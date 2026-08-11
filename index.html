@@ -315,97 +315,53 @@
                 <section id="tab-prep-finder" class="tab-pane">
                     <div class="card">
                         <div class="card-header">
-                            <h3><i data-lucide="compass"></i> 내 사업에 맞는 계약방법 찾기 위저드</h3>
-                            <p class="text-muted">사업의 목적물, 예산 규모, 자격요건을 입력하면 지방계약법에 맞는 입찰/낙찰 방식을 판정합니다.</p>
+                            <h3><i data-lucide="compass"></i> 내 사업에 맞는 계약방법 & 타임라인 찾기</h3>
+                            <p class="text-muted">계약 종류와 추정가격, 특례 요건만 선택하면 지방계약법 및 서울시 계약 매뉴얼에 따른 입찰방식과 처리 기한을 진단합니다.</p>
                         </div>
                         <div class="card-body">
-                            <div class="wizard-steps">
-                                <div class="step active" id="step-node-1">
-                                    <span class="step-num">1</span>
-                                    <span class="step-title">계약 목적물 분류</span>
+                            <div class="field mb-4">
+                                <label class="font-bold mb-2 block">① 계약 종류 선택:</label>
+                                <div class="chips" id="helperKindChips">
+                                    <button class="chip on" data-k="goods">📦 물품</button>
+                                    <button class="chip" data-k="service">🧾 용역</button>
+                                    <button class="chip" data-k="gc">🏗️ 종합공사</button>
+                                    <button class="chip" data-k="sc">🔧 전문공사</button>
+                                    <button class="chip" data-k="oc">⚡ 그 밖의 공사</button>
                                 </div>
-                                <div class="step" id="step-node-2">
-                                    <span class="step-num">2</span>
-                                    <span class="step-title">세부 유형 선택</span>
-                                </div>
-                                <div class="step" id="step-node-3">
-                                    <span class="step-num">3</span>
-                                    <span class="step-title">추정가격(예산) 입력</span>
-                                </div>
-                                <div class="step" id="step-node-4">
-                                    <span class="step-num">4</span>
-                                    <span class="step-title">최종 판정 결과</span>
-                                </div>
+                                <p class="form-hint mt-1">※ 그 밖의 공사: 전기 · 정보통신 · 소방시설 · 문화재수리 등</p>
                             </div>
 
-                            <div class="wizard-content mt-4" id="wizardBody">
-                                <!-- Step 1 Content -->
-                                <div class="wizard-page active" id="w-page-1">
-                                    <h4 class="mb-3">1. 사업의 주요 목적물 분류를 선택하세요.</h4>
-                                    <div class="grid-3">
-                                        <div class="option-card" data-val="공사">
-                                            <i data-lucide="hard-hat"></i>
-                                            <h5>공사 계약</h5>
-                                            <p>종합공사, 전문공사, 전기, 정보통신, 소방, 문화재 등</p>
-                                        </div>
-                                        <div class="option-card" data-val="용역">
-                                            <i data-lucide="briefcase"></i>
-                                            <h5>용역 계약</h5>
-                                            <p>기술용역(설계/감리), 학술연구, 일반용역(행사/운영 등)</p>
-                                        </div>
-                                        <div class="option-card" data-val="물품">
-                                            <i data-lucide="box"></i>
-                                            <h5>물품 계약</h5>
-                                            <p>물품 제조구매, 단순구매, 장비 및 시약 등</p>
-                                        </div>
-                                    </div>
+                            <div class="field mb-4">
+                                <label for="helperPrice" class="font-bold mb-2 block">② 추정가격 (부가가치세 제외):</label>
+                                <div class="input-with-suffix">
+                                    <input type="text" id="helperPrice" class="form-control money" inputmode="numeric" placeholder="예: 80,000,000">
+                                    <span class="suffix">원</span>
                                 </div>
+                                <div class="kor-hint text-primary font-bold mt-1" id="helperPriceKor">= 8,000만 원</div>
+                            </div>
 
-                                <!-- Step 2 Content -->
-                                <div class="wizard-page" id="w-page-2">
-                                    <h4 class="mb-3">2. 세부 사업 성격을 선택하세요.</h4>
-                                    <div class="grid-3" id="wSubTypes">
-                                        <!-- Rendered dynamically based on Step 1 selection -->
-                                    </div>
-                                </div>
+                            <div class="field mb-4">
+                                <label class="font-bold mb-2 block">③ 특례 및 해당 요건 체크 <small class="text-muted">(선택)</small>:</label>
+                                <label class="opt" id="optSpecial">
+                                    <input type="checkbox" id="chkOptSpecial">
+                                    <span>
+                                        <span class="t">특례 대상 기업과 계약 예정 (장애인·여성·사회적·청년창업기업 등)</span><br>
+                                        <span class="s">→ 1인 견적 수의계약 한도가 5,000만원으로 확대 적용됩니다.</span>
+                                    </span>
+                                </label>
+                                <label class="opt" id="optSevere">
+                                    <input type="checkbox" id="chkOptSevere">
+                                    <span>
+                                        <span class="t">중증장애인생산품 (직접 생산 물품·용역)</span><br>
+                                        <span class="s">→ 생산시설과의 직접 계약 시 금액 제한 없이 수의계약이 가능합니다.</span>
+                                    </span>
+                                </label>
+                            </div>
 
-                                <!-- Step 3 Content -->
-                                <div class="wizard-page" id="w-page-3">
-                                    <h4 class="mb-3">3. 추정가격(부가세 제외 순수 예금액)을 입력하세요.</h4>
-                                    <div class="form-group max-w-md">
-                                        <label for="inputEstimatePrice">추정가격 (원):</label>
-                                        <div class="input-with-suffix">
-                                            <input type="number" id="inputEstimatePrice" placeholder="예: 45000000" class="form-control">
-                                            <span class="suffix">원</span>
-                                        </div>
-                                        <span class="form-hint" id="priceHintText">4,500 만원 (VAT 별도)</span>
-                                    </div>
+                            <button class="btn btn-primary btn-lg" id="btnRunHelperGuide">결과 및 진행 타임라인 조회 <i data-lucide="arrow-right"></i></button>
 
-                                    <div class="form-group mt-3">
-                                        <label>특수 자격 / 희망기업 여부:</label>
-                                        <div class="checkbox-group">
-                                            <label><input type="checkbox" id="chkFemaleSocial"> 여성기업 / 장애인기업 / 사회적기업 (수의계약 한도 5천만원 적용)</label>
-                                            <label><input type="checkbox" id="chkPatented"> 특허공법 / 신기술 / 1인 생산자 (1인 수의 가능)</label>
-                                        </div>
-                                    </div>
-
-                                    <button class="btn btn-primary mt-3" id="btnCalculateWizard">계약방법 판정하기 <i data-lucide="arrow-right"></i></button>
-                                </div>
-
-                                <!-- Step 4 Content (Result) -->
-                                <div class="wizard-page" id="w-page-4">
-                                    <div class="result-box green" id="wizardResultBox">
-                                        <div class="result-icon"><i data-lucide="check-circle-2"></i></div>
-                                        <div class="result-text">
-                                            <h3 id="resContractMethod">2인 이상 견적 수의계약 (전자공개)</h3>
-                                            <p id="resContractDesc">추정가격 2천만원 초과 ~ 1억원 이하 일반용역에 해당하여 나라장터 전자공개 안내공고를 진행합니다.</p>
-                                            <div class="res-details" id="resDetailsList">
-                                                <!-- Detail bullets -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button class="btn btn-outline mt-3" id="btnResetWizard"><i data-lucide="rotate-ccw"></i> 다시 찾기</button>
-                                </div>
+                            <div id="helperGuideResult" class="mt-4">
+                                <!-- Results rendered dynamically -->
                             </div>
                         </div>
                     </div>
@@ -413,96 +369,18 @@
 
                 <!-- 3. TAB: 발주단계 체크리스트 (Prep Checklist) -->
                 <section id="tab-prep-checklist" class="tab-pane">
-                    <div class="grid-2">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3><i data-lucide="file-check"></i> 발주 전 필수 사전심의 절차 가이드</h3>
-                                <span class="card-subtitle">「한눈에 보이는 서울계약」 제1장 8~15p</span>
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i data-lucide="list-checks"></i> 5단계 동적 발주 준비도 체크리스트</h3>
+                                <p class="text-muted">선택한 계약 조건에 따라 필수 사전절차부터 대가지급까지 법정 및 필수 체크항목을 자동 구성합니다.</p>
                             </div>
-                            <div class="card-body">
-                                <div class="accordion">
-                                    <div class="acc-item open">
-                                        <div class="acc-header">
-                                            <span>1. 원가심사 (계약심사과)</span>
-                                            <i data-lucide="chevron-down"></i>
-                                        </div>
-                                        <div class="acc-body">
-                                            <ul>
-                                                <li><strong>공사:</strong> 종합공사 5억원 이상, 기타공사 3억원 이상 (설계변경 20억원 이상시 10% 이상 증액)</li>
-                                                <li><strong>용역:</strong> 추정금액 2억원 이상</li>
-                                                <li><strong>물품:</strong> 추정금액 2천만원 이상 제조·구매</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div class="acc-item">
-                                        <div class="acc-header">
-                                            <span>2. 일상감사 (공공감사담당관)</span>
-                                            <i data-lucide="chevron-down"></i>
-                                        </div>
-                                        <div class="acc-body">
-                                            <ul>
-                                                <li><strong>공사:</strong> 추정가격 20억원 이상 종합공사, 10억원 이상 기타공사</li>
-                                                <li><strong>용역:</strong> 일반경쟁 10억원 이상 (협상계약 5억원 이상)</li>
-                                                <li><strong>수의계약:</strong> 추정가격 2천만원 초과 1인견적 수의계약전 사전감사</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div class="acc-item">
-                                        <div class="acc-header">
-                                            <span>3. 특정제품 선정심사위원회</span>
-                                            <i data-lucide="chevron-down"></i>
-                                        </div>
-                                        <div class="acc-body">
-                                            <ul>
-                                                <li>공사 시 동일 특정제품 재료원가 합계 5천만원 초과 시 심사</li>
-                                                <li>물품 제조·구매 시 2천만원 초과 시 위원회 구성 (외부위원 과반)</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div class="acc-item">
-                                        <div class="acc-header">
-                                            <span>4. 재정합의 제도 (재무과)</span>
-                                            <i data-lucide="chevron-down"></i>
-                                        </div>
-                                        <div class="acc-body">
-                                            <ul>
-                                                <li><strong>공사:</strong> 10억원 이상 (담당사무관, 재무과장 합의)</li>
-                                                <li><strong>용역/제조:</strong> 5억원 이상 / <strong>물품:</strong> 2억원 이상</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <button class="btn btn-outline btn-sm" id="btnResetDynamicChecklist"><i data-lucide="rotate-ccw"></i> 전체 초기화</button>
                         </div>
-
-                        <!-- Checkable Interactive Checklist -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3><i data-lucide="check-square"></i> 발주담당자 서류 준비 체크리스트</h3>
-                                <span class="card-subtitle">계약의뢰시 필수 첨부 서류 자동 확인</span>
-                            </div>
-                            <div class="card-body">
-                                <div class="checklist-wrapper" id="interactiveChecklist">
-                                    <label class="check-item"><input type="checkbox" checked> <span>사업 시행 방침서 및 기본계획서</span></label>
-                                    <label class="check-item"><input type="checkbox" checked> <span>e-호조 지출품의서 (품의번호 기재 필수)</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>과업지시서 / 공사 시방서 / 내역서</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>산출기초조사서 및 거래실례가격 증빙견적</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>청렴계약 이행 서약서 (발주부서용)</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>부당계약 특수조건 체크리스트</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>녹색제품 구매·적용 가능 검토서 (기후환경정책과)</span></label>
-                                    <label class="check-item"><input type="checkbox"> <span>특정제품 선정심사위원회 의결서 (해당시)</span></label>
-                                </div>
-                                <div class="progress-bar-wrap mt-3">
-                                    <div class="progress-info">
-                                        <span>점검 완료율</span>
-                                        <strong id="chkProgressPercent">25%</strong>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="chkProgressFill" style="width: 25%;"></div>
-                                    </div>
+                        <div class="card-body">
+                            <div id="dynamicChecklistArea">
+                                <div class="empty-state text-center p-4">
+                                    <p class="text-muted">「맞춤 계약방법 찾기」에서 조건 입력 후 [결과 및 진행 타임라인 조회]를 누르면 이 계약에 맞춤 설정된 점검목록이 생성됩니다.</p>
                                 </div>
                             </div>
                         </div>
@@ -745,6 +623,53 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Calculator 3: 낙찰하한율 & 투찰 하한액 계산기 -->
+                        <div class="card mt-4" style="grid-column: 1 / -1;">
+                            <div class="card-header">
+                                <h3><i data-lucide="percent"></i> 적격심사 낙찰하한율 & 투찰 하한액 산출기</h3>
+                                <span class="card-subtitle">대상 구분과 추정가격을 선택하면 낙찰하한율 및 예정가격 기반 투찰 하한액(원)을 계산합니다.</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="grid-3">
+                                    <div class="form-group">
+                                        <label>적격심사 / 계약 대상 구분:</label>
+                                        <select id="rCat" class="form-control">
+                                            <option value="gongsa">공사 (행안부 적격심사)</option>
+                                            <option value="ilban">일반용역 적격심사</option>
+                                            <option value="danso">일반용역 — 단순노무</option>
+                                            <option value="gisulPQ">기술용역 (PQ)</option>
+                                            <option value="gisulNPQ">기술용역 (비PQ)</option>
+                                            <option value="haksul">학술용역</option>
+                                            <option value="mulpumH">물품 (행안부 적격심사)</option>
+                                            <option value="mulpumJ">물품 — 중소기업자간 경쟁제품</option>
+                                            <option value="gunpye">건설폐기물처리용역 (환경부)</option>
+                                            <option value="ilpye">일반폐기물처리용역 (서울시)</option>
+                                            <option value="boheom">보험용역</option>
+                                            <option value="ganhaeng">간행물</option>
+                                            <option value="su-gongsa">2인 견적 수의 — 공사</option>
+                                            <option value="su-yong">2인 견적 수의 — 용역·물품</option>
+                                            <option value="su-ganhaeng">2인 견적 수의 — 간행물</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>추정가격 (원):</label>
+                                        <input type="text" id="rPrice" class="form-control money" inputmode="numeric" placeholder="예: 500,000,000">
+                                        <div class="kor-hint text-primary font-bold mt-1" id="rPriceKor"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>예정가격 (원, 선택):</label>
+                                        <input type="text" id="rBase" class="form-control money" inputmode="numeric" placeholder="예: 550,000,000">
+                                        <div class="kor-hint text-primary font-bold mt-1" id="rBaseKor"></div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary mt-3" id="btnRunRateCalc">낙찰하한율 및 투찰 하한액 조회 <i data-lucide="arrow-right"></i></button>
+
+                                <div id="rOut" class="mt-3">
+                                    <!-- Rate output -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -807,6 +732,37 @@
                                     <span>계약상대자 최종 실지급 대금:</span>
                                     <strong id="resAdvNetPay" class="text-green">60,000,000 원</strong>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stamp Duty & Metro Rail Bond Calculator -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3><i data-lucide="receipt"></i> 인지세 & 도시철도공채 자동 계산기</h3>
+                            <span class="card-subtitle">계약금액 기준 정부수입인지 및 건설공사 도시철도채권 2% (5,000원 단위 매입) 계산</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>계약금액 (원, 부가세 포함):</label>
+                                    <input type="text" id="tAmt" class="form-control money" inputmode="numeric" placeholder="예: 120,000,000">
+                                    <div class="kor-hint text-primary font-bold mt-1" id="tAmtKor"></div>
+                                </div>
+                                <div class="form-group flex-align-center">
+                                    <label class="opt mt-4" id="tConstOpt">
+                                        <input type="checkbox" id="chkConstBond">
+                                        <span>
+                                            <span class="t">건설공사 도급계약 해당</span><br>
+                                            <span class="s">계약금액 2천만원 이상 건설공사 시 도시철도채권 매입 대상 (계약금액의 2%)</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary mt-3" id="btnRunTaxBondCalc">인지세 및 공채 매입액 계산 <i data-lucide="arrow-right"></i></button>
+
+                            <div id="tOut" class="mt-3">
+                                <!-- Tax and Bond output -->
                             </div>
                         </div>
                     </div>
@@ -898,7 +854,7 @@
                     </div>
                 </section>
 
-                <!-- 12. TAB: 서류 양식함 (Exec Documents) -->
+                <!-- 12. TAB: 서류 양식함 & 서울계약 레퍼런스 (Exec Documents) -->
                 <section id="tab-exec-documents" class="tab-pane">
                     <div class="card">
                         <div class="card-header flex-between">
@@ -926,6 +882,85 @@
                                     <h5>근로자 권리보호 이행서약서</h5>
                                     <span class="file-info">PDF / 110KB</span>
                                     <button class="btn btn-sm btn-outline mt-2" onclick="alert('서식이 다운로드 되었습니다.')">양식 받기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Reference Accordions -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3><i data-lucide="book-open"></i> 📚 지방계약법 및 서울시 실무 기준 한눈에</h3>
+                            <p class="text-muted">발주준비부터 대가지급까지 자주 찾는 주요 법령 요율 및 수의계약 한도를 요약정리합니다.</p>
+                        </div>
+                        <div class="card-body">
+                            <details open>
+                                <summary>🤝 수의계약 금액 기준 (추정가격)</summary>
+                                <div class="in">
+                                    <table class="stable">
+                                        <tr><th>구분</th><th>기준</th></tr>
+                                        <tr><td>1인 견적 수의계약</td><td>2천만원 이하 (여성·장애인·사회적기업 특례 5천만원 이하)</td></tr>
+                                        <tr><td>중증장애인생산품</td><td>직접 생산 물품·용역 — 금액 제한 없이 가능</td></tr>
+                                        <tr><td rowspan="4">2인 이상 견적<br>(전자공개 수의계약)</td><td>종합공사 4억원 이하</td></tr>
+                                        <tr><td>전문공사 2억원 이하</td></tr>
+                                        <tr><td>그 밖의 공사 1.6억원 이하</td></tr>
+                                        <tr><td>용역 · 물품 1억원 이하</td></tr>
+                                        <tr><td>동일업체 횟수 제한</td><td>실·국별 연 4회 / 서울시 전체 연 9회 (1인 수의)</td></tr>
+                                        <tr><td>분리발주 금지</td><td>수의계약 기준 회피 목적의 분할 계약 금지 (시행령 §77)</td></tr>
+                                    </table>
+                                </div>
+                            </details>
+
+                            <details>
+                                <summary>⏱️ 공고기간 · 법정 처리기한</summary>
+                                <div class="in">
+                                    <table class="stable">
+                                        <tr><th>절차</th><th>기간</th></tr>
+                                        <tr><td>입찰공고 (추정가격 10억 미만)</td><td>7일 이상</td></tr>
+                                        <tr><td>입찰공고 (10억 ~ 50억 미만)</td><td>15일 이상</td></tr>
+                                        <tr><td>입찰공고 (50억 이상)</td><td>30일 이상 (국제입찰 40일)</td></tr>
+                                        <tr><td>재공고 · 긴급입찰</td><td>5일 이상</td></tr>
+                                        <tr><td>전자공개 수의 안내공고</td><td>3일 이상 (신규 사업자 대상 5일)</td></tr>
+                                        <tr><td>계약 체결</td><td>낙찰 통지 후 10일 이내</td></tr>
+                                        <tr><td>검사</td><td>완료 통지 후 14일 이내</td></tr>
+                                        <tr><td>대가 지급</td><td>검사 후 청구일부터 5일 이내</td></tr>
+                                        <tr><td>선금 지급</td><td>청구 후 14일 이내 (하수급 배분 통지 15일)</td></tr>
+                                    </table>
+                                </div>
+                            </details>
+
+                            <details>
+                                <summary>🔎 발주 전 확인 절차 (서울시)</summary>
+                                <div class="in">
+                                    <table class="stable">
+                                        <tr><th>절차</th><th>대상</th></tr>
+                                        <tr><td>일상감사</td><td>종합공사 20억↑ · 기타공사 10억↑ · 용역 10억↑(협상 5억↑) · 물품 5억↑ · 수의 2천만원 초과</td></tr>
+                                        <tr><td>원가(계약)심사</td><td>토목·건축공사 5억↑ · 조경·전기·통신 3억↑ · 용역 2억↑ · 물품 2천만원↑</td></tr>
+                                        <tr><td>사전규격 공개</td><td>입찰 대상 5천만원 이상 (나라장터 5일)</td></tr>
+                                        <tr><td>재정합의</td><td>공사 10억↑ · 용역·제조 5억↑ · 물품 2억↑ → 재무과장 합의</td></tr>
+                                    </table>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- AI Contract Advisory Assistant Demo -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3><i data-lucide="message-square"></i> 💬 AI 서울계약 대화형 실무 상담 도우미</h3>
+                            <p class="text-muted">지방계약법 및 서울시 계약 매뉴얼 기준 질문에 즉시 답해드립니다.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="chat">
+                                <div id="chatLogArea" class="chat-log">
+                                    <div class="bubble ai">
+                                        안녕하세요! 👋 서울시 계약 실무 담당자님.<br>
+                                        사업 종류와 추정가격을 알려주시거나, 수의계약 요건·선금·지연배상금·적격심사에 대해 질문해주시면 서울시 계약 매뉴얼 기준으로 안내해 드립니다.
+                                    </div>
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" id="chatInputText" placeholder="예: 8천만원 일반용역이면 어떤 계약방식이 가능한가요?">
+                                    <button class="btn btn-primary" id="btnSendChatMessage">보내기 <i data-lucide="send"></i></button>
                                 </div>
                             </div>
                         </div>
