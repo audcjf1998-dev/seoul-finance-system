@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const subs = $("it-subs");
     if(subs) subs.style.display = on ? "" : "none";
     if(!on){
-      ["opt-itnew","opt-itpub","opt-itaudit"].forEach(id=>{
+      ["opt-itnew","opt-itmaint","opt-itpub","opt-itaudit"].forEach(id=>{
         const sub = $(id);
         if(sub){
           const c = sub.querySelector("input");
@@ -254,6 +254,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+  }
+
+  const itMaintInp = $("opt-itmaint") ? $("opt-itmaint").querySelector("input") : null;
+  if (itMaintInp) {
+    itMaintInp.addEventListener("change", () => {
+      if (itMaintInp.checked) {
+        ["opt-itnew", "opt-itaudit"].forEach(id => {
+          const el = $(id);
+          if (el) {
+            const c = el.querySelector("input");
+            if (c) c.checked = false;
+            el.classList.remove("on");
+          }
+        });
+      }
+    });
+  }
+  const itNewInp = $("opt-itnew") ? $("opt-itnew").querySelector("input") : null;
+  if (itNewInp) {
+    itNewInp.addEventListener("change", () => {
+      if (itNewInp.checked && itMaintInp) {
+        itMaintInp.checked = false;
+        $("opt-itmaint").classList.remove("on");
+      }
+    });
+  }
+  const itAuditInp = $("opt-itaudit") ? $("opt-itaudit").querySelector("input") : null;
+  if (itAuditInp) {
+    itAuditInp.addEventListener("change", () => {
+      if (itAuditInp.checked && itMaintInp) {
+        itMaintInp.checked = false;
+        $("opt-itmaint").classList.remove("on");
+      }
+    });
   }
 
   const negoChk = $("opt-nego") ? $("opt-nego").querySelector("input") : null;
@@ -273,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const festival = rawNego && $("opt-festival") && $("opt-festival").querySelector("input").checked;
     const it = $("opt-it") ? ($("opt-it").querySelector("input").checked && !k.isC) : false;
     const itNew = it && $("opt-itnew") && $("opt-itnew").querySelector("input").checked;
+    const itMaint = it && $("opt-itmaint") && $("opt-itmaint").querySelector("input").checked;
     const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
     const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
@@ -318,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itPub,itAudit,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
   }
 
   /* ───── 타임라인 ───── */
@@ -334,9 +369,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if(d.gam && d.p>=3e7) pre.push({t:"기술용역 타당성 심사", tag:"통상", days:[7,14], soft:true, s:"기술심사담당관 — 용역 필요성·대가 적정성 (예산 반영 전 원칙, 당해연도 사업은 발주 전)"});
     if(d.gam && d.p>=2.3*E) pre.push({t:"사업수행능력(PQ) 세부기준 심의", tag:"통상", days:[5,10], soft:true, s:"건설기술심의 — 시 표준기준과 동일하면 서면협의로 대체"});
     if(d.it){
-      pre.push({t:"과업심의위원회 (SW 과업 확정)", tag:"통상", days:[5,10], soft:true, s:"모든 SW사업 대상 · SW개발 포함 시 적정 사업기간 산정 (1억 이하·상용SW 구매는 간소화 심의)"});
-      if(d.itNew || d.p>=2*E) pre.push({t:"행안부 사전협의", tag:"법정", days:[30,30], s:"발주 40일 전 IRM(irm.go.kr) 신청 · 검토 30일 — 결과를 제안요청서에 반영한 뒤 사전규격 공개"});
-      if(!d.itAudit || d.itNew || d.itPub){
+      pre.push({t:"과업심의위원회 (SW 과업 확정)", tag:"통상", days:[5,10], soft:true, s:"모든 SW사업 대상 · 과업내용 및 계약기간 확정"});
+      if(d.itNew || d.p>=2*E) pre.push({t:"행안부 사전협의", tag:"법정", days:[30,30], s:d.itNew ? "신규 정보화사업 — 발주 40일 전 IRM 신청 · 검토 30일" : "유지보수·계속사업 2억원 이상 — 발주 40일 전 IRM 신청 · 검토 30일"});
+      if(!d.itAudit && !d.itMaint){
         pre.push({t:"정보통신 보안성 검토", tag:"통상", days:[5,10], soft:true, s:"정보보안과 (중요 사업은 국정원) · 검토 결과 제안요청서 반영"});
       }
     }
@@ -494,13 +529,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(d.it){
       pres.push(["과업심의위원회 (SW)", "모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
-      pres.push(["행안부 사전협의 (IRM)", (d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
-      pres.push(["정보통신 보안성 검토", (!d.itAudit || d.itNew || d.itPub) ? "정보시스템 신·증설 및 구축·개발 사업 대상 — 정보보안과 (단순 SW 감리 용역 단독 발주 시 제외)" : null]);
-      pres.push(["정보시스템 감리 (SW 감리)", (d.itAudit || d.p>=5*E || (d.itPub && d.p>=1*E))
+      pres.push(["행안부 사전협의 (IRM)", (d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"유지보수·계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
+      pres.push(["정보통신 보안성 검토", (!d.itAudit && !d.itMaint) ? "정보시스템 신·증설 및 구축·개발 사업 대상 — 정보보안과 (유지보수 및 단순 SW 감리 제외)" : null]);
+      pres.push(["정보시스템 감리 (SW 감리)", (!d.itMaint && (d.itAudit || d.p>=5*E || (d.itPub && d.p>=1*E)))
         ? (d.p>=20*E ? "전자정부법 §57 — 20억 이상 SW 구축: 3단계 감리(착수·중간·종료) 의무"
         : (d.p>=5*E || (d.itPub && d.p>=1*E)) ? "전자정부법 §57 — 5억 이상(대국민 1억 이상) 의무 감리 · 20억 미만·6개월 미만 2단계 감리 가능" : "SW 감리 대상 여부 검토") : null]);
-      pres.push(["SW사업 영향평가", (!d.itAudit || d.itNew || d.itPub) ? "자체평가 후 사전규격 공개 시 결과 공개" : null]);
-      pres.push(["예산타당성 심사", d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
+      pres.push(["SW사업 영향평가", (!d.itAudit && !d.itMaint) ? "자체평가 후 사전규격 공개 시 결과 공개" : null]);
+      pres.push(["예산타당성 심사", (d.itNew && !d.itMaint) ? "신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인" : null]);
     }
     const hit = pres.filter(x=>x[1]);
     if(hit.length){
@@ -576,14 +611,14 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"협상 대상 여부 확인","단순노무용역·단순물품구매 제외 — 지식기반사업 등 (령 §44①)","필수",d.rec==="nego");
     add(P,"제안요청서 · 과업지시서 작성","평가요소·평가방법·제안서 규격 명시, 부당계약 체크리스트 검토","필수",d.rec==="nego");
     add(P,"평가위원 예비명부 구성 (3배수, 21~30인)","공공감사담당관(일상감사팀장) 협조결재 · 위원정보 비공개","필수",d.rec==="nego");
-    add(P,"예산타당성 심사 이행 확인","신규 구축·SW개발 포함 사업 — 정보시스템과 (전년도 정기 7~9월 · 소요 30일)","필수",d.it&&d.itNew);
+    add(P,"예산타당성 심사 이행 확인","신규 구축·SW개발 포함 사업 — 정보시스템과 (전년도 정기 7~9월 · 소요 30일)","필수",d.it&&d.itNew&&!d.itMaint);
     add(P,"과업심의위원회 심의","모든 SW사업 · 과업내용 확정, SW개발 시 적정 사업기간 산정 — 1억 이하·상용SW 구매는 간소화","필수",d.it);
-    add(P,"행안부 사전협의 (irm.go.kr)","발주 40일 전 신청 · 검토 30일 — 미이행 시 사전협의 이행 후 재공고 대상","필수",d.it&&(d.itNew||d.p>=2*E));
-    add(P,"정보시스템 감리 (SW 감리) 이행","전자정부법 §57 — 5억 이상(대국민 1억 이상) 감리 의무, 전문 감리기관 계약","필수",d.it&&(d.itAudit||d.p>=5*E||(d.itPub&&d.p>=1*E)));
-    add(P,"SW사업 영향평가 (자체)","사전규격 공개 시 결과 공개 · 1억 이상 신규 개발은 발주 30일 전 과기부 검토요청","필수",d.it);
-    add(P,"정보통신 보안성 검토","정보보안과 의뢰 — 정보시스템 구축·신증설 본 사업 대상 (단순 SW 감리 용역 단독 발주 시 제외)","필수",d.it && (!d.itAudit || d.itNew || d.itPub));
-    add(P,"상용SW 직접구매 대상 검토","3억 이상 + 조달 등록 SW 포함 시 구매계획 첨부 · 경쟁입찰 구매 시 BMT 검토","필수",d.it&&d.p>=3*E);
-    add(P,"클라우드 우선 이용 검토","SaaS → 민간 클라우드 → 데이터센터 순 비교 검토서","권장",d.it&&d.itNew);
+    add(P,"행안부 사전협의 (irm.go.kr)",d.itNew?"신규 40일 전 신청 · 검토 30일":"유지관리·계속사업 2억원 이상 — 발주 40일 전 신청","필수",d.it&&(d.itNew||d.p>=2*E));
+    add(P,"정보시스템 감리 (SW 감리) 이행","전자정부법 §57 — 5억 이상(대국민 1억 이상) 감리 의무, 전문 감리기관 계약","필수",d.it&&!d.itMaint&&(d.itAudit||d.p>=5*E||(d.itPub&&d.p>=1*E)));
+    add(P,"SW사업 영향평가 (자체)","사전규격 공개 시 결과 공개 · 1억 이상 신규 개발은 발주 30일 전 과기부 검토요청","필수",d.it&&!d.itMaint);
+    add(P,"정보통신 보안성 검토","정보보안과 의뢰 — 정보시스템 구축·신증설 본 사업 대상 (유지보수 및 단순 SW 감리 용역 제외)","필수",d.it && !d.itAudit && !d.itMaint);
+    add(P,"상용SW 직접구매 대상 검토","3억 이상 + 조달 등록 SW 포함 시 구매계획 첨부 · 경쟁입찰 구매 시 BMT 검토","필수",d.it&&!d.itMaint&&d.p>=3*E);
+    add(P,"클라우드 우선 이용 검토","SaaS → 민간 클라우드 → 데이터센터 순 비교 검토서","권장",d.it&&d.itNew&&!d.itMaint);
     add(P,"기술용역 타당성 심사 요청","기술심사담당관 — 토목·도시계획 1억↑ · 건축 5천만↑ · 기계·전기·조경 3천만↑ (예산 반영 전, 당해연도는 발주 전)","필수",d.gam&&d.p>=3e7);
     add(P,"용역발주심의 (건설기술심의)","토목·건축 2억↑ · 전기·기계·조경 1억↑ — 발주 타당성·과업 적정성","필수",d.gam&&d.p>=1*E);
     add(P,"PQ 세부평가기준 건설기술심의","설계·건설사업관리 2.3억↑ (정밀안전진단 1억↑) — 시 표준기준과 동일 시 서면협의 대체","필수",d.gam&&d.p>=2.3*E);
@@ -1115,6 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gam: $("opt-gam") ? $("opt-gam").querySelector("input").checked : false,
         it: $("opt-it") ? $("opt-it").querySelector("input").checked : false,
         itNew: $("opt-itnew") ? $("opt-itnew").querySelector("input").checked : false,
+        itMaint: $("opt-itmaint") ? $("opt-itmaint").querySelector("input").checked : false,
         itPub: $("opt-itpub") ? $("opt-itpub").querySelector("input").checked : false,
         itAudit: $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false
       },
@@ -1225,6 +1261,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setChk("opt-gam", opts.gam);
       setChk("opt-it", opts.it);
       setChk("opt-itnew", opts.itNew);
+      setChk("opt-itmaint", opts.itMaint);
       setChk("opt-itpub", opts.itPub);
       setChk("opt-itaudit", opts.itAudit);
     }
