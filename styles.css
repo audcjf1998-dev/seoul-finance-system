@@ -207,6 +207,20 @@ body {
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
 }
 
+.mini-tag-bar span.creator-badge {
+  border-color: #fecdd3;
+  color: #e11d48;
+  background: #fff5f8;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.08);
+}
+
+.mini-tag-bar span.creator-badge b {
+  color: #be123c;
+  font-weight: 800;
+  margin-left: 3px;
+}
+
 /* ─────────────────── MASCOT SPEECH BANNER ─────────────────── */
 .mascot-speech-banner {
   display: flex;
