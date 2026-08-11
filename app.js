@@ -404,6 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.showStep = showStep;
 
+  window.goHome = function() {
+    if(typeof showTab === "function") showTab("guide");
+    showStep("input");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   /* ───── 진단 결과 렌더 ───── */
   let LAST = null;
 
@@ -769,9 +775,8 @@ document.addEventListener('DOMContentLoaded', () => {
       h += '</div>'; // End Phase Card
     }
 
-    h += '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn ghost" onclick="window._clearCk()">전체 해제</button>'
-      +'<button class="btn ghost" onclick="showTab(\'guide\');showStep(\'input\');">조건 바꾸기</button></div>';
-    h += '<p class="note">체크 상태는 화면을 새로고침하면 초기화돼요.</p></div>';
+    h += '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn pri-btn" style="background:#2563eb;color:#fff;" onclick="window.goHome()">🏠 홈으로 (조건 다시 입력)</button><button class="btn ghost" onclick="window._clearCk()">전체 해제</button></div>';
+    h += '<p class="note">체크 상태는 저장 버튼으로 보관하거나 화면을 새로고침하면 유지돼요.</p></div>';
     
     const ckArea = $("ck-area");
     if(ckArea) {
