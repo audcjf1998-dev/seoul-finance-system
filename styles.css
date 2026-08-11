@@ -1193,6 +1193,179 @@ tr.win td {
   font-size: 0.92rem;
 }
 
+/* ─────────────────── MOBILE RESPONSIVE OPTIMIZATIONS ─────────────────── */
+@media (max-width: 768px) {
+  .wrap {
+    padding: 12px 12px 60px;
+  }
+
+  /* Hero Header Mobile Adjustment */
+  .hero.seoul-soul-hero {
+    padding: 20px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .watermark-img {
+    width: 220px;
+    opacity: 0.12;
+    right: -10px;
+    bottom: -10px;
+  }
+
+  .slogan-badge-wrap {
+    padding: 4px 10px;
+  }
+
+  .slogan-img {
+    height: 38px;
+    max-width: 140px;
+  }
+
+  .hero h1 {
+    font-size: 1.35rem;
+  }
+
+  .soul-pill-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+  }
+
+  .hero-desc {
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .mini-tag-bar span {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    white-space: normal;
+  }
+
+  /* Navigation Tabs Horizontal Touch Scroll */
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: 6px;
+    padding: 4px 2px 10px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    border-radius: 12px;
+  }
+
+  /* Card & Forms Mobile Polish */
+  .card {
+    padding: 20px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card h2 {
+    font-size: 1.2rem;
+  }
+
+  /* Contract Type Buttons Mobile Grid */
+  .kopts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .kopt {
+    padding: 10px 8px;
+    font-size: 0.88rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Input fields & Checkboxes */
+  .field {
+    margin-bottom: 18px;
+  }
+
+  .opt {
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 0.88rem;
+  }
+
+  .opt .t {
+    font-size: 0.92rem;
+  }
+
+  .opt .s {
+    font-size: 0.8rem;
+  }
+
+  #it-subs, #opt-festival {
+    margin-left: 10px !important;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 14px;
+    font-size: 0.98rem;
+    width: 100%;
+  }
+
+  /* Calculator / Grid Controls */
+  .calc-grid, .grid-2, .grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .ev-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+
+  .ev-row .rm {
+    grid-column: span 2;
+  }
+
+  table {
+    min-width: 520px;
+  }
+
+  /* Pre-procedures Mobile Grid */
+  .pre {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .p {
+    padding: 12px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kopts {
+    grid-template-columns: 1fr;
+  }
+
+  .slogan-img {
+    height: 32px;
+    max-width: 120px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
