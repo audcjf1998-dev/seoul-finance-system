@@ -169,141 +169,93 @@
                         </div>
                     </div>
 
-                    <!-- KPI Cards Grid -->
-                    <div class="grid-4 kpi-grid">
-                        <div class="kpi-card kpi-blue">
-                            <div class="kpi-header">
-                                <div class="kpi-icon blue"><i data-lucide="building-2"></i></div>
-                                <div class="kpi-trend positive">
-                                    <i data-lucide="trending-up"></i>
-                                    <span>+12.4%</span>
-                                </div>
-                            </div>
-                            <div class="kpi-body">
-                                <span class="kpi-title">공사 계약</span>
-                                <div class="kpi-main-val">
-                                    <span class="kpi-amount">1조 9,200<small>억원</small></span>
-                                    <span class="kpi-count">1,840 건</span>
-                                </div>
-                            </div>
-                            <div class="kpi-footer">
-                                <span class="kpi-tag"><i data-lucide="shield-check"></i> 종합 4억 · 전문 2억 이하 수의 가능</span>
-                            </div>
+                    <!-- Real Working Tools Quick Launch Menu -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3><i data-lucide="wrench"></i> 발주부서 실무 핵심 도구 모음 (실제 기능)</h3>
+                            <p class="text-muted">원하는 실무 기능 버튼을 클릭하면 해당 계산기 및 진단 도구로 즉시 이동합니다.</p>
                         </div>
-
-                        <div class="kpi-card kpi-green">
-                            <div class="kpi-header">
-                                <div class="kpi-icon green"><i data-lucide="cpu"></i></div>
-                                <div class="kpi-trend positive">
-                                    <i data-lucide="trending-up"></i>
-                                    <span>+8.7%</span>
+                        <div class="card-body">
+                            <div class="grid-3">
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'prep-finder\']').click()">
+                                    <i data-lucide="compass" class="doc-icon text-primary"></i>
+                                    <h5>내 사업 계약방법 & 타임라인 진단</h5>
+                                    <span class="file-info">공사 · 용역 · 물품 선택 및 추정가격 입력</span>
+                                    <button class="btn btn-sm btn-primary mt-2">진단기 실행 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-body">
-                                <span class="kpi-title">용역 계약 (기술/학술/일반)</span>
-                                <div class="kpi-main-val">
-                                    <span class="kpi-amount">1조 1,400<small>억원</small></span>
-                                    <span class="kpi-count">4,210 건</span>
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'prep-checklist\']').click()">
+                                    <i data-lucide="list-checks" class="doc-icon text-success"></i>
+                                    <h5>5단계 동적 발주 서류 체크리스트</h5>
+                                    <span class="file-info">원가심사 · 일상감사 · 사전규격 서류 점검</span>
+                                    <button class="btn btn-sm btn-success mt-2">체크리스트 생성 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-footer">
-                                <span class="kpi-tag"><i data-lucide="award"></i> 협상에 의한 계약 85% 기술평가</span>
-                            </div>
-                        </div>
-
-                        <div class="kpi-card kpi-gold">
-                            <div class="kpi-header">
-                                <div class="kpi-icon gold"><i data-lucide="shopping-bag"></i></div>
-                                <div class="kpi-trend neutral">
-                                    <i data-lucide="minus"></i>
-                                    <span>+3.2%</span>
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'bid-eval\']').click()">
+                                    <i data-lucide="percent" class="doc-icon text-warning"></i>
+                                    <h5>낙찰하한율 & 투찰 하한액 계산기</h5>
+                                    <span class="file-info">15개 적격심사 기준별 예정가격 하한액</span>
+                                    <button class="btn btn-sm btn-outline mt-2">계산기 열기 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-body">
-                                <span class="kpi-title">물품 제조·구매</span>
-                                <div class="kpi-main-val">
-                                    <span class="kpi-amount">4,220<small>억원</small></span>
-                                    <span class="kpi-count">6,400 건</span>
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'exec-advance\']').click()">
+                                    <i data-lucide="receipt" class="doc-icon text-blue"></i>
+                                    <h5>인지세 & 도시철도공채 계산기</h5>
+                                    <span class="file-info">전자수입인지 및 건설공사 공채 2% 산출</span>
+                                    <button class="btn btn-sm btn-outline mt-2">계산기 열기 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-footer">
-                                <span class="kpi-tag"><i data-lucide="leaf"></i> 녹색제품 / 장애인기업 우선조달</span>
-                            </div>
-                        </div>
-
-                        <div class="kpi-card kpi-purple">
-                            <div class="kpi-header">
-                                <div class="kpi-icon purple"><i data-lucide="sparkles"></i></div>
-                                <div class="kpi-trend positive">
-                                    <i data-lucide="trending-up"></i>
-                                    <span>+15.1%</span>
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'exec-advance\']').click()">
+                                    <i data-lucide="coins" class="doc-icon text-purple"></i>
+                                    <h5>선금 지급 & 기성 정산 산출기</h5>
+                                    <span class="file-info">기성시 공제할 선금정산액 공식 계산</span>
+                                    <button class="btn btn-sm btn-outline mt-2">정산기 열기 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-body">
-                                <span class="kpi-title">희망기업(약자기업) 계약</span>
-                                <div class="kpi-main-val">
-                                    <span class="kpi-amount">3,850<small>억원</small></span>
-                                    <span class="kpi-count">3,120 건</span>
+                                <div class="doc-item-card cursor-pointer" onclick="document.querySelector('.nav-btn[data-tab=\'exec-documents\']').click()">
+                                    <i data-lucide="message-square" class="doc-icon text-primary"></i>
+                                    <h5>AI 서울계약 실무 대화형 상담</h5>
+                                    <span class="file-info">지방계약법령 및 매뉴얼 대화형 질문응답</span>
+                                    <button class="btn btn-sm btn-primary mt-2">상담 시작 <i data-lucide="arrow-right"></i></button>
                                 </div>
-                            </div>
-                            <div class="kpi-footer">
-                                <span class="kpi-tag"><i data-lucide="heart-handshake"></i> 여성·장애인 5천만원 1인수의</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Charts & Recent Activity -->
-                    <div class="grid-2 mt-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3><i data-lucide="pie-chart"></i> 발주 목적물별 & 수의계약 집행 비율</h3>
-                                <span class="card-subtitle">2026년 서울시 본청 및 사업소 기준</span>
-                            </div>
-                            <div class="card-body chart-container">
-                                <canvas id="chartContractCategory"></canvas>
-                            </div>
+                    <!-- G2B Public Procurement Service Open API Integration Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="link"></i> 조달청 나라장터 Open API 실시간 데이터 연동 가이드 및 설정</h3>
+                            <span class="card-subtitle">공공데이터포털(data.go.kr) 조달청 나라장터 입찰공고 / 사전규격 API 연동</span>
                         </div>
+                        <div class="card-body">
+                            <div class="grid-2">
+                                <div>
+                                    <h4 class="font-bold text-primary mb-2">🔑 조달청 Open API 인증키 연동 테스트</h4>
+                                    <p class="text-sm text-muted mb-3">공공데이터포털에서 발급받은 서비스키(ServiceKey)를 입력하여 실시간 조달청 나라장터 데이터와 연동할 수 있습니다.</p>
+                                    <div class="form-group mb-3">
+                                        <label for="apiServiceKey">공공데이터포털 인증키 (ServiceKey):</label>
+                                        <input type="password" id="apiServiceKey" class="form-control" placeholder="공공데이터포털에서 발급받은 Decoding 서비스키 입력">
+                                    </div>
+                                    <div class="form-group mb-3">
+                                        <label for="apiInstCd">조달청 수요기관 코드 (선택):</label>
+                                        <input type="text" id="apiInstCd" class="form-control" value="6110000" placeholder="서울특별시 본청 기관코드 (예: 6110000)">
+                                    </div>
+                                    <button class="btn btn-primary" id="btnTestG2bApi"><i data-lucide="refresh-cw"></i> 조달청 API 연동 테스트 및 실시간 공고 불러오기</button>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-2">📌 조달청 API 발급 및 연결 방법 안내</h4>
+                                    <ol class="text-sm text-muted" style="padding-left: 20px; line-height: 1.8;">
+                                        <li><strong>공공데이터포털(data.go.kr) 접속:</strong> 회원가입 후 로그인합니다.</li>
+                                        <li><strong>조달청 오픈API 검색:</strong> 검색창에 <code>[조달청_나라장터 입찰공고 정보]</code> 또는 <code>[조달청_나라장터 사전규격 정보]</code>를 검색합니다.</li>
+                                        <li><strong>활용신청 제출:</strong> [활용신청] 버튼을 클릭하면 즉시 승인 및 서비스키(Decoding/Encoding)가 발급됩니다.</li>
+                                        <li><strong>API 엔드포인트 URL:</strong><br>
+                                            <code style="font-size: 0.78rem;">https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01</code>
+                                        </li>
+                                        <li><strong>인증키 입력:</strong> 발급받은 <code>ServiceKey</code>를 왼쪽 입력란에 붙여넣고 [연동 테스트]를 실행합니다.</li>
+                                    </ol>
+                                </div>
+                            </div>
 
-                        <div class="card">
-                            <div class="card-header">
-                                <h3><i data-lucide="bar-chart-3"></i> 월별 대금 지급 현황 (선금 / 기성금 / 잔금)</h3>
-                                <span class="card-subtitle">노무비 구분관리제 적용 비율 99.4%</span>
+                            <div id="g2bApiResultArea" class="mt-4 hidden">
+                                <h4>📡 실시간 조달청 API 수신 결과</h4>
+                                <div id="g2bApiLog" class="p-3 mt-2" style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: monospace; font-size: 0.85rem; max-height: 250px; overflow-y: auto;"></div>
                             </div>
-                            <div class="card-body chart-container">
-                                <canvas id="chartMonthlyPayment"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Live Bids & Contracts Table -->
-                    <div class="card mt-4">
-                        <div class="card-header flex-between">
-                            <h3><i data-lucide="radio"></i> 실시간 서울시 입찰공고 & 진행 현황</h3>
-                            <div class="filter-pills">
-                                <button class="pill active" data-filter="all">전체</button>
-                                <button class="pill" data-filter="공사">공사</button>
-                                <button class="pill" data-filter="용역">용역</button>
-                                <button class="pill" data-filter="물품">물품</button>
-                            </div>
-                        </div>
-                        <div class="card-body padding-none">
-                            <table class="data-table" id="dashboardBidsTable">
-                                <thead>
-                                    <tr>
-                                        <th>공고번호</th>
-                                        <th>구분</th>
-                                        <th>사업/계약명</th>
-                                        <th>발주부서</th>
-                                        <th>추정가격(원)</th>
-                                        <th>계약/입찰방식</th>
-                                        <th>마감일자</th>
-                                        <th>상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Dynamic rows from app.js -->
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </section>

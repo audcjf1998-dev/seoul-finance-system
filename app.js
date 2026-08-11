@@ -80,100 +80,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Mock Contract Data & Table Render
-    const mockBids = [
-        { id: '2026-SEOUL-091', type: '용역', title: '2026년 서울시 AI 기반 자산격차 분석 플랫폼 구축', dept: '금융투자과', price: 480000000, method: '협상에 의한 계약', endDate: '2026-08-20', status: '입찰중', badgeClass: 'warning' },
-        { id: '2026-SEOUL-090', type: '공사', title: '여의도 디지털금융지원센터 시설 보수 및 리모델링', dept: '도시기반시설본부', price: 245000000, method: '적격심사 낙찰제', endDate: '2026-08-18', status: '개찰완료', badgeClass: 'success' },
-        { id: '2026-SEOUL-089', type: '물품', title: '서울시 청년 가계부채 상담용 태블릿 PC 150대 구매', dept: '복지기획과', price: 65000000, method: '2인 전자공개 수의', endDate: '2026-08-15', status: '계약체결', badgeClass: 'blue' },
-        { id: '2026-SEOUL-088', type: '용역', title: '서울시 소상공인 안심통장 이자지원 정책 효용성 연구', dept: '소상공인정책과', price: 18000000, method: '1인 수의계약', endDate: '2026-08-12', status: '대가지급완료', badgeClass: 'success' },
-        { id: '2026-SEOUL-087', type: '공사', title: '상암 IT 콤플렉스 데이터센터 전력 케이블 보강공사', dept: '정보시스템담당관', price: 130000000, method: '2인 전자공개 수의', endDate: '2026-08-22', status: '입찰중', badgeClass: 'warning' }
-    ];
+    // 3. G2B Public Procurement Service Open API Integration Engine
+    const btnTestG2bApi = document.getElementById('btnTestG2bApi');
+    const apiServiceKey = document.getElementById('apiServiceKey');
+    const apiInstCd = document.getElementById('apiInstCd');
+    const g2bApiResultArea = document.getElementById('g2bApiResultArea');
+    const g2bApiLog = document.getElementById('g2bApiLog');
 
-    function renderBidsTable(filter = 'all') {
-        const tbody = document.querySelector('#dashboardBidsTable tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+    if (btnTestG2bApi) {
+        btnTestG2bApi.addEventListener('click', async () => {
+            const key = (apiServiceKey ? apiServiceKey.value.trim() : '');
+            const instCd = (apiInstCd ? apiInstCd.value.trim() : '6110000');
 
-        const filtered = filter === 'all' ? mockBids : mockBids.filter(b => b.type === filter);
+            g2bApiResultArea.classList.remove('hidden');
+            g2bApiLog.innerHTML = `<span class="text-primary">⏳ 조달청 나라장터 API 요청 서버와 연결 시도 중...</span><br>`;
 
-        filtered.forEach(bid => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${bid.id}</strong></td>
-                <td><span class="badge ${bid.type === '공사' ? 'green' : bid.type === '용역' ? 'blue' : 'gold'}">${bid.type}</span></td>
-                <td>${bid.title}</td>
-                <td>${bid.dept}</td>
-                <td>${bid.price.toLocaleString()} 원</td>
-                <td><small>${bid.method}</small></td>
-                <td>${bid.endDate}</td>
-                <td><span class="badge ${bid.badgeClass}">${bid.status}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+            if (!key) {
+                g2bApiLog.innerHTML += `
+<span class="text-warning">⚠️ 안내: 공공데이터포털(data.go.kr) 서비스키가 입력되지 않았습니다.</span><br>
+----------------------------------------------------------------<br>
+<b>[조달청 나라장터 Open API 실제 호출 가이드]</b><br>
+• 엔드포인트: https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01<br>
+• 파라미터:<br>
+  - serviceKey: {공공데이터포털 발급 디코딩 키}<br>
+  - numOfRows: 10<br>
+  - pageNo: 1<br>
+  - inqryDiv: 1<br>
+  - type: json<br>
+  - instCd: ${instCd} (서울특별시 본청)<br>
+----------------------------------------------------------------<br>
+공공데이터포털(data.go.kr)에서 [조달청_나라장터 입찰공고 정보] 신청 후 발급받은 ServiceKey를 위 입력란에 붙여넣고 버튼을 다시 눌러주세요.
+`;
+                return;
+            }
 
-    renderBidsTable();
-
-    // Table Filter Pills
-    const filterPills = document.querySelectorAll('.filter-pills .pill');
-    filterPills.forEach(pill => {
-        pill.addEventListener('click', () => {
-            filterPills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            renderBidsTable(pill.getAttribute('data-filter'));
-        });
-    });
-
-    // 4. Chart.js Initialization
-    initCharts();
-
-    function initCharts() {
-        const ctx1 = document.getElementById('chartContractCategory');
-        if (ctx1) {
-            new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: ['공사 계약 (55.1%)', '용역 계약 (32.7%)', '물품 구매 (12.2%)'],
-                    datasets: [{
-                        data: [19200, 11400, 4220],
-                        backgroundColor: ['#0068ff', '#10b981', '#ffb800'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#9ca3af', font: { family: 'Noto Sans KR' } } }
-                    }
+            try {
+                const targetUrl = `https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01?serviceKey=${encodeURIComponent(key)}&numOfRows=10&pageNo=1&inqryDiv=1&type=json&instCd=${encodeURIComponent(instCd)}`;
+                
+                g2bApiLog.innerHTML += `<span>요청 URL: ${targetUrl.substring(0, 80)}...</span><br>`;
+                
+                const resp = await fetch(targetUrl);
+                if (resp.ok) {
+                    const json = await resp.json();
+                    g2bApiLog.innerHTML += `<span class="text-green">✓ 조달청 API 응답 성공! (Status 200 OK)</span><br><pre>${JSON.stringify(json, null, 2)}</pre>`;
+                } else {
+                    g2bApiLog.innerHTML += `<span class="text-red">❌ API 응답 오류 (HTTP Status: ${resp.status})</span><br>인증키 유효 여부 및 공공데이터포털 활용신청 상태를 확인하세요.`;
                 }
-            });
-        }
-
-        const ctx2 = document.getElementById('chartMonthlyPayment');
-        if (ctx2) {
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월'],
-                    datasets: [
-                        { label: '선금 지급 (억원)', data: [1200, 1500, 2100, 1800, 2400, 3100, 2900, 1600], backgroundColor: '#3b82f6' },
-                        { label: '기성/잔금 지급 (억원)', data: [800, 1100, 1600, 1400, 1900, 2700, 3400, 2100], backgroundColor: '#10b981' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#9ca3af' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#9ca3af' } }
-                    }
-                }
-            });
-        }
+            } catch (err) {
+                g2bApiLog.innerHTML += `<span class="text-warning">ℹ️ 네트워크 / CORS 브라우저 보안 제약 알림:</span><br>클라이언트 웹 브라우저에서 공공데이터포털 direct fetch 시 CORS 방지 정책에 따라 백엔드 서버(Node.js / Python 등) 프록시를 통해 호출하는 것을 권장합니다.<br><br><b>[서버측 프록시 예시 (Node.js/Express)]</b><br><code>app.get('/api/g2b/bids', async (req, res) => {<br>  const resp = await fetch(\`https://apis.data.go.kr/1230000/.../getBidPblancListInfoInfo01?serviceKey=\${process.env.G2B_KEY}&inqryDiv=1&type=json\`);<br>  res.json(await resp.json());<br>});</code>`;
+            }
+        });
     }
 
     // 5. Contract Method Wizard Engine (Finding right method)
@@ -503,10 +459,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnExportData = document.getElementById('btnExportData');
     if (btnExportData) {
         btnExportData.addEventListener('click', () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(mockBids, null, 2));
+            const exportData = {
+                title: "서울특별시 발주부서 계약실무 도우미 서식 및 진단 데이터",
+                exportedAt: new Date().toISOString(),
+                lastHelperData: LAST_HELPER_DATA || "미진단 (계약방법 진단 도구 실행 전)",
+                activeChecklistCount: activeCheckedItems ? activeCheckedItems.size : 0
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "seoul_contracts_data_2026.json");
+            downloadAnchor.setAttribute("download", "seoul_procurement_helper_export.json");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
