@@ -30,13 +30,13 @@ function attachMoney(inp){
   });
 }
 
-/* ─────────────────── 마우스 호버 법령 툴팁 사전 ─────────────────── */
+/* ─────────────────── 글로벌 법령 호버 툴팁 사전에 정의 ─────────────────── */
 const LEGAL_CLAUSES = {
-  "령 §25·§30": "<b>지방계약법 시행령 제25조 및 제30조</b><br>추정가격 2천만원 이하(특례기업 5천만원 이하) 수의계약 근거 규정입니다.",
+  "령 §25·§30": "<b>지방계약법 시행령 제25조 및 제30조</b><br>추정가격 2천만원 이하(특례기업 5천만원 이하) 1인 견적 수의계약 근거 규정입니다.",
   "령 §25①5호·§30": "<b>지방계약법 시행령 제25조 제1항 제5호 및 제30조</b><br>전자공개 견적 수의계약 (공사 4억/2억/1.6억 이하, 용역·물품 1억원 이하) 대상 및 3일 이상(신규 5일) 안내공고 규정입니다.",
   "집행기준 제5장": "<b>행정안전부 예규 「입찰 및 계약 집행기준」 제5장</b><br>수의계약 운영요령 (견적서 징구, 수의계약 체결제한 여부 확인, 동일업체 연 4회/9회 제한 등) 세부 지침입니다.",
-  "령 §35": "<b>지방계약법 시행령 제35조</b><br>입찰공고 시기 규정입니다. (공사 금액별 7일~40일, 용역·물품 7일/신규10일, 긴급·재공고 5일 — 게시일·개찰일 제외)",
-  "적격심사 — 낙찰자 결정기준 제2~4장": "<b>행정안전부 예규 「낙찰자 결정기준」 제2~4장</b><br>입찰가격 및 수행능력(이행실적, 재무상태 등)을 평가하여 낙찰하한율 이상 최적업체를 낙찰자로 결정하는 심사기준입니다.",
+  "령 §35": "<b>지방계약법 시행령 제35조 (입찰공고 시기)</b><br>공사 금액별 7일~40일, 용역·물품 7일(신규 10일), 긴급·재공고 5일 — 게시일과 개찰일을 제외한 법정 공고기간입니다.",
+  "적격심사 — 낙찰자 결정기준 제2~4장": "<b>행정안전부 예규 「낙찰자 결정기준」 제2~4장</b><br>입찰가격 및 수행능력(이행실적, 재무상태 등)을 종합 평가하여 낙찰하한율 이상 최적업체를 낙찰자로 결정하는 심사기준입니다.",
   "령 §43·§44": "<b>지방계약법 시행령 제43조 및 제44조</b><br>전문성·기술성·창의성이 필요한 용역·물품 계약 시 제안서 평가를 거쳐 낙찰자를 선정하는 협상에 의한 계약 규정입니다.",
   "낙찰자 결정기준 제7장": "<b>행정안전부 예규 「낙찰자 결정기준」 제7장</b><br>협상에 의한 계약 체결기준 (배점 80:20 구성, 정성평가 위원 구성 및 최고·최저점 제외 평균 산식) 규정입니다.",
   "기술 90 : 가격 10 (SW사업 준수사항)": "<b>소프트웨어 진흥법 제50조</b><br>SW 구축·개발 정보화사업은 기술능력 배점을 90% 이상 필수로 적용해야 합니다.",
@@ -53,28 +53,90 @@ const LEGAL_CLAUSES = {
 };
 
 function tagHtml(text, colorClass) {
-  // Check exact key or match prefix before '·'
-  let key = text;
-  if (!LEGAL_CLAUSES[key] && text.includes(" · ")) {
-    key = text.split(" · ")[0];
-  }
-  
-  const tip = LEGAL_CLAUSES[key] || LEGAL_CLAUSES[text];
-  if (tip) {
-    return `<span class="tag ${colorClass} has-tip">${text}<div class="tip-box">${tip}</div></span>`;
-  }
   return `<span class="tag ${colorClass}">${text}</span>`;
 }
 window.tagHtml = tagHtml;
 
+/* ─────────────────── 글로벌 플로팅 툴팁 엔진 ─────────────────── */
+function initGlobalTooltip() {
+  let tooltipEl = $("globalLegalTooltip");
+  if (!tooltipEl) {
+    tooltipEl = document.createElement("div");
+    tooltipEl.id = "globalLegalTooltip";
+    tooltipEl.className = "global-tip-box";
+    document.body.appendChild(tooltipEl);
+  }
+
+  function showTip(e, text) {
+    let key = text.trim();
+    if (!LEGAL_CLAUSES[key] && key.includes(" · ")) {
+      key = key.split(" · ")[0];
+    }
+    const html = LEGAL_CLAUSES[key] || LEGAL_CLAUSES[text.trim()];
+    if (!html) return;
+
+    tooltipEl.innerHTML = html;
+    tooltipEl.style.display = "block";
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    tooltipEl.style.opacity = "1";
+
+    const tipWidth = tooltipEl.offsetWidth || 280;
+    const tipHeight = tooltipEl.offsetHeight || 80;
+
+    let top = rect.top - tipHeight - 10;
+    let left = rect.left + (rect.width / 2) - (tipWidth / 2);
+
+    if (top < 10) top = rect.bottom + 10;
+    if (left < 10) left = 10;
+    if (left + tipWidth > window.innerWidth - 10) left = window.innerWidth - tipWidth - 10;
+
+    tooltipEl.style.top = (top + window.scrollY) + "px";
+    tooltipEl.style.left = (left + window.scrollX) + "px";
+  }
+
+  function hideTip() {
+    tooltipEl.style.opacity = "0";
+    tooltipEl.style.display = "none";
+  }
+
+  window.attachLegalTooltips = function() {
+    document.querySelectorAll(".tag, [data-tip]").forEach(el => {
+      const text = el.getAttribute("data-tip") || el.textContent;
+      let key = text.trim();
+      if (!LEGAL_CLAUSES[key] && key.includes(" · ")) {
+        key = key.split(" · ")[0];
+      }
+      const rawClause = LEGAL_CLAUSES[key] || LEGAL_CLAUSES[text.trim()];
+      if (rawClause) {
+        el.classList.add("has-legal-tip");
+        el.setAttribute("title", rawClause.replace(/<[^>]*>/g, ' '));
+        
+        el.removeEventListener("mouseenter", el._tipShow);
+        el.removeEventListener("mouseleave", el._tipHide);
+
+        el._tipShow = (e) => showTip(e, text);
+        el._tipHide = () => hideTip();
+
+        el.addEventListener("mouseenter", el._tipShow);
+        el.addEventListener("mouseleave", el._tipHide);
+      }
+    });
+  };
+
+  attachLegalTooltips();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll(".money").forEach(attachMoney);
+  initGlobalTooltip();
 
   /* 탭 스위칭 */
   window.showTab = function(p){
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
     document.querySelectorAll(".panel").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
     window.scrollTo({top:0,behavior:"smooth"});
+    setTimeout(() => { if (window.attachLegalTooltips) window.attachLegalTooltips(); }, 50);
   };
 
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.p)));
@@ -94,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chkNone.addEventListener("change", () => {
       if (chkNone.checked) {
         optNone.classList.add("on");
-        // 해제 처리
+        // 다른 특수조건 해제 및 딤 처리
         specialIds.forEach(id => {
           const el = $(id);
           if (el) {
@@ -392,6 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
       h += '</div>';
       $("result").innerHTML = h;
       LAST = d;
+      if (window.attachLegalTooltips) window.attachLegalTooltips();
     });
   }
 
@@ -529,6 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
     }
+    if (window.attachLegalTooltips) window.attachLegalTooltips();
   }
 
   window._clearCk = function() {
@@ -712,6 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : '일반: 종합평점 70점 이상')+' · 적격자 중 1순위부터 기술협상 → 가격협상 순으로 진행해요.</p>';
       if(notes.size) h += '<div class="warnbox">'+[...notes].map(n=>'· '+n).join('<br>')+'</div>';
       out.innerHTML = h;
+      if (window.attachLegalTooltips) window.attachLegalTooltips();
     });
   }
 
@@ -777,6 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if(cat.note) h += '<p class="note">'+cat.note+'</p>';
       $("r-out").innerHTML = h;
+      if (window.attachLegalTooltips) window.attachLegalTooltips();
     });
   }
 

@@ -521,68 +521,56 @@ select:focus {
 .tag.v { background: var(--vio-soft); color: var(--vio); border: 1px solid var(--vio-border); }
 .tag.k { background: var(--ok-soft); color: var(--ok-deep); border: 1px solid var(--ok-border); }
 
-/* ─────────────────── 마우스 호버 법령 툴팁 (Legal Hover Tooltip) ─────────────────── */
-.tag.has-tip {
-  position: relative;
+/* ─────────────────── 마우스 호버 법령 툴팁 (Global Floating Legal Tooltip) ─────────────────── */
+.tag.has-legal-tip, [data-tip].has-legal-tip {
   cursor: help !important;
   transition: all 0.2s ease;
   user-select: none;
+  text-decoration: underline dotted var(--pri-deep);
+  text-underline-offset: 3px;
 }
 
-.tag.has-tip:hover {
-  filter: brightness(0.93);
+.tag.has-legal-tip:hover, [data-tip].has-legal-tip:hover {
+  filter: brightness(0.92);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-.tip-box {
+.global-tip-box {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
   background: #0f172a;
   color: #f8fafc;
-  padding: 11px 15px;
-  border-radius: 12px;
-  font-size: 0.82rem;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.6;
   width: max-content;
-  max-width: 320px;
+  max-width: 340px;
   white-space: normal;
   word-break: keep-all;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
   pointer-events: none;
+  z-index: 99999;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: none;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: opacity 0.15s ease;
   text-align: left;
 }
 
-.tip-box b {
+.global-tip-box b {
   color: #93c5fd;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
-.tip-box::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: #0f172a transparent transparent transparent;
-}
-
-.tag.has-tip:hover .tip-box {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
+/* 해당 사항 없음 딤 처리 */
+.opt.disabled-by-none {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 /* 사전절차 박스 */
