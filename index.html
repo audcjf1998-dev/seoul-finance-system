@@ -291,9 +291,24 @@
       <label class="opt" id="ev-sw"><input type="checkbox">
         <span><span class="t">SW사업 (정보화)</span><br>
         <span class="s">가격 하한 80% 적용 · 협상적격은 기술점수(정량+정성)가 기술배점의 85% 이상</span></span></label>
-      <h3>업체별 입력</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;margin-bottom:12px;flex-wrap:wrap;gap:8px;border-top:1px solid #e2e8f0;padding-top:14px;">
+        <h3 style="margin:0;">업체별 및 위원별 점수 입력</h3>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label style="font-size:0.88rem;font-weight:700;color:var(--sub)">👥 평가위원 수:</label>
+          <select id="ev-member-count" style="padding:6px 12px;border-radius:10px;border:1.5px solid #2563eb;font-weight:800;color:#1d4ed8;background:#eff6ff;">
+            <option value="3">3명</option>
+            <option value="5">5명</option>
+            <option value="7" selected>7명 (기본)</option>
+            <option value="8">8명</option>
+            <option value="9">9명</option>
+            <option value="10">10명</option>
+            <option value="11">11명</option>
+            <option value="12">12명</option>
+          </select>
+        </div>
+      </div>
       <div id="ev-rows"></div>
-      <div style="display:flex;gap:8px;margin-top:4px">
+      <div style="display:flex;gap:8px;margin-top:10px">
         <button class="btn ghost" id="ev-add">＋ 업체 추가</button>
         <button class="btn" id="ev-run">평가 계산하기</button>
       </div>

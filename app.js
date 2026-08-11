@@ -967,93 +967,220 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ───── 협상 제안서 평가 계산 ───── */
-  function evRow(){
+  /* ───── 협상 제안서 평가 계산 (위원별 개별 점수 입력 기능) ───── */
+
+  function getMemberCount() {
+    const el = $("ev-member-count");
+    return el ? parseInt(el.value, 10) || 7 : 7;
+  }
+
+  function renderRowQualInputs(div, count) {
+    const wrap = div.querySelector(".ev-quals-wrap");
+    if (!wrap) return;
+
+    const existing = Array.from(wrap.querySelectorAll(".ev-q-item")).map(inp => inp.value);
+
+    let h = '';
+    for (let i = 0; i < count; i++) {
+      const val = existing[i] !== undefined ? existing[i] : '';
+      h += `<input type="number" class="ev-q-item" data-idx="${i}" placeholder="위원${i+1}" step="0.1" min="0" max="100" value="${val}">`;
+    }
+    wrap.innerHTML = h;
+  }
+
+  function evRow() {
     const rowsEl = $("ev-rows");
-    if(!rowsEl) return;
+    if (!rowsEl) return;
+    const count = getMemberCount();
+
     const div = document.createElement("div");
     div.className = "ev-row";
-    div.innerHTML = '<input type="text" class="ev-name" placeholder="업체명">'
-      +'<input type="text" class="money ev-bid" inputmode="numeric" placeholder="입찰가격(원)">'
-      +'<input type="text" class="ev-quant" inputmode="numeric" placeholder="정량">'
-      +'<input type="text" class="ev-qual" placeholder="위원 정성점수 — 쉼표 구분 (예: 52,55,48,50,53,51,49)">'
-      +'<button type="button" class="rm" title="행 삭제">✕</button>';
+    div.innerHTML = `
+      <div class="ev-row-top">
+        <input type="text" class="ev-name" placeholder="업체명 (예: 업체A)">
+        <input type="text" class="money ev-bid" inputmode="numeric" placeholder="입찰가격 (원)">
+        <input type="text" class="ev-quant" inputmode="numeric" placeholder="정량점수">
+        <button type="button" class="rm" title="행 삭제">✕</button>
+      </div>
+      <div class="ev-row-bottom">
+        <span style="font-size:0.84rem;font-weight:700;color:var(--sub);white-space:nowrap;">✍️ 위원별 점수:</span>
+        <div class="ev-quals-wrap"></div>
+        <input type="text" class="ev-paste-input" placeholder="📋 쉼표 한꺼번에 붙여넣기 (예: 52,55,48...)">
+      </div>
+    `;
+
     attachMoney(div.querySelector(".ev-bid"));
-    div.querySelector(".rm").addEventListener("click", ()=>div.remove());
+    div.querySelector(".rm").addEventListener("click", () => div.remove());
+
+    renderRowQualInputs(div, count);
+
+    const pasteInput = div.querySelector(".ev-paste-input");
+    if (pasteInput) {
+      pasteInput.addEventListener("input", () => {
+        const raw = pasteInput.value;
+        const nums = raw.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) && n > 0);
+        const qInputs = div.querySelectorAll(".ev-q-item");
+        qInputs.forEach((inp, idx) => {
+          if (nums[idx] !== undefined) {
+            inp.value = nums[idx];
+          }
+        });
+      });
+    }
+
     rowsEl.appendChild(div);
   }
 
   const btnEvAdd = $("ev-add");
-  if(btnEvAdd) {
+  if (btnEvAdd) {
     btnEvAdd.addEventListener("click", evRow);
     evRow(); evRow(); evRow();
   }
 
-  const swChk = $("ev-sw") ? $("ev-sw").querySelector("input") : null;
-  if(swChk) {
-    swChk.addEventListener("change", e=>{
-      if($("ev-tech")) $("ev-tech").value = e.target.checked ? "90" : "80";
-      if($("ev-price-w")) $("ev-price-w").value = e.target.checked ? "10" : "20";
+  const memberCountEl = $("ev-member-count");
+  if (memberCountEl) {
+    memberCountEl.addEventListener("change", () => {
+      const count = getMemberCount();
+      document.querySelectorAll("#ev-rows .ev-row").forEach(div => {
+        renderRowQualInputs(div, count);
+      });
     });
   }
 
-  function trimmedMean(a){
-    if(a.length>=3){ const s=[...a].sort((x,y)=>x-y);
-      return {v:s.slice(1,-1).reduce((p,c)=>p+c,0)/(s.length-2), trim:true}; }
-    return {v:a.length ? a.reduce((p,c)=>p+c,0)/a.length : 0, trim:false};
+  const swChk = $("ev-sw") ? $("ev-sw").querySelector("input") : null;
+  if (swChk) {
+    swChk.addEventListener("change", e => {
+      if ($("ev-tech")) $("ev-tech").value = e.target.checked ? "90" : "80";
+      if ($("ev-price-w")) $("ev-price-w").value = e.target.checked ? "10" : "20";
+    });
+  }
+
+  function calculateQualDetails(qualArr) {
+    const valid = qualArr.filter(n => !isNaN(n) && n > 0);
+    if (!valid.length) {
+      return { v: 0, trim: false, max: null, min: null, valid, count: 0 };
+    }
+    if (valid.length >= 3) {
+      const sorted = [...valid].sort((x, y) => x - y);
+      const min = sorted[0];
+      const max = sorted[sorted.length - 1];
+      const middle = sorted.slice(1, -1);
+      const sum = middle.reduce((p, c) => p + c, 0);
+      const avg = sum / middle.length;
+      return { v: avg, trim: true, max, min, middle, valid, count: valid.length };
+    } else {
+      const sum = valid.reduce((p, c) => p + c, 0);
+      return { v: sum / valid.length, trim: false, max: null, min: null, middle: valid, valid, count: valid.length };
+    }
   }
 
   const btnEvRun = $("ev-run");
-  if(btnEvRun) {
-    btnEvRun.addEventListener("click", ()=>{
+  if (btnEvRun) {
+    btnEvRun.addEventListener("click", () => {
       const base = num($("ev-base"));
-      const techW = parseFloat($("ev-tech").value)||0, priceW = parseFloat($("ev-price-w").value)||0;
+      const techW = parseFloat($("ev-tech").value) || 0, priceW = parseFloat($("ev-price-w").value) || 0;
       const sw = $("ev-sw") ? $("ev-sw").querySelector("input").checked : false;
+      const memberCount = getMemberCount();
       const out = $("ev-out");
-      if(!base){ out.innerHTML='<p class="placeholder">예정가격을 입력해 주세요.</p>'; return; }
-      const rows = [...document.querySelectorAll("#ev-rows .ev-row")].map((r,i)=>{
-        const bid = parseInt((r.querySelector(".ev-bid").value||"").replace(/[^0-9]/g,""),10)||0;
-        const quant = parseFloat(r.querySelector(".ev-quant").value)||0;
-        const quals = (r.querySelector(".ev-qual").value||"").split(/[,\s]+/).map(Number).filter(n=>!isNaN(n)&&n>0);
-        return {name: r.querySelector(".ev-name").value || ("업체 "+(i+1)), bid, quant, quals};
-      }).filter(r=>r.bid>0);
+      if (!base) { out.innerHTML = '<p class="placeholder">예정가격을 입력해 주세요.</p>'; return; }
 
-      if(!rows.length){ out.innerHTML='<p class="placeholder">업체 입찰가격을 1건 이상 입력해 주세요.</p>'; return; }
-      const floorR = sw?0.8:0.7, p80 = base*0.8, p70 = base*0.7, floorV = base*floorR;
-      const rawMin = Math.min(...rows.map(r=>r.bid));
+      const rows = [...document.querySelectorAll("#ev-rows .ev-row")].map((r, i) => {
+        const name = r.querySelector(".ev-name").value.trim() || ("업체 " + String.fromCharCode(65 + i));
+        const bid = parseInt((r.querySelector(".ev-bid").value || "").replace(/[^0-9]/g, ""), 10) || 0;
+        const quant = parseFloat(r.querySelector(".ev-quant").value) || 0;
+
+        const qInputs = r.querySelectorAll(".ev-q-item");
+        let quals = Array.from(qInputs).map(inp => parseFloat(inp.value)).filter(n => !isNaN(n) && n > 0);
+
+        if (!quals.length) {
+          const pasteVal = r.querySelector(".ev-paste-input") ? r.querySelector(".ev-paste-input").value : "";
+          quals = pasteVal.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) && n > 0);
+        }
+
+        return { name, bid, quant, quals };
+      }).filter(r => r.bid > 0);
+
+      if (!rows.length) { out.innerHTML = '<p class="placeholder">업체 입찰가격을 1건 이상 입력해 주세요.</p>'; return; }
+
+      const floorR = sw ? 0.8 : 0.7, p80 = base * 0.8, p70 = base * 0.7, floorV = base * floorR;
+      const rawMin = Math.min(...rows.map(r => r.bid));
       const minBid = Math.max(rawMin, floorV);
       const notes = new Set();
 
-      if(rawMin < floorV) notes.add("최저입찰가격이 예정가격의 "+(floorR*100)+"% 미만이라 "+(floorR*100)+"% 상당가격("+won(Math.round(floorV))+")으로 보정해 계산했어요.");
-      rows.forEach(r=>{
-        const q = trimmedMean(r.quals);
-        r.qual = q.v;
-        if(r.quals.length && !q.trim) notes.add("위원 점수가 3개 미만인 업체는 최고·최저 제외 없이 전체 평균으로 계산했어요.");
-        if(r.bid < floorV){ r.pricePt = priceW*0.3; r.tagP = "하한 미만 → 배점의 30%"; }
-        else if(r.bid >= p80){ r.pricePt = priceW*minBid/r.bid; r.tagP = ""; }
-        else { r.pricePt = priceW*minBid/p80 + 2*((p80-r.bid)/(p80-p70)); r.tagP = "80% 미만 산식";
-          notes.add("예정가격의 80% 미만 입찰은 예규 제2산식(가산 최대 2점)으로 계산했어요."); }
+      if (rawMin < floorV) notes.add("최저입찰가격이 예정가격의 " + (floorR * 100) + "% 미만이라 " + (floorR * 100) + "% 상당가격(" + won(Math.round(floorV)) + ")으로 보정해 계산했어요.");
+
+      rows.forEach(r => {
+        const qDetail = calculateQualDetails(r.quals);
+        r.qualDetail = qDetail;
+        r.qual = qDetail.v;
+        if (r.quals.length && !qDetail.trim) notes.add("위원 점수가 3개 미만인 업체는 최고·최저 제외 없이 전체 평균으로 계산했어요.");
+        if (r.bid < floorV) { r.pricePt = priceW * 0.3; r.tagP = "하한 미만 → 배점의 30%"; }
+        else if (r.bid >= p80) { r.pricePt = priceW * minBid / r.bid; r.tagP = ""; }
+        else {
+          r.pricePt = priceW * minBid / p80 + 2 * ((p80 - r.bid) / (p80 - p70)); r.tagP = "80% 미만 산식";
+          notes.add("예정가격의 80% 미만 입찰은 예규 제2산식(가산 최대 2점)으로 계산했어요.");
+        }
         r.tech = r.quant + r.qual;
         r.total = r.tech + r.pricePt;
-        r.pass = sw ? (r.tech >= techW*0.85) : (r.total >= 70);
+        r.pass = sw ? (r.tech >= techW * 0.85) : (r.total >= 70);
       });
-      rows.sort((a,b)=>b.total-a.total).forEach((r,i)=>r.rank=i+1);
-      let h = '<div class="res" style="overflow-x:auto"><table>';
-      h += '<tr><th>순위</th><th>업체</th><th>입찰가 (예가 대비)</th><th>정량</th><th>정성(제외 평균)</th><th>가격평점</th><th>기술점수</th><th>종합</th><th>적격</th></tr>';
-      rows.forEach(r=>{
-        h += '<tr'+(r.rank===1&&r.pass?' class="win"':'')+'><td>'+r.rank+'</td><td>'+r.name+'</td>'
-          +'<td class="num">'+won(r.bid)+'<br><span style="color:var(--sub)">'+(r.bid/base*100).toFixed(2)+'%</span>'
-          +(r.tagP?' '+tagHtml(r.tagP, "o"):'')+'</td>'
-          +'<td class="num">'+r.quant.toFixed(2)+'</td><td class="num">'+r.qual.toFixed(2)+'</td>'
-          +'<td class="num">'+r.pricePt.toFixed(2)+'</td><td class="num">'+r.tech.toFixed(2)+'</td>'
-          +'<td class="num"><b>'+r.total.toFixed(2)+'</b></td>'
-          +'<td>'+(r.pass?tagHtml("적격","k"):tagHtml("미달","r"))+'</td></tr>';
+
+      rows.sort((a, b) => b.total - a.total).forEach((r, i) => r.rank = i + 1);
+
+      // TABLE 1: SUMMARY RANKING TABLE
+      let h = '<div style="margin-top:20px;margin-bottom:24px;">';
+      h += '<h3 style="color:#1e40af;margin-bottom:8px;">🏆 1. 제안서 종합 평가 및 낙찰 적격 판정 결과</h3>';
+      h += '<div class="res" style="overflow-x:auto"><table>';
+      h += '<tr><th>순위</th><th>업체명</th><th>입찰가 (예가 대비)</th><th>정량점수</th><th>정성평균(최고·최저 제외)</th><th>가격평점</th><th>기술점수</th><th>종합점수</th><th>적격 여부</th></tr>';
+      rows.forEach(r => {
+        h += '<tr' + (r.rank === 1 && r.pass ? ' class="win"' : '') + '><td>' + r.rank + '</td><td><b>' + r.name + '</b></td>'
+          + '<td class="num">' + won(r.bid) + '<br><span style="color:var(--sub)">' + (r.bid / base * 100).toFixed(2) + '%</span>'
+          + (r.tagP ? ' ' + tagHtml(r.tagP, "o") : '') + '</td>'
+          + '<td class="num">' + r.quant.toFixed(2) + '</td><td class="num"><b style="color:#2563eb">' + r.qual.toFixed(2) + '</b></td>'
+          + '<td class="num">' + r.pricePt.toFixed(2) + '</td><td class="num">' + r.tech.toFixed(2) + '</td>'
+          + '<td class="num"><b style="font-size:1.05rem;">' + r.total.toFixed(2) + '</b></td>'
+          + '<td>' + (r.pass ? tagHtml("적격", "k") : tagHtml("미달", "r")) + '</td></tr>';
       });
       h += '</table></div>';
-      h += '<p class="note">적격 기준 — '+(sw
-        ? 'SW사업: 기술점수(정량+정성)가 기술배점 '+techW+'점의 85%인 '+(techW*0.85).toFixed(2)+'점 이상'
-        : '일반: 종합평점 70점 이상')+' · 적격자 중 1순위부터 기술협상 → 가격협상 순으로 진행해요.</p>';
-      if(notes.size) h += '<div class="warnbox">'+[...notes].map(n=>'· '+n).join('<br>')+'</div>';
+      h += '<p class="note">적격 기준 — ' + (sw
+        ? 'SW사업: 기술점수(정량+정성)가 기술배점 ' + techW + '점의 85%인 ' + (techW * 0.85).toFixed(2) + '점 이상'
+        : '일반: 종합평점 70점 이상') + ' · 적격자 중 1순위부터 기술협상 → 가격협상 순으로 진행해요.</p></div>';
+
+      // TABLE 2: DETAILED COMMITTEE MEMBER SCORE BREAKDOWN MATRIX
+      h += '<div style="margin-top:20px;margin-bottom:16px;">';
+      h += '<h3 style="color:#0f766e;margin-bottom:8px;">📝 2. 위원별 정성점수 세부 집계표 (최고·최저 제외 내역)</h3>';
+      h += '<div class="res" style="overflow-x:auto"><table>';
+      h += '<tr><th>업체명</th>';
+      for (let m = 1; m <= memberCount; m++) {
+        h += `<th>위원 ${m}</th>`;
+      }
+      h += '<th>🔴 최고점 (제외)</th><th>🔵 최저점 (제외)</th><th>⭐ 최종 정성평균</th></tr>';
+
+      rows.forEach(r => {
+        const qd = r.qualDetail;
+        h += '<tr><td><b>' + r.name + '</b></td>';
+        for (let m = 0; m < memberCount; m++) {
+          const score = r.quals[m];
+          if (score === undefined) {
+            h += '<td style="color:#94a3b8;">–</td>';
+          } else if (qd.trim && score === qd.max) {
+            h += `<td><span class="badge-max">${score}</span></td>`;
+          } else if (qd.trim && score === qd.min) {
+            h += `<td><span class="badge-min">${score}</span></td>`;
+          } else {
+            h += `<td><b>${score}</b></td>`;
+          }
+        }
+        h += `<td class="num">${qd.max !== null ? '<span class="badge-max">' + qd.max + '</span>' : '–'}</td>`;
+        h += `<td class="num">${qd.min !== null ? '<span class="badge-min">' + qd.min + '</span>' : '–'}</td>`;
+        h += `<td class="num"><b style="color:#0f766e;font-size:1rem;">${r.qual.toFixed(2)}점</b></td>`;
+        h += '</tr>';
+      });
+      h += '</table></div>';
+      h += '<p class="note">※ 행안부 예규: 평가위원이 3인 이상인 경우 최고점 1개와 최저점 1개를 제외하고 남은 위원의 점수를 산술평균합니다.</p></div>';
+
+      if (notes.size) h += '<div class="warnbox">' + [...notes].map(n => '· ' + n).join('<br>') + '</div>';
+
       out.innerHTML = h;
       if (window.attachLegalTooltips) window.attachLegalTooltips();
     });
