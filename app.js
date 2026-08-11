@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function ckItems(d){
     const items = [];
     const add = (ph,label,sub,lv,show)=>{ if(show) items.push({ph,label,sub,lv,id:"ck"+items.length}); };
-    const P = "📝 발주 준비", N = "📣 공고 · 업체 선정", C = "✍️ 계약 체결", I = "🚚 이행 관리", F = "💳 검사 · 대가";
+    const P = "📝 1. 발주 준비", N = "📣 2. 공고 · 업체 선정", C = "✍️ 3. 계약 체결 및 보증", I = "🚚 4. 이행 및 선금 관리", F = "💳 5. 검사 및 대가 지급";
     add(P,"예산 편성·배정 확인","지출원인행위 전 예산 확보","권장",true);
     add(P,"과업내용서 · 시방서 · 설계서 확정","산출 근거 포함","권장",true);
     add(P,"분리발주(쪼개기) 여부 점검","수의 기준 회피 목적 분할 금지 — 시행령 §77","필수",true);
@@ -645,34 +645,131 @@ document.addEventListener('DOMContentLoaded', () => {
     return items;
   }
 
+  const STAGES = [
+    { id: "p1", name: "1. 발주 준비", key: "📝 1. 발주 준비", desc: "지출원인행위 전 예산확정 · 과업내용서 · 원가심사 · 일상감사 · 사전협의 등 준비 단계" },
+    { id: "p2", name: "2. 공고 · 업체 선정", key: "📣 2. 공고 · 업체 선정", desc: "사전규격공개 · 입찰공고 · 제안서/PQ평가 · 낙찰자 결정 및 협상 단계" },
+    { id: "p3", name: "3. 계약 체결 및 보증", key: "✍️ 3. 계약 체결 및 보증", desc: "계약보증금 · 인지세 납부 · 청렴서약서 · 계약서 전자서명 단계" },
+    { id: "p4", name: "4. 이행 및 선금 관리", key: "🚚 4. 이행 및 선금 관리", desc: "착수계 · 선금 청구 · 감독관 지정 · 감리 및 변경계약 관리 단계" },
+    { id: "p5", name: "5. 검사 및 대가 지급", key: "💳 5. 검사 및 대가 지급", desc: "검사원/검수 · 하자보수보증 · 대가 청구 · 정보자원 등록 마무리 단계" }
+  ];
+
+  let CURR_STAGE = 0;
+  let VIEW_ALL_STAGES = false;
+
+  window.setStage = function(idx) {
+    CURR_STAGE = idx;
+    VIEW_ALL_STAGES = false;
+    renderCk();
+    const ckArea = $("ck-area");
+    if(ckArea) ckArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.toggleViewAllStages = function() {
+    VIEW_ALL_STAGES = !VIEW_ALL_STAGES;
+    renderCk();
+  };
+
   let CKS = null, CKSET = new Set();
   window.makeChecklist = function(){
     if(!LAST) return;
-    CKS = ckItems(LAST); CKSET = new Set();
-    renderCk(); showTab("check");
+    CKS = ckItems(LAST); 
+    CKSET = new Set();
+    CURR_STAGE = 0;
+    VIEW_ALL_STAGES = false;
+    renderCk(); 
+    showTab("check");
   };
 
   function renderCk(){
     const byPh = {};
     CKS.forEach(it=>{(byPh[it.ph]=byPh[it.ph]||[]).push(it);});
+    const totalDone = CKS.filter(it=>CKSET.has(it.id)).length;
     const missReq = CKS.filter(it=>(it.lv!=="권장")&&!CKSET.has(it.id));
-    let h = '<div class="card"><h2>이 계약의 점검 목록</h2>'
-      +'<p class="desc">'+LAST.k.name+' · '+korUnit(LAST.p)+' · 총 '+CKS.length+'개 항목 — 체크하면서 빠진 것이 없는지 확인하세요.</p>';
+
+    let h = '<div class="card"><h2>이 계약의 단계별 점검 목록</h2>'
+      +'<p class="desc">'+LAST.k.name+' · '+korUnit(LAST.p)+' · 전체 '+CKS.length+'개 항목 중 '+totalDone+'개 완료 ('+Math.round(totalDone/CKS.length*100)+'%)</p>';
+
+    // 1. STAGE STEPPER NAVIGATION BAR
+    h += '<div class="stage-stepper-wrap">';
+    h += '<div class="stage-stepper">';
+    STAGES.forEach((stg, i)=>{
+      const list = byPh[stg.key] || [];
+      const done = list.filter(it=>CKSET.has(it.id)).length;
+      const isComplete = list.length > 0 && done === list.length;
+      const isActive = !VIEW_ALL_STAGES && CURR_STAGE === i;
+      h += '<button class="stage-step-btn'+(isActive?' active':'')+(isComplete?' complete':'')+'" onclick="window.setStage('+i+')">'
+        +'<span class="stg-num">'+(isComplete?'✓':(i+1))+'</span>'
+        +'<span class="stg-title">'+stg.name.split(". ")[1]+'</span>'
+        +'<span class="stg-badge">'+done+'/'+list.length+'</span>'
+        +'</button>';
+    });
+    h += '</div>';
+
+    h += '<div class="stage-view-toggle">'
+      +'<button class="btn-toggle'+(VIEW_ALL_STAGES?' on':'')+'" onclick="window.toggleViewAllStages()">'
+      +(VIEW_ALL_STAGES ? '📌 단계별 순서대로 보기' : '📜 전체 5단계 한눈에 보기')
+      +'</button></div>';
+    h += '</div>'; // End Stepper Wrap
+
+    // 2. REQUIRED MISSING BANNER
     h += missReq.length
       ? '<div class="miss"><b>🔔 아직 확인 안 된 필수·법정 항목 '+missReq.length+'건</b><div class="list">'+missReq.map(it=>tagHtml(it.label.split(" — ")[0], it.lv==="법정"?"b":"r")).join("")+'</div></div>'
-      : '<div class="miss ok"><b>🎉 필수·법정 항목을 모두 확인했어요!</b><div class="s" style="font-size:.85rem;color:var(--sub);margin-top:4px">권장 항목도 한 번 더 훑어보면 좋아요.</div></div>';
-    for(const ph in byPh){
-      const list = byPh[ph], done = list.filter(it=>CKSET.has(it.id)).length;
-      h += '<div class="phase"><div class="phase-h"><b>'+ph+'</b><span class="pbar"><i style="width:'+(done/list.length*100)+'%"></i></span><span class="pcnt">'+done+'/'+list.length+'</span></div>';
+      : '<div class="miss ok"><b>🎉 모든 단계 필수·법정 항목 확인 완료!</b><div class="s" style="font-size:.85rem;color:var(--sub);margin-top:4px">권장 항목도 한 번 더 훑어보면 안전해요.</div></div>';
+
+    // 3. RENDER STAGE ITEMS (Sequential View vs All View)
+    if(VIEW_ALL_STAGES){
+      for(const ph in byPh){
+        const list = byPh[ph], done = list.filter(it=>CKSET.has(it.id)).length;
+        h += '<div class="phase"><div class="phase-h"><b>'+ph+'</b><span class="pbar"><i style="width:'+(done/list.length*100)+'%"></i></span><span class="pcnt">'+done+'/'+list.length+'</span></div>';
+        list.forEach(it=>{
+          const on = CKSET.has(it.id);
+          h += '<label class="ck'+(on?' on':'')+'"><input type="checkbox" data-id="'+it.id+'"'+(on?' checked':'')+'>'
+            +'<span><span class="l">'+it.label+'</span> '+tagHtml(it.lv, it.lv==="법정"?"b":it.lv==="필수"?"r":"g")
+            +(it.sub?'<div class="s">'+it.sub+'</div>':'')+'</span></label>';
+        });
+        h += '</div>';
+      }
+    } else {
+      const currStgObj = STAGES[CURR_STAGE];
+      const list = byPh[currStgObj.key] || [];
+      const done = list.filter(it=>CKSET.has(it.id)).length;
+      const stageDone = list.length > 0 && done === list.length;
+
+      h += '<div class="phase" style="border:2px solid #2563eb;background:#fcfdff;border-radius:20px;padding:24px;margin-bottom:20px;">';
+      h += '<div class="phase-h" style="border-bottom:1.5px solid #e2e8f0;padding-bottom:14px;margin-bottom:18px;">'
+        +'<div><b style="font-size:1.15rem;color:#1e40af;">'+currStgObj.name+'</b>'
+        +'<div style="font-size:0.84rem;color:#64748b;margin-top:4px;">'+currStgObj.desc+'</div></div>'
+        +'<div style="text-align:right;"><span class="pcnt" style="font-size:1rem;font-weight:800;color:#2563eb;">'+done+' / '+list.length+' 완료</span>'
+        +'<span class="pbar" style="width:140px;height:8px;margin-top:6px;"><i style="width:'+(done/list.length*100)+'%"></i></span></div>'
+        +'</div>';
+
       list.forEach(it=>{
         const on = CKSET.has(it.id);
         h += '<label class="ck'+(on?' on':'')+'"><input type="checkbox" data-id="'+it.id+'"'+(on?' checked':'')+'>'
           +'<span><span class="l">'+it.label+'</span> '+tagHtml(it.lv, it.lv==="법정"?"b":it.lv==="필수"?"r":"g")
           +(it.sub?'<div class="s">'+it.sub+'</div>':'')+'</span></label>';
       });
-      h += '</div>';
+
+      // STAGE BOTTOM NAVIGATION BUTTONS
+      h += '<div class="stage-nav-bar">';
+      if(CURR_STAGE > 0){
+        h += '<button class="btn ghost" onclick="window.setStage('+(CURR_STAGE-1)+')">← 이전 단계 ('+STAGES[CURR_STAGE-1].name.split(". ")[1]+')</button>';
+      } else {
+        h += '<div></div>';
+      }
+      if(CURR_STAGE < 4){
+        h += '<button class="btn '+(stageDone?'ok-btn':'pri-btn')+'" onclick="window.setStage('+(CURR_STAGE+1)+')">'
+          +(stageDone ? '🎉 현 단계 완료! 다음 단계로 이동 ('+STAGES[CURR_STAGE+1].name.split(". ")[1]+') ➔' : '다음 단계: '+STAGES[CURR_STAGE+1].name.split(". ")[1]+' 진행 ➔')
+          +'</button>';
+      } else {
+        h += '<div style="font-size:0.95rem;font-weight:800;color:#00c283;background:#f0fdf4;padding:10px 18px;border-radius:99px;border:1px solid #bbf7d0;">🎉 모든 계약 단계 점검을 완료했습니다!</div>';
+      }
+      h += '</div>'; // End Stage Nav Bar
+
+      h += '</div>'; // End Phase Card
     }
-    h += '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost" onclick="window._clearCk()">전체 해제</button>'
+
+    h += '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn ghost" onclick="window._clearCk()">전체 해제</button>'
       +'<button class="btn ghost" onclick="showTab(\'guide\');showStep(\'input\');">조건 바꾸기</button></div>';
     h += '<p class="note">체크 상태는 화면을 새로고침하면 초기화돼요.</p></div>';
     
