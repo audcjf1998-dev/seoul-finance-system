@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
     document.querySelectorAll(".panel").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
     window.scrollTo({top:0,behavior:"smooth"});
+    if (p === "gpt" && window.openAiChatbotWidget) {
+      window.openAiChatbotWidget();
+    }
     setTimeout(() => { if (window.attachLegalTooltips) window.attachLegalTooltips(); }, 50);
   };
 
@@ -1740,7 +1743,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ───── 7. AI 계약 Q&A (OpenAI GPT API 연동) ───── */
+  /* ───── 7. AI 계약 Q&A (OpenAI GPT API 연동 & 플로팅 챗봇 위젯) ───── */
+  const aiWidget = $("ai-chatbot-widget");
+  const btnToggleAiWidget = $("btn-toggle-ai-widget");
+  const btnCloseAiWidget = $("btn-close-ai-widget");
+  const btnToggleGptKeybox = $("btn-toggle-gpt-keybox");
+  const gptKeyboxPanel = $("gpt-keybox-panel");
+
   const gptKeyInput = $("gpt-api-key");
   const gptModelSelect = $("gpt-model");
   const btnSaveGptKey = $("btn-save-gpt-key");
@@ -1748,6 +1757,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const gptInputText = $("gpt-input-text");
   const btnSendGpt = $("btn-send-gpt");
   const btnGptClear = $("btn-gpt-clear");
+
+  window.openAiChatbotWidget = function() {
+    if (aiWidget) {
+      aiWidget.classList.add("open");
+      if (gptInputText) gptInputText.focus();
+    }
+  };
+
+  function toggleAiChatbotWidget() {
+    if (aiWidget) {
+      aiWidget.classList.toggle("open");
+      if (aiWidget.classList.contains("open") && gptInputText) {
+        gptInputText.focus();
+      }
+    }
+  }
+
+  if (btnToggleAiWidget) {
+    btnToggleAiWidget.addEventListener("click", toggleAiChatbotWidget);
+  }
+
+  if (btnCloseAiWidget) {
+    btnCloseAiWidget.addEventListener("click", () => {
+      if (aiWidget) aiWidget.classList.remove("open");
+    });
+  }
+
+  if (btnToggleGptKeybox) {
+    btnToggleGptKeybox.addEventListener("click", () => {
+      if (gptKeyboxPanel) {
+        gptKeyboxPanel.style.display = gptKeyboxPanel.style.display === "none" ? "block" : "none";
+      }
+    });
+  }
+
+  if (gptInputText) {
+    gptInputText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendGptMessage();
+      }
+    });
+  }
 
   // Restore API key if saved
   try {

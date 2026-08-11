@@ -789,7 +789,68 @@
 <div class="foot">서울계약 도우미 · Designed & Developed by <b>LMC</b><br>2026 지방계약 실무 매뉴얼('26.7.31.) · 행안부 예규 · 서울시 지침 기준 (참고용 도구)</div>
 </div>
 
-<button class="floating-home-btn" onclick="window.goHome()" title="첫 화면(조건 입력)으로 이동">🏠 홈으로</button>
+<!-- ─────────── FLOATING AI CHATBOT WIDGET & TRIGGER BUTTON ─────────── -->
+<button class="floating-ai-btn" id="btn-toggle-ai-widget" title="AI 계약 챗봇 열기">
+  🤖 AI 계약 챗봇
+</button>
+
+<div class="ai-chatbot-widget" id="ai-chatbot-widget">
+  <!-- Widget Header -->
+  <div class="ai-widget-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:1.2rem;">🤖</span>
+      <div>
+        <b style="font-size:0.96rem;display:block;line-height:1.2;">AI 지방계약 전문 챗봇</b>
+        <small style="font-size:0.75rem;opacity:0.85;">지방계약법 · 서울시 회계규칙 자문</small>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button type="button" class="ai-hdr-btn" id="btn-toggle-gpt-keybox" title="API Key 설정">🔑 Key</button>
+      <button type="button" class="ai-hdr-btn" id="btn-gpt-clear" title="대화 초기화">🗑️</button>
+      <button type="button" class="ai-hdr-btn close" id="btn-close-ai-widget" title="닫기">✕</button>
+    </div>
+  </div>
+
+  <!-- API Key Setting Drawer (Collapsible) -->
+  <div class="ai-widget-keybox" id="gpt-keybox-panel" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <b style="font-size:0.82rem;color:#1d4ed8;">🔑 OpenAI API Key 설정</b>
+      <small style="color:#64748b;font-size:0.72rem;">* LocalStorage 보관</small>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <input type="password" id="gpt-api-key" placeholder="sk-proj-..." style="width:100%;height:34px;padding:4px 10px;border-radius:8px;border:1.5px solid #cbd5e1;font-family:monospace;font-size:0.82rem;">
+      <div style="display:flex;gap:6px;">
+        <select id="gpt-model" style="flex:1;height:34px;padding:0 8px;border-radius:8px;border:1.5px solid #cbd5e1;font-weight:700;font-size:0.8rem;color:#334155;">
+          <option value="gpt-4o-mini" selected>gpt-4o-mini (빠름)</option>
+          <option value="gpt-4o">gpt-4o (고성능)</option>
+          <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+        </select>
+        <button type="button" class="btn pri-btn" id="btn-save-gpt-key" style="height:34px;padding:0 12px;font-size:0.8rem;">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset Chips -->
+  <div class="ai-widget-chips">
+    <button type="button" class="preset-chip-btn" data-q="1인 견적 수의계약 대상 및 5천만원 특례 적용 조건을 알려줘.">1인 수의 특례</button>
+    <button type="button" class="preset-chip-btn" data-q="SW사업 사전협의, 보안성검토, 과업심의위원회 대상 기준을 알려줘.">SW 사전절차</button>
+    <button type="button" class="preset-chip-btn" data-q="지연배상금 요율과 면제 사유, 10% 이상시 해제 기준을 설명해줘.">지연배상금 요율</button>
+    <button type="button" class="preset-chip-btn" data-q="협상에 의한 계약 평가위원회 구성 및 최고·최저 제외 산출방식 알려줘.">협상계약 위원구성</button>
+  </div>
+
+  <!-- Chat History -->
+  <div class="gpt-chat-box" id="gpt-chat-box">
+    <div class="chat-bubble system-info">
+      🤖 안녕하세요! 계약법 및 서울시 회계실무 AI 챗봇입니다. 질문을 입력해 보세요. (🔑 버튼을 눌러 API Key를 등록할 수 있습니다)
+    </div>
+  </div>
+
+  <!-- Input Footer -->
+  <div class="ai-widget-footer">
+    <textarea id="gpt-input-text" rows="1" placeholder="계약법, 수의계약, 입찰 절차 등에 대해 질문해 보세요..." style="flex:1;border:1.5px solid #cbd5e1;border-radius:10px;padding:8px 12px;font-family:inherit;font-size:0.88rem;resize:none;max-height:80px;"></textarea>
+    <button type="button" class="btn pri-btn" id="btn-send-gpt" style="height:38px;padding:0 14px;font-size:0.88rem;background:#2563eb;color:#fff;border-radius:10px;white-space:nowrap;">전송</button>
+  </div>
+</div>
 
 <script src="app.js?v=20260811_2"></script>
 </body>
