@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
       pre.push({t:"발주 준비 — 과업내용서·예산 확정", tag:"통상", days:[3,5], soft:true});
     }
     if(d.cost) pre.push({t:"원가(계약)심사", tag:"통상", days:[5,10], soft:true, s:d.cost});
-    if(d.agree) pre.push({t:"재정합의 (재무과장)", tag:"통상", days:[2,3], soft:true, s:d.agree});
     if(d.audit) pre.push({t:"일상감사", tag:"통상", days:[3,7], soft:true, s:d.audit});
     if(d.gam && d.p>=3e7) pre.push({t:"기술용역 타당성 심사", tag:"통상", days:[7,14], soft:true, s:"기술심사담당관 — 용역 필요성·대가 적정성 (예산 반영 전 원칙, 당해연도 사업은 발주 전)"});
     if(d.gam && d.p>=2.3*E) pre.push({t:"사업수행능력(PQ) 세부기준 심의", tag:"통상", days:[5,10], soft:true, s:"건설기술심의 — 시 표준기준과 동일하면 서면협의로 대체"});
@@ -411,8 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 감리 등 건설기술용역은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 협상 체크를 해제하고 진행하세요.</div>';
 
-    h += '<h3>📋 발주 전 확인할 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 것만 보여드려요</span></h3>';
-    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의",d.agree]];
+    h += '<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 항목만 표시해요</span></h3>';
+    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree]];
     if(d.gam){
       pres.push(["기술용역 타당성 심사", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
         : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
@@ -485,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"분리발주(쪼개기) 여부 점검","수의 기준 회피 목적 분할 금지 — 시행령 §77","필수",true);
     add(P,"동일업체 수의계약 횟수 확인","실·국 연 4회 / 시 전체 연 9회 이내","필수",d.rec==="one");
     add(P,"원가(계약)심사 의뢰",d.cost||"","필수",!!d.cost);
-    add(P,"재정합의 (재무과장)",d.agree||"","필수",!!d.agree);
+    add(P,"재정합의 (계약의뢰 시 필수)",d.agree||"","필수",!!d.agree);
     add(P,"일상감사 의뢰",d.audit||"","필수",!!d.audit);
     add(P,"사전규격 공개 (나라장터)",d.spec||"","필수",!!d.spec);
     add(P,"협상 대상 여부 확인","단순노무용역·단순물품구매 제외 — 지식기반사업 등 (령 §44①)","필수",d.rec==="nego");
