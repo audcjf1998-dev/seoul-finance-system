@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한눈에 보이는 서울계약 | 서울특별시 계약시스템</title>
+    <meta name="description" content="서울특별시 계약업무 매뉴얼 및 발주, 입찰, 수의계약, 적격심사, 계약이행, 대금지급 통합 관리 시스템">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="seoul-emblem">
+                    <span class="dot red"></span>
+                    <span class="dot green"></span>
+                    <span class="dot blue"></span>
+                    <span class="brand-sub">동행·매력 특별시</span>
+                </div>
+                <h1 class="logo-title">
+                    <i data-lucide="file-check-2"></i>
+                    <span>서울계약<span class="highlight">마당</span></span>
+                </h1>
+                <p class="logo-sub">한눈에 보이는 서울계약 v2.4</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">메인 대시보드</div>
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>계약 현황 대시보드</span>
+                </button>
+
+                <div class="nav-section-title">제1장 계약준비 (발주부서)</div>
+                <button class="nav-btn" data-tab="prep-finder">
+                    <i data-lucide="compass"></i>
+                    <span>내 사업 맞춤 계약방법 찾기</span>
+                </button>
+                <button class="nav-btn" data-tab="prep-checklist">
+                    <i data-lucide="list-checks"></i>
+                    <span>발주단계 체크리스트 & 사전심의</span>
+                </button>
+                <button class="nav-btn" data-tab="prep-spec">
+                    <i data-lucide="file-spread-sheet"></i>
+                    <span>사전규격 공개 & 발주계획 등록</span>
+                </button>
+
+                <div class="nav-section-title">제2장 입찰 및 계약 (계약부서)</div>
+                <button class="nav-btn" data-tab="bid-methods">
+                    <i data-lucide="git-pull-request-draft"></i>
+                    <span>금액별 낙찰자 결정방법 표</span>
+                </button>
+                <button class="nav-btn" data-tab="bid-private">
+                    <i data-lucide="user-check"></i>
+                    <span>수의계약 (1인·2인전자공개)</span>
+                </button>
+                <button class="nav-btn" data-tab="bid-eval">
+                    <i data-lucide="calculator"></i>
+                    <span>적격심사 & 예정가격 계산기</span>
+                </button>
+                <button class="nav-btn" data-tab="bid-proposal">
+                    <i data-lucide="users"></i>
+                    <span>협상에 의한 계약 (평가위원회)</span>
+                </button>
+
+                <div class="nav-section-title">제3장 계약이행 & 대금 (공통)</div>
+                <button class="nav-btn" data-tab="exec-advance">
+                    <i data-lucide="coins"></i>
+                    <span>선금 신청 & 정산 계산기</span>
+                </button>
+                <button class="nav-btn" data-tab="exec-payment">
+                    <i data-lucide="badge-percent"></i>
+                    <span>검사 및 대가지급 5단계 트래킹</span>
+                </button>
+                <button class="nav-btn" data-tab="exec-penalty">
+                    <i data-lucide="shield-alert"></i>
+                    <span>지연배상금 & 하자보수/제재</span>
+                </button>
+                <button class="nav-btn" data-tab="exec-documents">
+                    <i data-lucide="file-text"></i>
+                    <span>서류 양식함 & 실적증명</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar"><i data-lucide="shield"></i></div>
+                    <div class="info">
+                        <span class="name">서울시 재무과</span>
+                        <span class="role">계약총괄팀 관리자</span>
+                    </div>
+                </div>
+                <button id="themeToggle" class="theme-btn" title="다크/라이트 모드 전환">
+                    <i data-lucide="moon"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Bar Header -->
+            <header class="top-bar">
+                <div class="breadcrumb">
+                    <span id="currentChapter">메인 대시보드</span>
+                    <i data-lucide="chevron-right"></i>
+                    <span id="currentPageTitle" class="active">서울시 계약 현황 및 지표</span>
+                </div>
+                <div class="top-actions">
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="globalSearch" placeholder="사업명, 공고번호, 계약상대자 검색...">
+                    </div>
+                    <button class="btn btn-outline" id="btnExportData">
+                        <i data-lucide="download"></i>
+                        <span>데이터 내보내기</span>
+                    </button>
+                    <button class="btn btn-primary" id="btnNewDraft">
+                        <i data-lucide="plus-circle"></i>
+                        <span>계약의뢰 기안 작성</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Content Tabs -->
+            <div class="content-body">
+
+                <!-- 1. TAB: 대시보드 (Dashboard) -->
+                <section id="tab-dashboard" class="tab-pane active">
+                    <!-- Hero Banner -->
+                    <div class="hero-card">
+                        <div class="hero-text">
+                            <div class="badge-tag">서울특별시 공식 가이드북 연동</div>
+                            <h2>한눈에 보이는 <span>서울계약</span> 통합 시스템</h2>
+                            <p>지방계약법령 및 서울시 계약 매뉴얼 기준 발주준비부터 입찰, 계약체결, 선금/기성금 지급까지 한눈에 확인하세요.</p>
+                            <div class="hero-metrics">
+                                <div class="metric">
+                                    <span class="label">금년 총 발주금액</span>
+                                    <span class="value">3조 4,820<small>억원</small></span>
+                                </div>
+                                <div class="metric">
+                                    <span class="label">총 계약 건수</span>
+                                    <span class="value">12,450<small>건</small></span>
+                                </div>
+                                <div class="metric">
+                                    <span class="label">수의계약 투명 공개율</span>
+                                    <span class="value accent">100.0<small>%</small></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-image-wrap">
+                            <img src="assets/images/seoul_finance_hero.jpg" alt="Seoul Finance Skyline" id="heroImg">
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards Grid -->
+                    <div class="grid-4">
+                        <div class="kpi-card">
+                            <div class="kpi-icon blue"><i data-lucide="building-2"></i></div>
+                            <div class="kpi-data">
+                                <span class="title">공사 계약</span>
+                                <span class="count">1,840 건</span>
+                                <span class="amount">1조 9,200 억원</span>
+                            </div>
+                            <div class="kpi-badge">종합 4억/전문 2억 이하 수의 가능</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon green"><i data-lucide="cpu"></i></div>
+                            <div class="kpi-data">
+                                <span class="title">용역 계약 (기술/학술/일반)</span>
+                                <span class="count">4,210 건</span>
+                                <span class="amount">1조 1,400 억원</span>
+                            </div>
+                            <div class="kpi-badge">협상에 의한 계약 85% 기술평가</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon gold"><i data-lucide="shopping-bag"></i></div>
+                            <div class="kpi-data">
+                                <span class="title">물품 제조·구매</span>
+                                <span class="count">6,400 건</span>
+                                <span class="amount">4,220 억원</span>
+                            </div>
+                            <div class="kpi-badge">녹색제품 / 장애인기업 우선조달</div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon purple"><i data-lucide="sparkles"></i></div>
+                            <div class="kpi-data">
+                                <span class="title">희망기업(약자기업) 계약</span>
+                                <span class="count">3,120 건</span>
+                                <span class="amount">3,850 억원</span>
+                            </div>
+                            <div class="kpi-badge">여성·장애인 5천만원 1인수의</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Recent Activity -->
+                    <div class="grid-2 mt-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="pie-chart"></i> 발주 목적물별 & 수의계약 집행 비율</h3>
+                                <span class="card-subtitle">2026년 서울시 본청 및 사업소 기준</span>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="chartContractCategory"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="bar-chart-3"></i> 월별 대금 지급 현황 (선금 / 기성금 / 잔금)</h3>
+                                <span class="card-subtitle">노무비 구분관리제 적용 비율 99.4%</span>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="chartMonthlyPayment"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Bids & Contracts Table -->
+                    <div class="card mt-4">
+                        <div class="card-header flex-between">
+                            <h3><i data-lucide="radio"></i> 실시간 서울시 입찰공고 & 진행 현황</h3>
+                            <div class="filter-pills">
+                                <button class="pill active" data-filter="all">전체</button>
+                                <button class="pill" data-filter="공사">공사</button>
+                                <button class="pill" data-filter="용역">용역</button>
+                                <button class="pill" data-filter="물품">물품</button>
+                            </div>
+                        </div>
+                        <div class="card-body padding-none">
+                            <table class="data-table" id="dashboardBidsTable">
+                                <thead>
+                                    <tr>
+                                        <th>공고번호</th>
+                                        <th>구분</th>
+                                        <th>사업/계약명</th>
+                                        <th>발주부서</th>
+                                        <th>추정가격(원)</th>
+                                        <th>계약/입찰방식</th>
+                                        <th>마감일자</th>
+                                        <th>상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows from app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. TAB: 계약방법 찾기 (Prep Finder) -->
+                <section id="tab-prep-finder" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="compass"></i> 내 사업에 맞는 계약방법 찾기 위저드</h3>
+                            <p class="text-muted">사업의 목적물, 예산 규모, 자격요건을 입력하면 지방계약법에 맞는 입찰/낙찰 방식을 판정합니다.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="wizard-steps">
+                                <div class="step active" id="step-node-1">
+                                    <span class="step-num">1</span>
+                                    <span class="step-title">계약 목적물 분류</span>
+                                </div>
+                                <div class="step" id="step-node-2">
+                                    <span class="step-num">2</span>
+                                    <span class="step-title">세부 유형 선택</span>
+                                </div>
+                                <div class="step" id="step-node-3">
+                                    <span class="step-num">3</span>
+                                    <span class="step-title">추정가격(예산) 입력</span>
+                                </div>
+                                <div class="step" id="step-node-4">
+                                    <span class="step-num">4</span>
+                                    <span class="step-title">최종 판정 결과</span>
+                                </div>
+                            </div>
+
+                            <div class="wizard-content mt-4" id="wizardBody">
+                                <!-- Step 1 Content -->
+                                <div class="wizard-page active" id="w-page-1">
+                                    <h4 class="mb-3">1. 사업의 주요 목적물 분류를 선택하세요.</h4>
+                                    <div class="grid-3">
+                                        <div class="option-card" data-val="공사">
+                                            <i data-lucide="hard-hat"></i>
+                                            <h5>공사 계약</h5>
+                                            <p>종합공사, 전문공사, 전기, 정보통신, 소방, 문화재 등</p>
+                                        </div>
+                                        <div class="option-card" data-val="용역">
+                                            <i data-lucide="briefcase"></i>
+                                            <h5>용역 계약</h5>
+                                            <p>기술용역(설계/감리), 학술연구, 일반용역(행사/운영 등)</p>
+                                        </div>
+                                        <div class="option-card" data-val="물품">
+                                            <i data-lucide="box"></i>
+                                            <h5>물품 계약</h5>
+                                            <p>물품 제조구매, 단순구매, 장비 및 시약 등</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2 Content -->
+                                <div class="wizard-page" id="w-page-2">
+                                    <h4 class="mb-3">2. 세부 사업 성격을 선택하세요.</h4>
+                                    <div class="grid-3" id="wSubTypes">
+                                        <!-- Rendered dynamically based on Step 1 selection -->
+                                    </div>
+                                </div>
+
+                                <!-- Step 3 Content -->
+                                <div class="wizard-page" id="w-page-3">
+                                    <h4 class="mb-3">3. 추정가격(부가세 제외 순수 예금액)을 입력하세요.</h4>
+                                    <div class="form-group max-w-md">
+                                        <label for="inputEstimatePrice">추정가격 (원):</label>
+                                        <div class="input-with-suffix">
+                                            <input type="number" id="inputEstimatePrice" placeholder="예: 45000000" class="form-control">
+                                            <span class="suffix">원</span>
+                                        </div>
+                                        <span class="form-hint" id="priceHintText">4,500 만원 (VAT 별도)</span>
+                                    </div>
+
+                                    <div class="form-group mt-3">
+                                        <label>특수 자격 / 희망기업 여부:</label>
+                                        <div class="checkbox-group">
+                                            <label><input type="checkbox" id="chkFemaleSocial"> 여성기업 / 장애인기업 / 사회적기업 (수의계약 한도 5천만원 적용)</label>
+                                            <label><input type="checkbox" id="chkPatented"> 특허공법 / 신기술 / 1인 생산자 (1인 수의 가능)</label>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-primary mt-3" id="btnCalculateWizard">계약방법 판정하기 <i data-lucide="arrow-right"></i></button>
+                                </div>
+
+                                <!-- Step 4 Content (Result) -->
+                                <div class="wizard-page" id="w-page-4">
+                                    <div class="result-box green" id="wizardResultBox">
+                                        <div class="result-icon"><i data-lucide="check-circle-2"></i></div>
+                                        <div class="result-text">
+                                            <h3 id="resContractMethod">2인 이상 견적 수의계약 (전자공개)</h3>
+                                            <p id="resContractDesc">추정가격 2천만원 초과 ~ 1억원 이하 일반용역에 해당하여 나라장터 전자공개 안내공고를 진행합니다.</p>
+                                            <div class="res-details" id="resDetailsList">
+                                                <!-- Detail bullets -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline mt-3" id="btnResetWizard"><i data-lucide="rotate-ccw"></i> 다시 찾기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. TAB: 발주단계 체크리스트 (Prep Checklist) -->
+                <section id="tab-prep-checklist" class="tab-pane">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="file-check"></i> 발주 전 필수 사전심의 절차 가이드</h3>
+                                <span class="card-subtitle">「한눈에 보이는 서울계약」 제1장 8~15p</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="accordion">
+                                    <div class="acc-item open">
+                                        <div class="acc-header">
+                                            <span>1. 원가심사 (계약심사과)</span>
+                                            <i data-lucide="chevron-down"></i>
+                                        </div>
+                                        <div class="acc-body">
+                                            <ul>
+                                                <li><strong>공사:</strong> 종합공사 5억원 이상, 기타공사 3억원 이상 (설계변경 20억원 이상시 10% 이상 증액)</li>
+                                                <li><strong>용역:</strong> 추정금액 2억원 이상</li>
+                                                <li><strong>물품:</strong> 추정금액 2천만원 이상 제조·구매</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="acc-item">
+                                        <div class="acc-header">
+                                            <span>2. 일상감사 (공공감사담당관)</span>
+                                            <i data-lucide="chevron-down"></i>
+                                        </div>
+                                        <div class="acc-body">
+                                            <ul>
+                                                <li><strong>공사:</strong> 추정가격 20억원 이상 종합공사, 10억원 이상 기타공사</li>
+                                                <li><strong>용역:</strong> 일반경쟁 10억원 이상 (협상계약 5억원 이상)</li>
+                                                <li><strong>수의계약:</strong> 추정가격 2천만원 초과 1인견적 수의계약전 사전감사</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="acc-item">
+                                        <div class="acc-header">
+                                            <span>3. 특정제품 선정심사위원회</span>
+                                            <i data-lucide="chevron-down"></i>
+                                        </div>
+                                        <div class="acc-body">
+                                            <ul>
+                                                <li>공사 시 동일 특정제품 재료원가 합계 5천만원 초과 시 심사</li>
+                                                <li>물품 제조·구매 시 2천만원 초과 시 위원회 구성 (외부위원 과반)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="acc-item">
+                                        <div class="acc-header">
+                                            <span>4. 재정합의 제도 (재무과)</span>
+                                            <i data-lucide="chevron-down"></i>
+                                        </div>
+                                        <div class="acc-body">
+                                            <ul>
+                                                <li><strong>공사:</strong> 10억원 이상 (담당사무관, 재무과장 합의)</li>
+                                                <li><strong>용역/제조:</strong> 5억원 이상 / <strong>물품:</strong> 2억원 이상</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkable Interactive Checklist -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="check-square"></i> 발주담당자 서류 준비 체크리스트</h3>
+                                <span class="card-subtitle">계약의뢰시 필수 첨부 서류 자동 확인</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="checklist-wrapper" id="interactiveChecklist">
+                                    <label class="check-item"><input type="checkbox" checked> <span>사업 시행 방침서 및 기본계획서</span></label>
+                                    <label class="check-item"><input type="checkbox" checked> <span>e-호조 지출품의서 (품의번호 기재 필수)</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>과업지시서 / 공사 시방서 / 내역서</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>산출기초조사서 및 거래실례가격 증빙견적</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>청렴계약 이행 서약서 (발주부서용)</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>부당계약 특수조건 체크리스트</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>녹색제품 구매·적용 가능 검토서 (기후환경정책과)</span></label>
+                                    <label class="check-item"><input type="checkbox"> <span>특정제품 선정심사위원회 의결서 (해당시)</span></label>
+                                </div>
+                                <div class="progress-bar-wrap mt-3">
+                                    <div class="progress-info">
+                                        <span>점검 완료율</span>
+                                        <strong id="chkProgressPercent">25%</strong>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="chkProgressFill" style="width: 25%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. TAB: 사전규격 공개 & 발주계획 (Prep Spec) -->
+                <section id="tab-prep-spec" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i data-lucide="eye"></i> 사전규격 공개 & 서울계약마당 발주계획 관리</h3>
+                                <p class="text-muted">추정가격 5천만원 이상 용역·물품 입찰 전 구매규격을 5일간 사전공개하여 공정한 경쟁을 유도합니다.</p>
+                            </div>
+                            <button class="btn btn-outline" id="btnRegisterSpec"><i data-lucide="plus"></i> 신규 규격등록</button>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>등록번호</th>
+                                        <th>분류</th>
+                                        <th>사업명</th>
+                                        <th>공개기관</th>
+                                        <th>공개기간</th>
+                                        <th>의견제시</th>
+                                        <th>상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>SPEC-2026-089</td>
+                                        <td><span class="badge blue">용역</span></td>
+                                        <td>2026년 서울시 스마트교통시스템 유지관리 용역</td>
+                                        <td>교통정보과</td>
+                                        <td>2026.08.10 ~ 08.15 (5일)</td>
+                                        <td>2건 (검토중)</td>
+                                        <td><span class="badge warning">공개중</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>SPEC-2026-088</td>
+                                        <td><span class="badge green">공사</span></td>
+                                        <td>여의도 금융허브 센터 인프라 확장 공사</td>
+                                        <td>도시기반시설본부</td>
+                                        <td>2026.08.05 ~ 08.10 (5일)</td>
+                                        <td>0건</td>
+                                        <td><span class="badge success">공개완료</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>SPEC-2026-087</td>
+                                        <td><span class="badge gold">물품</span></td>
+                                        <td>서울시 청년 안심통장 전산 서버 10대 구매</td>
+                                        <td>정보시스템담당관</td>
+                                        <td>2026.08.01 ~ 08.06 (5일)</td>
+                                        <td>1건 (반영완료)</td>
+                                        <td><span class="badge success">공개완료</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. TAB: 금액별 낙찰자 결정방법 (Bid Methods) -->
+                <section id="tab-bid-methods" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="table"></i> 계약목적물·금액별 낙찰자 결정방법 총괄표</h3>
+                            <span class="card-subtitle">「한눈에 보이는 서울계약」 제2장 18p 기준</span>
+                        </div>
+                        <div class="card-body padding-none">
+                            <table class="data-table border-table">
+                                <thead>
+                                    <tr>
+                                        <th>구분</th>
+                                        <th>공사 (Construction)</th>
+                                        <th>용역 (Services)</th>
+                                        <th>물품 (Goods)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>1인견적 수의</th>
+                                        <td>추정가격 2천만원 이하<br><small class="text-muted">(여성·장애인·사회적기업 5천만원 이하)</small></td>
+                                        <td>추정가격 2천만원 이하<br><small class="text-muted">(중증장애인 생산품 모든 금액)</small></td>
+                                        <td>추정가격 2천만원 이하</td>
+                                    </tr>
+                                    <tr>
+                                        <th>2인견적 수의<br>(전자공개)</th>
+                                        <td>종합 4억원 / 전문 2억원 / 기타 1.6억원 이하</td>
+                                        <td>추정가격 1억원 이하</td>
+                                        <td>추정가격 1억원 이하</td>
+                                    </tr>
+                                    <tr>
+                                        <th>적격심사 낙찰제</th>
+                                        <td>종합 4억 초과 ~ 300억 미만<br>전문 2억 초과 ~ 300억 미만</td>
+                                        <td>추정가격 1억원 초과</td>
+                                        <td>추정가격 1억원 초과</td>
+                                    </tr>
+                                    <tr>
+                                        <th>협상에 의한 계약</th>
+                                        <td>해당 없음</td>
+                                        <td>전문성·창의성 필요 용역<br><small class="text-muted">(정량 20 + 정성 60 + 가격 20)</small></td>
+                                        <td>전문성 필요 특수 물품</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. TAB: 수의계약 관리 (Bid Private) -->
+                <section id="tab-bid-private" class="tab-pane">
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="shield-check"></i> 특정업체 수의계약 일감 몰아주기 차단 검증</h3>
+                                <p class="text-muted">서울시 수의계약 준칙: 동일업체 연간 실·본부·국 5회 이상 / 시 전체 10회 이상 체결 금지</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>검증할 사업자등록번호 / 업체명:</label>
+                                    <div class="input-with-button">
+                                        <input type="text" id="inputVendorBizNo" placeholder="예: 107-86-12345 (서울건설 주식회사)" class="form-control">
+                                        <button class="btn btn-primary" id="btnCheckVendorLimit">수의계약 횟수 조회</button>
+                                    </div>
+                                </div>
+
+                                <div class="vendor-status-card hidden" id="vendorStatusResult">
+                                    <div class="status-header">
+                                        <h4 id="vResultName">서울건설 주식회사</h4>
+                                        <span class="badge success" id="vResultBadge">계약가능</span>
+                                    </div>
+                                    <div class="status-counts">
+                                        <div class="c-box">
+                                            <span>당해 본청/국 횟수</span>
+                                            <strong id="vDeptCount">2 회</strong>
+                                            <small>/ 5회 제한</small>
+                                        </div>
+                                        <div class="c-box">
+                                            <span>서울시 전체 횟수</span>
+                                            <strong id="vTotalCount">4 회</strong>
+                                            <small>/ 10회 제한</small>
+                                        </div>
+                                    </div>
+                                    <p class="mt-3 text-sm text-muted" id="vMessageText">현재 수의계약 체결 한도 내에 있으므로 수의계약 진행이 가능합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="file-signature"></i> 수의계약 체결제한 확인서 자동 징구</h3>
+                                <p class="text-muted">공직자의 이해충돌 방지법 제12조에 따른 확인서</p>
+                            </div>
+                            <div class="card-body">
+                                <form id="formPledge">
+                                    <div class="form-group">
+                                        <label>계약상대자 대표자명:</label>
+                                        <input type="text" class="form-control" placeholder="홍길동" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>계약건명:</label>
+                                        <input type="text" class="form-control" value="2026년 서울시 정책금융 시스템 개선 용역">
+                                    </div>
+                                    <div class="pledge-text">
+                                        본인은 서울특별시와의 수의계약 체결에 있어 「공직자의 이해충돌 방지법」 제12조에 따른 수의계약 체결 제한 대상자가 아님을 확인하며, 만일 위반 시 계약 해제·해지 및 제재 처분에 이의를 제기하지 않을 것을 서약합니다.
+                                    </div>
+                                    <button type="button" class="btn btn-outline mt-3" onclick="alert('서약서가 저장되었습니다.')">전자 서약서 저장</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. TAB: 적격심사 & 예가 계산기 (Bid Eval) -->
+                <section id="tab-bid-eval" class="tab-pane">
+                    <div class="grid-2">
+                        <!-- Calculator 1: 예정가격 산정 계산기 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="calculator"></i> 복수예비가격 & 예정가격 추첨 산출기</h3>
+                                <span class="card-subtitle">기초금액 ±3% 범위 내 15개 복예가 생성 중 4개 추첨 평균</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="inputBaseAmount">조사 기초금액 (원):</label>
+                                    <input type="number" id="inputBaseAmount" value="100000000" class="form-control">
+                                </div>
+                                <button class="btn btn-primary" id="btnGenEstimates"><i data-lucide="dice-5"></i> 15개 복수예비가격 생성 및 4개 무작위 추첨</button>
+
+                                <div class="est-results mt-3 hidden" id="estResultsArea">
+                                    <div class="est-summary flex-between">
+                                        <span>추첨된 4개 예가 평균 (예정가격):</span>
+                                        <strong id="finalEstPrice" class="text-gold">99,850,250 원</strong>
+                                    </div>
+                                    <div class="price-grid mt-2" id="priceGrid15">
+                                        <!-- 15 prices badge -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculator 2: 적격심사 점수 계산기 -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i data-lucide="award"></i> 적격심사 낙찰점수 종합 계산기</h3>
+                                <span class="card-subtitle">수행능력(30점) + 입찰가격(70점) + 신인도 - 결격사유</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>수행능력 점수 (배점 30점):</label>
+                                        <input type="number" id="scorePerf" value="28.5" max="30" step="0.1" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>입찰가격 (원):</label>
+                                        <input type="number" id="scoreBidPrice" value="87750000" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-row mt-2">
+                                    <div class="form-group">
+                                        <label>신인도 가점 (점):</label>
+                                        <input type="number" id="scoreCredit" value="1.0" step="0.1" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>감점 요인 (점):</label>
+                                        <input type="number" id="scorePenalty" value="0.0" step="0.1" class="form-control">
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-success mt-3" id="btnCalcEvalScore">적격심사 점수 계산</button>
+
+                                <div class="eval-result-card mt-3 hidden" id="evalResultArea">
+                                    <div class="res-score flex-between">
+                                        <span>종합 평가점수:</span>
+                                        <strong id="totalEvalScore" class="accent-text">95.4 점</strong>
+                                    </div>
+                                    <div id="evalPassBadge" class="badge-status pass mt-2">적격 심사 통과 (낙찰 예정)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. TAB: 협상에 의한 계약 (Bid Proposal) -->
+                <section id="tab-bid-proposal" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="users-2"></i> 제안서 평가위원회 예비명부 3배수 추첨 시뮬레이터</h3>
+                            <p class="text-muted">위원 7인 구성 시 3배수(21명) 예비명부 작성 후 입찰참여자가 번호 추첨 -> 다빈도순 7인 확정</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="flex-between mb-3">
+                                <div><strong>위원회 정원:</strong> 7명 | <strong>예비명부 인원:</strong> 21명</div>
+                                <button class="btn btn-primary" id="btnRunCommitteeSim"><i data-lucide="shuffle"></i> 예비위원 무작위 난수 추첨 실행</button>
+                            </div>
+
+                            <div class="committee-grid" id="committeeGrid">
+                                <!-- 21 Candidate Cards -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 9. TAB: 선금 신청 & 정산 (Exec Advance) -->
+                <section id="tab-exec-advance" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="percent"></i> 선금 지급 및 기성정산 자동 계산기</h3>
+                            <span class="card-subtitle">「한눈에 보이는 서울계약」 제3장 45~46p 선금정산식 적용</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="formula-box">
+                                <code>선금정산액 = 선금액 × (기성부분의 대가상당액 / 총 계약금액)</code>
+                            </div>
+
+                            <div class="grid-3 mt-4">
+                                <div class="form-group">
+                                    <label>총 계약금액 (원):</label>
+                                    <input type="number" id="advContractAmt" value="500000000" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>지급된 선금액 (원):</label>
+                                    <input type="number" id="advGivenAmt" value="350000000" class="form-control">
+                                    <small class="text-muted">계약금액의 70% 지급</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>금회 기성 신청액 (원):</label>
+                                    <input type="number" id="advProgressAmt" value="200000000" class="form-control">
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary mt-3" id="btnCalcAdvance">선금 정산액 산출</button>
+
+                            <div class="calc-res-card mt-3 hidden" id="advCalcResult">
+                                <div class="r-row">
+                                    <span>이번 기성시 공제할 선금정산액:</span>
+                                    <strong id="resAdvDeduct" class="text-red">140,000,000 원</strong>
+                                </div>
+                                <div class="r-row highlight-bg mt-2">
+                                    <span>계약상대자 최종 실지급 대금:</span>
+                                    <strong id="resAdvNetPay" class="text-green">60,000,000 원</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 10. TAB: 검사 및 대가지급 (Exec Payment) -->
+                <section id="tab-exec-payment" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="check-check"></i> 검사 및 대가지급 5단계 실시간 트래커</h3>
+                            <span class="card-subtitle">준공신고 -> 검사 14일 이내 -> 대가지급 5일 이내 법칙 준수</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="tracker-steps">
+                                <div class="t-step done">
+                                    <div class="icon"><i data-lucide="file-up"></i></div>
+                                    <span class="title">1. 준공/기성 신고</span>
+                                    <small>계약상대자 제출</small>
+                                </div>
+                                <div class="t-step done">
+                                    <div class="icon"><i data-lucide="user-check"></i></div>
+                                    <span class="title">2. 검사원 지정</span>
+                                    <small>재무과 -> 발주부서</small>
+                                </div>
+                                <div class="t-step active">
+                                    <div class="icon"><i data-lucide="search"></i></div>
+                                    <span class="title">3. 현장 검사·검수</span>
+                                    <small>14일 이내 완료 (진행중)</small>
+                                </div>
+                                <div class="t-step">
+                                    <div class="icon"><i data-lucide="file-check"></i></div>
+                                    <span class="title">4. 검수조서 송부</span>
+                                    <small>e-호조 등록</small>
+                                </div>
+                                <div class="t-step">
+                                    <div class="icon"><i data-lucide="banknote"></i></div>
+                                    <span class="title">5. 대가 입금 완료</span>
+                                    <small>청구후 5일 이내</small>
+                                </div>
+                            </div>
+
+                            <div class="payment-check-box mt-4">
+                                <h4><i data-lucide="shield-alert"></i> 발주부서 대가지급 시 필수 확인서류</h4>
+                                <div class="grid-2 mt-2">
+                                    <label><input type="checkbox" checked disabled> 대가청구서 & 세금계산서</label>
+                                    <label><input type="checkbox" checked disabled> 국세·지방세 완납증명서 (G4C)</label>
+                                    <label><input type="checkbox" checked disabled> 국민연금·건강보험료 완납증명서</label>
+                                    <label><input type="checkbox" checked disabled> 노무비 구분관리 입금확인 내역서</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 11. TAB: 지연배상금 & 제재 (Exec Penalty) -->
+                <section id="tab-exec-penalty" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i data-lucide="alert-triangle"></i> 지연배상금 & 하자보수 보증금 계산기</h3>
+                            <span class="card-subtitle">공사 0.5/1000, 용역 1.3/1000, 물품 0.8/1000 적용</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid-3">
+                                <div class="form-group">
+                                    <label>계약 유형:</label>
+                                    <select id="penType" class="form-control">
+                                        <option value="0.0005">공사 (0.5 / 1,000)</option>
+                                        <option value="0.0013" selected>용역 (1.3 / 1,000)</option>
+                                        <option value="0.0008">물품 제조·구매 (0.8 / 1,000)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>계약 금액 (원):</label>
+                                    <input type="number" id="penContractAmt" value="200000000" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>지체 일수 (일):</label>
+                                    <input type="number" id="penDays" value="5" class="form-control">
+                                </div>
+                            </div>
+
+                            <button class="btn btn-danger mt-3" id="btnCalcPenalty">지연배상금 계산</button>
+
+                            <div class="result-box red mt-3 hidden" id="penResultArea">
+                                <h4>총 부과 지연배상금: <span id="resPenaltyAmt">1,300,000 원</span></h4>
+                                <p class="text-sm">수령할 기성대금 및 준공금에서 일괄 공제 후 대가가 지급됩니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 12. TAB: 서류 양식함 (Exec Documents) -->
+                <section id="tab-exec-documents" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3><i data-lucide="folder-down"></i> 서울계약마당 서식 자료실 및 표준 계약서 다운로드</h3>
+                                <p class="text-muted">서울특별시 본청 및 사업소 표준 양식 모음집</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid-3">
+                                <div class="doc-item-card">
+                                    <i data-lucide="file-text" class="doc-icon"></i>
+                                    <h5>서울시 표준 용역계약서</h5>
+                                    <span class="file-info">DOCX / 45KB</span>
+                                    <button class="btn btn-sm btn-outline mt-2" onclick="alert('서식이 다운로드 되었습니다.')">양식 받기</button>
+                                </div>
+                                <div class="doc-item-card">
+                                    <i data-lucide="file-check" class="doc-icon"></i>
+                                    <h5>청렴계약 이행서약서 (발주/업체용)</h5>
+                                    <span class="file-info">HWP / 28KB</span>
+                                    <button class="btn btn-sm btn-outline mt-2" onclick="alert('서식이 다운로드 되었습니다.')">양식 받기</button>
+                                </div>
+                                <div class="doc-item-card">
+                                    <i data-lucide="shield" class="doc-icon"></i>
+                                    <h5>근로자 권리보호 이행서약서</h5>
+                                    <span class="file-info">PDF / 110KB</span>
+                                    <button class="btn btn-sm btn-outline mt-2" onclick="alert('서식이 다운로드 되었습니다.')">양식 받기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for New Draft / Contract Form -->
+    <div class="modal-overlay hidden" id="draftModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i data-lucide="file-plus"></i> 신규 계약의뢰 기안문 생성</h3>
+                <button class="close-btn" id="btnCloseModal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNewDraft">
+                    <div class="form-group">
+                        <label>e-호조 지출품의 번호:</label>
+                        <input type="text" class="form-control" placeholder="2026-EHOJO-99812" required>
+                    </div>
+                    <div class="form-group">
+                        <label>사업/계약명:</label>
+                        <input type="text" class="form-control" placeholder="서울시 디지털 금융 역량 강화 사업" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>계약 구분:</label>
+                            <select class="form-control">
+                                <option>용역</option>
+                                <option>공사</option>
+                                <option>물품</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>추정가격 (원):</label>
+                            <input type="number" class="form-control" placeholder="45000000" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mt-3">계약의뢰 등록하기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
