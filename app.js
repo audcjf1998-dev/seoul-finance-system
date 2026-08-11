@@ -143,7 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 옵션 토글 스타일 */
   document.querySelectorAll(".opt input").forEach(c=>{
-    c.addEventListener("change",()=>c.closest(".opt").classList.toggle("on",c.checked));
+    c.addEventListener("change",()=>{
+      c.closest(".opt").classList.toggle("on",c.checked);
+      autoUpdateResult();
+    });
   });
 
   /* ───── "해당 사항 없음" 토글 제어 ───── */
@@ -156,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
     chkNone.addEventListener("change", () => {
       if (chkNone.checked) {
         optNone.classList.add("on");
-        // 다른 특수조건 해제 및 딤 처리
         specialIds.forEach(id => {
           const el = $(id);
           if (el) {
@@ -169,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         optNone.classList.remove("on");
       }
+      autoUpdateResult();
     });
 
     // 다른 특수조건 체크 시 "해당 사항 없음" 자동 해제
@@ -182,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
               chkNone.checked = false;
               optNone.classList.remove("on");
             }
+            autoUpdateResult();
           });
         }
       }
@@ -197,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
         syncOpts();
+        autoUpdateResult();
       });
     });
   }
@@ -363,98 +368,124 @@ document.addEventListener('DOMContentLoaded', () => {
       +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
   }
 
-  /* ───── 결과 렌더 ───── */
+  /* ───── 결과 렌더 (실시간 자동 실행) ───── */
   let LAST = null;
+
+  function renderResult() {
+    const d = decide();
+    const resEl = $("result");
+    if(!resEl) return;
+
+    if(!d.p){ 
+      resEl.innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력하시면 실시간으로 결과를 진단해 드려요 🙂</p></div>'; 
+      return; 
+    }
+    let h = '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
+
+    if(d.rec==="nego"){
+      h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
+        +'<p>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)</p>'
+        +'<div class="tags">'+(d.it
+          ? tagHtml("기술 90 : 가격 10 (SW사업 준수사항)", "v") + tagHtml("협상적격 — 기술점수 85%↑", "b")
+          : tagHtml("배점 100 = 정량 20 + 정성 60 + 가격 20", "v") + tagHtml("협상적격 종합 70점↑", "b"))
+        + tagHtml("공고 "+d.noticeDays+"일", "o")
+        + tagHtml("령 §43·§44", "g")
+        + tagHtml("낙찰자 결정기준 제7장", "g") +'</div></div>';
+      if(d.oneOk||d.twoOk) h += '<p class="note">금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.</p>';
+      h += '<p class="note">분야별 배점은 ±10점 범위에서 조정할 수 있어요. 대상 여부(지식기반사업 등)는 「📚 기준 한눈에」에서 확인하세요.</p>';
+    } else {
+      if(d.oneOk){
+        h += '<div class="mcard rec"><span class="badge">추천</span><b>🤝 1인 견적 수의계약</b>'
+          +'<p>'+(d.severe?'중증장애인생산품 직접 생산 — 금액 제한 없이 가능':(d.special?'특례 대상 기업 — 5천만원 이하 가능':'추정가격 2천만원 이하'))+'</p>'
+          +'<div class="tags">'
+          + tagHtml("령 §25·§30", "g")
+          + tagHtml("견적서 1인 제출", "k")
+          + tagHtml("동일업체 연 4회/9회 제한", "o")
+          + tagHtml("변경계약 한도 "+(d.special?"5,500만원":"2,200만원"), "v")
+          +(d.audit ? tagHtml("일상감사 대상", "r") : (d.special&&d.p>2e7 ? tagHtml("일상감사 제외 (5천만 이하 장애인·여성기업)", "g") : ''))
+          +'</div></div>';
+      }
+      if(d.twoOk){
+        h += '<div class="mcard'+(d.rec==="two"?' rec':'')+'">'+(d.rec==="two"?'<span class="badge">추천</span>':'')
+          +'<b>💻 전자공개 수의계약 (2인 이상 견적)</b>'
+          +'<p>'+d.k.name+' '+korUnit(d.k.two)+' 이하 — 나라장터 안내공고 3일(신규 5일), 견적률 '+d.quoteRate+' 이상 최저가</p>'
+          +'<div class="tags">'
+          + tagHtml("령 §25①5호·§30", "g")
+          + tagHtml("집행기준 제5장", "g")
+          +'</div></div>';
+      }
+      h += '<div class="mcard'+(d.rec==="bid"?' rec':'')+'">'+(d.rec==="bid"?'<span class="badge">추천</span>':'')
+        +'<b>📢 일반(경쟁)입찰</b><p>'+(d.k.isC
+          ?'공고 '+d.noticeDays+'일 이상 (10억 미만 7일 · 10~50억 15일 · 50억~국제입찰 미만 30일 · 국제입찰 40일 · 긴급·재공고 5일)'
+          :'공고 7일 이상 (신규사업 10일 · 긴급·재공고 5일) — 게시일·개찰일 제외')
+        +'</p><div class="tags">'
+        + tagHtml("령 §35", "g")
+        + tagHtml("적격심사 — 낙찰자 결정기준 제2~4장", "g")
+        +'</div></div>';
+      if(d.rec==="bid" && !d.k.isC) h += '<p class="note">'+(d.it
+        ?'정보화·SW사업은 보통 협상에 의한 계약으로 발주해요. ③에서 「협상에 의한 계약」을 함께 체크하면 절차와 배점을 협상 기준으로 안내해 드려요.'
+        :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
+    }
+
+    if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 감리 등 건설기술용역은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 협상 체크를 해제하고 진행하세요.</div>';
+
+    h += '<h3>📋 발주 전 확인할 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 것만 보여드려요</span></h3>';
+    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의",d.agree]];
+    if(d.gam){
+      pres.push(["기술용역 타당성 심사", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
+        : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
+        : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null]);
+      pres.push(["용역발주심의 (건설기술심의)", d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
+        : d.p>=1*E ? "전기·기계·조경 1억↑ 대상 (토목·건축은 2억↑)" : null]);
+      pres.push(["사업수행능력(PQ) 세부기준 심의", d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null]);
+    }
+    if(d.it){
+      pres.push(["과업심의위원회","모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
+      pres.push(["행안부 사전협의",(d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
+      pres.push(["정보통신 보안성 검토","정보시스템 신·증설 — 정보보안과"]);
+      pres.push(["SW사업 영향평가","자체평가 후 사전규격 공개 시 결과 공개"]);
+      pres.push(["예산타당성 심사",d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
+    }
+    const hit = pres.filter(x=>x[1]);
+    if(hit.length){
+      h += '<div class="pre">';
+      hit.forEach(([n,v])=>{ h += '<div class="p on"><div class="n">⚠️ '+n+'</div><div class="y">'+v+'</div></div>'; });
+      h += '</div>';
+    } else {
+      h += '<div class="verdict"><span class="big">🎈</span><div><b>필수 사전절차 대상이 없어요</b><small>이 금액·조건에서는 일상감사 · 원가심사 · 재정합의 등 대상이 아니에요</small></div></div>';
+    }
+    if(d.rec!=="bid"){
+      h += '<div class="warnbox">🔍 수의계약 시 유의 — 금액 기준을 피하려는 <b>분리발주(쪼개기)는 금지</b>돼요(령 §77). 1인 견적은 동일업체와 실·국 연 4회 / 시 전체 연 9회까지, 변경계약도 수의 기준금액(계약금액 소액 2,200만원 · 여성기업 등 5,500만원) 안에서만 가능해요.</div>';
+      if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
+    }
+
+    h += '<h3>⏱️ 예상 진행 일정</h3>' + buildTimeline(d);
+    h += '<div style="margin-top:16px"><button class="btn" onclick="makeChecklist()">✅ 이 조건으로 체크리스트 만들기</button></div>';
+    h += '</div>';
+    resEl.innerHTML = h;
+    LAST = d;
+    if (window.attachLegalTooltips) window.attachLegalTooltips();
+  }
+  window.renderResult = renderResult;
+
+  function autoUpdateResult() {
+    if(num($("price")) > 0) {
+      renderResult();
+    }
+  }
+
+  // 실시간 입력 자동 진단 리스너
+  const priceEl = $("price");
+  if(priceEl) {
+    priceEl.addEventListener("input", autoUpdateResult);
+  }
+
   const btnGo = $("go");
   if(btnGo) {
     btnGo.addEventListener("click", ()=>{
-      const d = decide();
-      if(!d.p){ $("result").innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력해 주세요 🙂</p></div>'; return; }
-      let h = '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
-
-      if(d.rec==="nego"){
-        h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
-          +'<p>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)</p>'
-          +'<div class="tags">'+(d.it
-            ? tagHtml("기술 90 : 가격 10 (SW사업 준수사항)", "v") + tagHtml("협상적격 — 기술점수 85%↑", "b")
-            : tagHtml("배점 100 = 정량 20 + 정성 60 + 가격 20", "v") + tagHtml("협상적격 종합 70점↑", "b"))
-          + tagHtml("공고 "+d.noticeDays+"일", "o")
-          + tagHtml("령 §43·§44", "g")
-          + tagHtml("낙찰자 결정기준 제7장", "g") +'</div></div>';
-        if(d.oneOk||d.twoOk) h += '<p class="note">금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.</p>';
-        h += '<p class="note">분야별 배점은 ±10점 범위에서 조정할 수 있어요. 대상 여부(지식기반사업 등)는 「📚 기준 한눈에」에서 확인하세요.</p>';
-      } else {
-        if(d.oneOk){
-          h += '<div class="mcard rec"><span class="badge">추천</span><b>🤝 1인 견적 수의계약</b>'
-            +'<p>'+(d.severe?'중증장애인생산품 직접 생산 — 금액 제한 없이 가능':(d.special?'특례 대상 기업 — 5천만원 이하 가능':'추정가격 2천만원 이하'))+'</p>'
-            +'<div class="tags">'
-            + tagHtml("령 §25·§30", "g")
-            + tagHtml("견적서 1인 제출", "k")
-            + tagHtml("동일업체 연 4회/9회 제한", "o")
-            + tagHtml("변경계약 한도 "+(d.special?"5,500만원":"2,200만원"), "v")
-            +(d.audit ? tagHtml("일상감사 대상", "r") : (d.special&&d.p>2e7 ? tagHtml("일상감사 제외 (5천만 이하 장애인·여성기업)", "g") : ''))
-            +'</div></div>';
-        }
-        if(d.twoOk){
-          h += '<div class="mcard'+(d.rec==="two"?' rec':'')+'">'+(d.rec==="two"?'<span class="badge">추천</span>':'')
-            +'<b>💻 전자공개 수의계약 (2인 이상 견적)</b>'
-            +'<p>'+d.k.name+' '+korUnit(d.k.two)+' 이하 — 나라장터 안내공고 3일(신규 5일), 견적률 '+d.quoteRate+' 이상 최저가</p>'
-            +'<div class="tags">'
-            + tagHtml("령 §25①5호·§30", "g")
-            + tagHtml("집행기준 제5장", "g")
-            +'</div></div>';
-        }
-        h += '<div class="mcard'+(d.rec==="bid"?' rec':'')+'">'+(d.rec==="bid"?'<span class="badge">추천</span>':'')
-          +'<b>📢 일반(경쟁)입찰</b><p>'+(d.k.isC
-            ?'공고 '+d.noticeDays+'일 이상 (10억 미만 7일 · 10~50억 15일 · 50억~국제입찰 미만 30일 · 국제입찰 40일 · 긴급·재공고 5일)'
-            :'공고 7일 이상 (신규사업 10일 · 긴급·재공고 5일) — 게시일·개찰일 제외')
-          +'</p><div class="tags">'
-          + tagHtml("령 §35", "g")
-          + tagHtml("적격심사 — 낙찰자 결정기준 제2~4장", "g")
-          +'</div></div>';
-        if(d.rec==="bid" && !d.k.isC) h += '<p class="note">'+(d.it
-          ?'정보화·SW사업은 보통 협상에 의한 계약으로 발주해요. ③에서 「협상에 의한 계약」을 함께 체크하면 절차와 배점을 협상 기준으로 안내해 드려요.'
-          :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
-      }
-
-      if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 감리 등 건설기술용역은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 협상 체크를 해제하고 진행하세요.</div>';
-
-      h += '<h3>📋 발주 전 확인할 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 것만 보여드려요</span></h3>';
-      const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의",d.agree]];
-      if(d.gam){
-        pres.push(["기술용역 타당성 심사", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
-          : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
-          : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null]);
-        pres.push(["용역발주심의 (건설기술심의)", d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
-          : d.p>=1*E ? "전기·기계·조경 1억↑ 대상 (토목·건축은 2억↑)" : null]);
-        pres.push(["사업수행능력(PQ) 세부기준 심의", d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null]);
-      }
-      if(d.it){
-        pres.push(["과업심의위원회","모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
-        pres.push(["행안부 사전협의",(d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
-        pres.push(["정보통신 보안성 검토","정보시스템 신·증설 — 정보보안과"]);
-        pres.push(["SW사업 영향평가","자체평가 후 사전규격 공개 시 결과 공개"]);
-        pres.push(["예산타당성 심사",d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
-      }
-      const hit = pres.filter(x=>x[1]);
-      if(hit.length){
-        h += '<div class="pre">';
-        hit.forEach(([n,v])=>{ h += '<div class="p on"><div class="n">⚠️ '+n+'</div><div class="y">'+v+'</div></div>'; });
-        h += '</div>';
-      } else {
-        h += '<div class="verdict"><span class="big">🎈</span><div><b>필수 사전절차 대상이 없어요</b><small>이 금액·조건에서는 일상감사 · 원가심사 · 재정합의 등 대상이 아니에요</small></div></div>';
-      }
-      if(d.rec!=="bid"){
-        h += '<div class="warnbox">🔍 수의계약 시 유의 — 금액 기준을 피하려는 <b>분리발주(쪼개기)는 금지</b>돼요(령 §77). 1인 견적은 동일업체와 실·국 연 4회 / 시 전체 연 9회까지, 변경계약도 수의 기준금액(계약금액 소액 2,200만원 · 여성기업 등 5,500만원) 안에서만 가능해요.</div>';
-        if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
-      }
-
-      h += '<h3>⏱️ 예상 진행 일정</h3>' + buildTimeline(d);
-      h += '<div style="margin-top:16px"><button class="btn" onclick="makeChecklist()">✅ 이 조건으로 체크리스트 만들기</button></div>';
-      h += '</div>';
-      $("result").innerHTML = h;
-      LAST = d;
-      if (window.attachLegalTooltips) window.attachLegalTooltips();
+      renderResult();
+      const resEl = $("result");
+      if(resEl) resEl.scrollIntoView({ behavior: 'smooth' });
     });
   }
 
