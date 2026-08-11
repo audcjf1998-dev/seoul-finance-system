@@ -63,11 +63,6 @@ body {
   padding: 24px 24px 100px;
 }
 
-#step-input .card {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
 /* ─────────────────── 2-COLUMN DASHBOARD GRID LAYOUT ─────────────────── */
 .result-grid-layout {
   display: grid;
