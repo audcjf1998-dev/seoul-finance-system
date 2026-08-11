@@ -441,10 +441,56 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.showStep = showStep;
 
-  window.goHome = function() {
-    if(typeof showTab === "function") showTab("guide");
+  window.resetAll = function() {
+    try {
+      localStorage.removeItem("seoul_contract_state");
+    } catch(e) {}
+
+    const priceInput = $("price");
+    if(priceInput) priceInput.value = "";
+    const priceKor = $("price-kor");
+    if(priceKor) priceKor.textContent = "";
+
+    KIND = "goods";
+    const kindEl = $("kind");
+    if(kindEl) {
+      kindEl.querySelectorAll(".chip").forEach(b => {
+        b.classList.toggle("on", b.dataset.k === "goods");
+      });
+    }
+
+    const allOptIds = [
+      "chk-none", "opt-special", "opt-severe", "opt-nego", "opt-festival",
+      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit"
+    ];
+    allOptIds.forEach(id => {
+      const el = $(id);
+      if(el) {
+        const input = el.querySelector("input") || (el.tagName === "INPUT" ? el : null);
+        if(input) input.checked = false;
+        el.classList.remove("on");
+      }
+    });
+
+    const festivalOpt = $("opt-festival");
+    if(festivalOpt) festivalOpt.style.display = "none";
+    const itSubs = $("it-subs");
+    if(itSubs) itSubs.style.display = "none";
+
+    CKSET.clear();
+    CKS = null;
+    CURR_STAGE = 0;
+    VIEW_ALL_STAGES = false;
+    LAST = null;
+
+    if(typeof syncOpts === "function") syncOpts();
+    showTab("guide");
     showStep("input");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  window.goHome = function() {
+    window.resetAll();
   };
 
   /* ───── 진단 결과 렌더 ───── */
