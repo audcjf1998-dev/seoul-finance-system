@@ -3,7 +3,48 @@
    ========================================================================== */
 
 :root {
-    /* Color Palette (Dark Default) */
+    /* Color Palette (Bright Light Mode Default) */
+    --bg-main: #f4f6fa;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-input: #ffffff;
+    --border-color: #e2e8f0;
+    --border-highlight: #2563eb;
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --text-dark: #0f172a;
+
+    --primary: #1d4fc4;
+    --primary-hover: #1e40af;
+    --primary-glow: rgba(29, 79, 196, 0.15);
+
+    --accent-gold: #d97706;
+    --accent-gold-glow: rgba(217, 119, 6, 0.2);
+
+    --success: #059669;
+    --success-bg: #ecfdf5;
+
+    --warning: #d97706;
+    --warning-bg: #fffbe6;
+
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+
+    --sidebar-width: 280px;
+    --topbar-height: 70px;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-lg: 0 10px 25px rgba(30, 41, 59, 0.06);
+    --shadow-sm: 0 2px 8px rgba(30, 41, 59, 0.04);
+}
+
+/* Dark Mode Overrides (when toggled) */
+body.dark-theme {
     --bg-main: #0b0f19;
     --bg-sidebar: #111827;
     --bg-card: #1f293d;
@@ -14,47 +55,7 @@
 
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
-    --text-dark: #111827;
-
-    --primary: #0068ff;
-    --primary-hover: #0052cc;
-    --primary-glow: rgba(0, 104, 255, 0.35);
-
-    --accent-gold: #ffb800;
-    --accent-gold-glow: rgba(255, 184, 0, 0.3);
-
-    --success: #10b981;
-    --success-bg: rgba(16, 185, 129, 0.15);
-
-    --warning: #f59e0b;
-    --warning-bg: rgba(245, 158, 11, 0.15);
-
-    --danger: #ef4444;
-    --danger-bg: rgba(239, 68, 68, 0.15);
-
-    --sidebar-width: 280px;
-    --topbar-height: 70px;
-    --radius-lg: 16px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
-
-    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-/* Light Mode Overrides */
-body.light-theme {
-    --bg-main: #f8fafc;
-    --bg-sidebar: #ffffff;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f1f5f9;
-    --bg-input: #f1f5f9;
-    --border-color: #e2e8f0;
-    --border-highlight: #0068ff;
-
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* Reset & Base Styles */
@@ -384,8 +385,9 @@ body {
 
 /* Hero Card */
 .hero-card {
-    background: linear-gradient(135deg, #162035 0%, #0d1526 100%);
-    border: 1px solid var(--border-highlight);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4fc4 50%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
     border-radius: var(--radius-lg);
     padding: 32px;
     display: flex;
@@ -394,7 +396,7 @@ body {
     margin-bottom: 24px;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 12px 30px rgba(29, 79, 196, 0.22);
 }
 
 .hero-text {
@@ -405,9 +407,9 @@ body {
 .badge-tag {
     display: inline-block;
     padding: 4px 12px;
-    background: rgba(0, 104, 255, 0.2);
-    border: 1px solid var(--primary);
-    color: #60a5fa;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
     font-size: 0.78rem;
     font-weight: 700;
     border-radius: 20px;
@@ -417,14 +419,15 @@ body {
 .hero-text h2 {
     font-size: 2rem;
     font-weight: 900;
+    color: #ffffff;
     margin-bottom: 10px;
 }
 .hero-text h2 span {
-    color: var(--accent-gold);
+    color: #fbbf24;
 }
 
 .hero-text p {
-    color: var(--text-muted);
+    color: #e2e8f0;
     font-size: 0.95rem;
     margin-bottom: 24px;
 }
@@ -439,14 +442,15 @@ body {
 }
 .hero-metrics .label {
     font-size: 0.78rem;
-    color: var(--text-muted);
+    color: #cbd5e1;
 }
 .hero-metrics .value {
     font-size: 1.45rem;
     font-weight: 800;
+    color: #ffffff;
 }
 .hero-metrics .value.accent {
-    color: var(--accent-gold);
+    color: #fef08a;
 }
 
 .hero-image-wrap {

@@ -15,18 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPageTitleEl = document.getElementById('currentPageTitle');
 
     const tabTitles = {
-        'dashboard': { chapter: '메인 대시보드', title: '서울시 계약 현황 및 지표' },
-        'prep-finder': { chapter: '제1장 계약준비', title: '내 사업 맞춤 계약방법 찾기' },
-        'prep-checklist': { chapter: '제1장 계약준비', title: '발주단계 체크리스트 & 사전심의' },
-        'prep-spec': { chapter: '제1장 계약준비', title: '사전규격 공개 & 발주계획 등록' },
-        'bid-methods': { chapter: '제2장 입찰 및 계약', title: '계약목적물·금액별 낙찰자 결정방법 표' },
-        'bid-private': { chapter: '제2장 입찰 및 계약', title: '수의계약 관리 및 일감몰아주기 차단' },
-        'bid-eval': { chapter: '제2장 입찰 및 계약', title: '적격심사 & 예정가격 계산기' },
-        'bid-proposal': { chapter: '제2장 입찰 및 계약', title: '협상에 의한 계약 (제안서 평가위원회)' },
-        'exec-advance': { chapter: '제3장 계약이행', title: '선금 신청 & 기성정산 계산기' },
-        'exec-payment': { chapter: '제3장 계약이행', title: '검사 및 대가지급 5단계 트래킹' },
-        'exec-penalty': { chapter: '제3장 계약이행', title: '지연배상금 & 하자보수/부정당제재' },
-        'exec-documents': { chapter: '제3장 계약이행', title: '서류 양식함 & 서울계약마당 자료실' }
+        'dashboard': { chapter: '📌 발주 실무 메인', title: '공사 · 용역 · 물품 발주부서 실무 지원' },
+        'prep-finder': { chapter: '제1장 발주 준비', title: '내 사업 맞춤 계약방법 진단 & 타임라인' },
+        'prep-checklist': { chapter: '제1장 발주 준비', title: '5단계 동적 체크리스트 & 사전심의 점검' },
+        'prep-spec': { chapter: '제1장 발주 준비', title: '사전규격 공개 & 발주계획' },
+        'bid-methods': { chapter: '제2장 입찰·계약 판단', title: '금액별 낙찰자 결정기준' },
+        'bid-private': { chapter: '제2장 입찰·계약 판단', title: '수의계약 판단 & 동일업체 횟수 제한' },
+        'bid-eval': { chapter: '제2장 입찰·계약 판단', title: '15개 적격심사 낙찰하한율 & 예가 산출기' },
+        'bid-proposal': { chapter: '제2장 입찰·계약 판단', title: '제안서 평가위원회 (협상에 의한 계약)' },
+        'exec-advance': { chapter: '제3장 계약이행 & 대가', title: '선금 정산식 & 인지세/공채 산출기' },
+        'exec-payment': { chapter: '제3장 계약이행 & 대가', title: '검사 & 대가지급 5단계 트래커' },
+        'exec-penalty': { chapter: '제3장 계약이행 & 대가', title: '지연배상금 & 하자보수/제재 산정' },
+        'exec-documents': { chapter: '제3장 계약이행 & 대가', title: '서류 양식함 & AI 계약 실무 상담' }
     };
 
     navBtns.forEach(btn => {
@@ -70,13 +70,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Dark / Light Theme Toggle
     const themeToggleBtn = document.getElementById('themeToggle');
-    themeToggleBtn.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        document.body.classList.toggle('dark-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        themeToggleBtn.innerHTML = isLight ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
-        if (window.lucide) lucide.createIcons();
-    });
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            document.body.classList.toggle('dark-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            themeToggleBtn.innerHTML = isLight ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+            if (window.lucide) lucide.createIcons();
+        });
+    }
 
     // 3. Mock Contract Data & Table Render
     const mockBids = [

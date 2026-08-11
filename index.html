@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한눈에 보이는 서울계약 | 서울특별시 계약시스템</title>
-    <meta name="description" content="서울특별시 계약업무 매뉴얼 및 발주, 입찰, 수의계약, 적격심사, 계약이행, 대금지급 통합 관리 시스템">
+    <title>서울특별시 발주담당자 계약실무 도우미 | 공사 · 용역 · 물품 계약지원</title>
+    <meta name="description" content="서울특별시 공사, 용역, 물품 발주부서 실무자를 위한 계약방법 진단, 사전심의, 예정가격, 인지세/공채 계산 및 5단계 서류 준비 실무 도우미">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="dark-theme">
+<body class="light-theme">
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
@@ -32,80 +32,80 @@
                     <span class="brand-sub">동행·매력 특별시</span>
                 </div>
                 <h1 class="logo-title">
-                    <i data-lucide="file-check-2"></i>
-                    <span>서울계약<span class="highlight">마당</span></span>
+                    <i data-lucide="compass"></i>
+                    <span>서울계약<span class="highlight">도우미</span></span>
                 </h1>
-                <p class="logo-sub">한눈에 보이는 서울계약 v2.4</p>
+                <p class="logo-sub">발주부서 실무자 맞춤 길잡이 v2.4</p>
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section-title">메인 대시보드</div>
+                <div class="nav-section-title">📌 발주 실무 메인</div>
                 <button class="nav-btn active" data-tab="dashboard">
                     <i data-lucide="layout-dashboard"></i>
-                    <span>계약 현황 대시보드</span>
+                    <span>발주담당자 홈 & 가이드</span>
                 </button>
 
-                <div class="nav-section-title">제1장 계약준비 (발주부서)</div>
+                <div class="nav-section-title">제1장 발주 준비 (발주부서 필수)</div>
                 <button class="nav-btn" data-tab="prep-finder">
                     <i data-lucide="compass"></i>
-                    <span>내 사업 맞춤 계약방법 찾기</span>
+                    <span>내 사업 맞춤 계약방법 진단</span>
                 </button>
                 <button class="nav-btn" data-tab="prep-checklist">
                     <i data-lucide="list-checks"></i>
-                    <span>발주단계 체크리스트 & 사전심의</span>
+                    <span>5단계 체크리스트 & 사전심의</span>
                 </button>
                 <button class="nav-btn" data-tab="prep-spec">
                     <i data-lucide="file-spread-sheet"></i>
-                    <span>사전규격 공개 & 발주계획 등록</span>
+                    <span>사전규격 공개 & 발주계획</span>
                 </button>
 
-                <div class="nav-section-title">제2장 입찰 및 계약 (계약부서)</div>
+                <div class="nav-section-title">제2장 입찰·계약 판단 (계약부서 협의)</div>
                 <button class="nav-btn" data-tab="bid-methods">
                     <i data-lucide="git-pull-request-draft"></i>
-                    <span>금액별 낙찰자 결정방법 표</span>
+                    <span>금액별 낙찰자 결정기준</span>
                 </button>
                 <button class="nav-btn" data-tab="bid-private">
                     <i data-lucide="user-check"></i>
-                    <span>수의계약 (1인·2인전자공개)</span>
+                    <span>수의계약 판단 & 한도</span>
                 </button>
                 <button class="nav-btn" data-tab="bid-eval">
                     <i data-lucide="calculator"></i>
-                    <span>적격심사 & 예정가격 계산기</span>
+                    <span>낙찰하한율 & 예가 산출기</span>
                 </button>
                 <button class="nav-btn" data-tab="bid-proposal">
                     <i data-lucide="users"></i>
-                    <span>협상에 의한 계약 (평가위원회)</span>
+                    <span>제안서 평가위원회 (협상)</span>
                 </button>
 
-                <div class="nav-section-title">제3장 계약이행 & 대금 (공통)</div>
+                <div class="nav-section-title">제3장 계약이행 & 대가 (실무)</div>
                 <button class="nav-btn" data-tab="exec-advance">
                     <i data-lucide="coins"></i>
-                    <span>선금 신청 & 정산 계산기</span>
+                    <span>선금 신청 & 정산식 계산기</span>
                 </button>
                 <button class="nav-btn" data-tab="exec-payment">
                     <i data-lucide="badge-percent"></i>
-                    <span>검사 및 대가지급 5단계 트래킹</span>
+                    <span>검사 & 대가지급 트래커</span>
                 </button>
                 <button class="nav-btn" data-tab="exec-penalty">
                     <i data-lucide="shield-alert"></i>
-                    <span>지연배상금 & 하자보수/제재</span>
+                    <span>지연배상금 & 하자보수</span>
                 </button>
                 <button class="nav-btn" data-tab="exec-documents">
                     <i data-lucide="file-text"></i>
-                    <span>서류 양식함 & 실적증명</span>
+                    <span>서류 양식함 & AI 계약 상담</span>
                 </button>
             </nav>
 
             <div class="sidebar-footer">
                 <div class="user-info">
-                    <div class="avatar"><i data-lucide="shield"></i></div>
+                    <div class="avatar"><i data-lucide="user-check"></i></div>
                     <div class="info">
-                        <span class="name">서울시 재무과</span>
-                        <span class="role">계약총괄팀 관리자</span>
+                        <span class="name">서울시 발주부서 담당자</span>
+                        <span class="role">사업발주 담당관</span>
                     </div>
                 </div>
                 <button id="themeToggle" class="theme-btn" title="다크/라이트 모드 전환">
-                    <i data-lucide="moon"></i>
+                    <i data-lucide="sun"></i>
                 </button>
             </div>
         </aside>
@@ -118,14 +118,14 @@
                     <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="메뉴 열기/닫기">
                         <i data-lucide="menu"></i>
                     </button>
-                    <span id="currentChapter">메인 대시보드</span>
+                    <span id="currentChapter">발주 실무 메인</span>
                     <i data-lucide="chevron-right"></i>
-                    <span id="currentPageTitle" class="active">서울시 계약 현황 및 지표</span>
+                    <span id="currentPageTitle" class="active">공사 · 용역 · 물품 발주부서 실무 지원</span>
                 </div>
                 <div class="top-actions">
                     <div class="search-box">
                         <i data-lucide="search"></i>
-                        <input type="text" id="globalSearch" placeholder="사업명, 공고번호, 계약상대자 검색...">
+                        <input type="text" id="globalSearch" placeholder="사업명, 계약방법, 서류 양식 검색...">
                     </div>
                     <button class="btn btn-outline" id="btnExportData">
                         <i data-lucide="download"></i>
@@ -133,7 +133,7 @@
                     </button>
                     <button class="btn btn-primary" id="btnNewDraft">
                         <i data-lucide="plus-circle"></i>
-                        <span>계약의뢰 기안 작성</span>
+                        <span>신규 계약의뢰 기안 작성</span>
                     </button>
                 </div>
             </header>
@@ -149,26 +149,23 @@
                     <!-- Hero Banner -->
                     <div class="hero-card">
                         <div class="hero-text">
-                            <div class="badge-tag">서울특별시 공식 가이드북 연동</div>
-                            <h2>한눈에 보이는 <span>서울계약</span> 통합 시스템</h2>
-                            <p>지방계약법령 및 서울시 계약 매뉴얼 기준 발주준비부터 입찰, 계약체결, 선금/기성금 지급까지 한눈에 확인하세요.</p>
-                            <div class="hero-metrics">
-                                <div class="metric">
-                                    <span class="label">금년 총 발주금액</span>
-                                    <span class="value">3조 4,820<small>억원</small></span>
-                                </div>
-                                <div class="metric">
-                                    <span class="label">총 계약 건수</span>
-                                    <span class="value">12,450<small>건</small></span>
-                                </div>
-                                <div class="metric">
-                                    <span class="label">수의계약 투명 공개율</span>
-                                    <span class="value accent">100.0<small>%</small></span>
-                                </div>
+                            <div class="badge-tag">서울특별시 발주부서 실무자 전용 도우미</div>
+                            <h2>👋 <span>공사 · 용역 · 물품</span> 발주 실무 길잡이</h2>
+                            <p>계약시스템과 연동하여 사업 발주 전 계약방법 진단, 사전심의, 예정가격, 인지세/공채 계산, 5단계 서류 체크리스트를 한곳에서 챙겨드립니다.</p>
+                            <div class="hero-actions mt-3 flex" style="gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="document.querySelector('.nav-btn[data-tab=\'prep-finder\']').click()">
+                                    <i data-lucide="compass"></i> 내 사업 계약방법 진단하기
+                                </button>
+                                <button class="btn btn-success" onclick="document.querySelector('.nav-btn[data-tab=\'prep-checklist\']').click()">
+                                    <i data-lucide="list-checks"></i> 5단계 체크리스트 생성
+                                </button>
+                                <button class="btn btn-outline" style="background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.4);" onclick="document.querySelector('.nav-btn[data-tab=\'bid-eval\']').click()">
+                                    <i data-lucide="calculator"></i> 낙찰하한율 & 예가 산출
+                                </button>
                             </div>
                         </div>
                         <div class="hero-image-wrap">
-                            <img src="assets/images/seoul_finance_hero.jpg" alt="Seoul Finance Skyline" id="heroImg">
+                            <img src="assets/images/seoul_finance_hero.jpg" alt="Seoul Procurement Officer Helper" id="heroImg">
                         </div>
                     </div>
 
