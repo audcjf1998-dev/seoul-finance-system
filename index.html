@@ -58,6 +58,9 @@
 
       <div class="field">
         <label>③ 해당되면 체크해 주세요 <span style="font-weight:400">(선택)</span></label>
+        <label class="opt" id="opt-none"><input type="checkbox" id="chk-none">
+          <span><span class="t">해당 사항 없음 (일반 수의계약 · 경쟁입찰)</span><br>
+          <span class="s">특례기업·협상·감리·정보화 등 별도 특수 조건 없이 일반 수의계약 또는 경쟁입찰로 진행합니다</span></span></label>
         <label class="opt" id="opt-special"><input type="checkbox">
           <span><span class="t">특례 대상 기업과 계약 예정</span><br>
           <span class="s">장애인기업 · 여성기업 · 사회적기업 · 청년창업기업 등 → 1인 견적 수의 한도가 5천만원으로 확대</span></span></label>
@@ -71,18 +74,21 @@
           <span><span class="t">축제·행사성 사업</span><br>
           <span class="s">재난안전법상 안전관리계획 수립 대상 행사 — 일상감사 기준이 1억원 이상으로 낮아져요</span></span></label>
         <label class="opt" id="opt-gam"><input type="checkbox">
-          <span><span class="t">감리 · 건설기술용역 (공사감리 · 건설사업관리 · 설계 · 안전진단)</span><br>
-          <span class="s">기술용역 타당성 심사, 건설기술심의(PQ·발주심의), 기술용역 낙찰하한율 등 건설엔지니어링 절차를 안내해요</span></span></label>
+          <span><span class="t">건설기술용역 · 공사감리 (건설사업관리 · 설계 · 안전진단)</span><br>
+          <span class="s">건설기술진흥법 적용 — 기술용역 타당성 심사, 건설기술심의(PQ·발주심의), 기술용역 낙찰하한율 절차를 안내해요</span></span></label>
         <label class="opt" id="opt-it"><input type="checkbox">
-          <span><span class="t">정보화사업 (정보시스템 · SW 개발 등)</span><br>
-          <span class="s">SW 개발·구축, 웹사이트·모바일앱, ISP, 상용SW 도입 등 — 예산타당성·과업심의·사전협의 같은 정보화 절차를 함께 안내해요 (서울시 정보화사업 추진절차 지침)</span></span></label>
+          <span><span class="t">정보화사업 · SW 감리 (정보시스템 구축 · SW 개발 등)</span><br>
+          <span class="s">SW 개발·구축, 웹사이트·모바일앱, ISP, SW 감리 — 예산타당성·과업심의·사전협의·정보시스템 감리 절차를 안내해요</span></span></label>
         <div id="it-subs" style="display:none;margin-left:24px">
           <label class="opt on" id="opt-itnew"><input type="checkbox" checked>
             <span><span class="t">신규 사업</span><br>
             <span class="s">유지관리·기능개선 등 계속 사업이면 해제하세요 — 행안부 사전협의는 신규 전체, 계속은 2억원 이상</span></span></label>
           <label class="opt" id="opt-itpub"><input type="checkbox">
             <span><span class="t">대시민 서비스 (웹사이트 · 모바일앱)</span><br>
-            <span class="s">오픈 심의 · 보안취약점 점검 · 성별영향평가 대상이에요</span></span></label>
+            <span class="s">오픈 심의 · 보안취약점 점검 · 성별영향평가 · 1억원 이상 정보시스템 감리 대상이에요</span></span></label>
+          <label class="opt" id="opt-itaudit"><input type="checkbox">
+            <span><span class="t">정보시스템 감리 (SW 감리) 사업</span><br>
+            <span class="s">전자정부법 §57 — 5억원 이상 구축(대국민·공동이용은 1억원 이상) 감리 의무, 20억원 미만 2단계 감리 가능</span></span></label>
         </div>
       </div>
 

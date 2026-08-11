@@ -148,6 +148,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /* ───── "해당 사항 없음" 토글 제어 ───── */
+  const chkNone = $("chk-none");
+  const optNone = $("opt-none");
+  
+  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub", "opt-itaudit"];
+
+  if (chkNone && optNone) {
+    chkNone.addEventListener("change", () => {
+      if (chkNone.checked) {
+        optNone.classList.add("on");
+        specialIds.forEach(id => {
+          const el = $(id);
+          if (el) {
+            const inp = el.querySelector("input");
+            if (inp) inp.checked = false;
+            el.classList.remove("on");
+          }
+        });
+        syncOpts();
+      } else {
+        optNone.classList.remove("on");
+      }
+    });
+
+    specialIds.forEach(id => {
+      const el = $(id);
+      if (el) {
+        const inp = el.querySelector("input");
+        if (inp) {
+          inp.addEventListener("change", () => {
+            if (inp.checked) {
+              chkNone.checked = false;
+              optNone.classList.remove("on");
+            }
+          });
+        }
+      }
+    });
+  }
+
   /* 종류 칩 */
   let KIND = "goods";
   const kindEl = $("kind");
@@ -224,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const it = $("opt-it") ? ($("opt-it").querySelector("input").checked && !k.isC) : false;
     const itNew = it && $("opt-itnew") && $("opt-itnew").querySelector("input").checked;
     const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
+    const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
     const oneLimit = severe ? Infinity : (special ? 5e7 : 2e7);
     const oneOk = p>0 && p<=oneLimit;
@@ -263,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itPub,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+    return {k,p,special,severe,nego,festival,it,itNew,itPub,itAudit,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
   }
 
   /* ───── 타임라인 ───── */
@@ -332,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resultView) {
         resultView.style.display = "block";
         resultView.classList.remove("fade-in");
-        void resultView.offsetWidth; // trigger reflow
+        void resultView.offsetWidth;
         resultView.classList.add("fade-in");
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -341,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inputView) {
         inputView.style.display = "block";
         inputView.classList.remove("fade-in");
-        void inputView.offsetWidth; // trigger reflow
+        void inputView.offsetWidth;
         inputView.classList.add("fade-in");
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -408,12 +449,12 @@ document.addEventListener('DOMContentLoaded', () => {
         :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
     }
 
-    if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 감리 등 건설기술용역은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 협상 체크를 해제하고 진행하세요.</div>';
+    if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 건설기술용역(공사감리·건설사업관리)은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 정보시스템 감리(SW 감리)는 협상 계약 및 SW 관리지침 기준을 적용해요.</div>';
 
-    h += '<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 항목만 표시해요</span></h3>';
+    h += '<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 금액·조건별 필수 절차만 안내해요</span></h3>';
     const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree]];
     if(d.gam){
-      pres.push(["기술용역 타당성 심사", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
+      pres.push(["기술용역 타당성 심사 (건설기술)", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
         : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
         : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null]);
       pres.push(["용역발주심의 (건설기술심의)", d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
@@ -421,11 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pres.push(["사업수행능력(PQ) 세부기준 심의", d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null]);
     }
     if(d.it){
-      pres.push(["과업심의위원회","모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
-      pres.push(["행안부 사전협의",(d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
-      pres.push(["정보통신 보안성 검토","정보시스템 신·증설 — 정보보안과"]);
-      pres.push(["SW사업 영향평가","자체평가 후 사전규격 공개 시 결과 공개"]);
-      pres.push(["예산타당성 심사",d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
+      pres.push(["과업심의위원회 (SW)", "모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
+      pres.push(["행안부 사전협의 (IRM)", (d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
+      pres.push(["정보통신 보안성 검토", "정보시스템 신·증설 — 정보보안과"]);
+      pres.push(["정보시스템 감리 (SW 감리)", (d.itAudit || d.p>=5*E || (d.itPub && d.p>=1*E))
+        ? (d.p>=20*E ? "전자정부법 §57 — 20억 이상 SW 구축: 3단계 감리(착수·중간·종료) 의무"
+        : (d.p>=5*E || (d.itPub && d.p>=1*E)) ? "전자정부법 §57 — 5억 이상(대국민 1억 이상) 의무 감리 · 20억 미만·6개월 미만 2단계 감리 가능" : "SW 감리 대상 여부 검토") : null]);
+      pres.push(["SW사업 영향평가", "자체평가 후 사전규격 공개 시 결과 공개"]);
+      pres.push(["예산타당성 심사", d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
     }
     const hit = pres.filter(x=>x[1]);
     if(hit.length){
@@ -493,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"예산타당성 심사 이행 확인","신규 구축·SW개발 포함 사업 — 정보시스템과 (전년도 정기 7~9월 · 소요 30일)","필수",d.it&&d.itNew);
     add(P,"과업심의위원회 심의","모든 SW사업 · 과업내용 확정, SW개발 시 적정 사업기간 산정 — 1억 이하·상용SW 구매는 간소화","필수",d.it);
     add(P,"행안부 사전협의 (irm.go.kr)","발주 40일 전 신청 · 검토 30일 — 미이행 시 사전협의 이행 후 재공고 대상","필수",d.it&&(d.itNew||d.p>=2*E));
+    add(P,"정보시스템 감리 (SW 감리) 이행","전자정부법 §57 — 5억 이상(대국민 1억 이상) 감리 의무, 전문 감리기관 계약","필수",d.it&&(d.itAudit||d.p>=5*E||(d.itPub&&d.p>=1*E)));
     add(P,"SW사업 영향평가 (자체)","사전규격 공개 시 결과 공개 · 1억 이상 신규 개발은 발주 30일 전 과기부 검토요청","필수",d.it);
     add(P,"정보통신 보안성 검토","정보보안과 의뢰 — 결과 제안요청서 반영 (준공 1주 전 보안점검표 별도)","필수",d.it);
     add(P,"상용SW 직접구매 대상 검토","3억 이상 + 조달 등록 SW 포함 시 구매계획 첨부 · 경쟁입찰 구매 시 BMT 검토","필수",d.it&&d.p>=3*E);
@@ -544,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(C,"하도급 제한사항 확인","SW사업 50% 초과 하도급 금지 · 재하도급 원칙 금지 · 하도급계획서 (공고문 명시)","필수",d.it);
     add(I,"착수계 제출 확인","발주부서·계약부서 각 1부 (전자제출 원칙)","권장",d.rec==="nego");
     add(I,"사업수행계획서 검토·승인","계약 후 10일 이내 착수계(수행계획서·보안서약서 포함) 검토","권장",d.it);
-    add(I,"정보시스템 감리","5억 이상 구축 의무 (대국민·다수부서 공동은 1억 이상) — 20억 미만 2단계 가능","필수",d.it&&d.p>=5*E);
+    add(I,"정보시스템 감리","5억 이상 구축 의무 (대국민·다수부서 공동은 1억 이상) — 20억 미만 2단계 가능","필수",d.it&&(d.itAudit||d.p>=5*E||(d.itPub&&d.p>=1*E)));
     add(I,"과업 변경 시 과업심의위원회","계약금액·기간 조정이 따르는 변경은 심의 후 변경계약","권장",d.it);
     add(I,"감독 · 검사공무원 지정","공사·용역 이행 관리","권장",true);
     add(I,"건설기계 임대료 지급 확인","'26년 신설 제도 — 건설기계 대여대금 체불 방지, 지급 확인 (매뉴얼 p.278)","권장",d.k.isC);
