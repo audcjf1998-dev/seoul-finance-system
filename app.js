@@ -406,8 +406,14 @@ document.addEventListener('DOMContentLoaded', () => {
       resEl.innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력해 주세요 🙂</p></div>'; 
       return; 
     }
-    let h = '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
 
+    let h = '<div class="result-grid-layout">';
+    
+    // LEFT COLUMN (주요 계약 방식 & 사전절차)
+    h += '<div class="result-col-main">';
+    
+    // 1. 추천 계약 방법 카드
+    h += '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
     if(d.rec==="nego"){
       h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
         +'<p>'+(d.itAudit
@@ -454,10 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ?'정보화·SW사업은 보통 협상에 의한 계약으로 발주해요. ③에서 「협상에 의한 계약」을 함께 체크하면 절차와 배점을 협상 기준으로 안내해 드려요.'
         :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
     }
+    h += '</div>'; // End Left Main Card 1
 
-    if(d.gam && d.rec==="nego" && !d.itAudit) h += '<div class="warnbox">🧐 <b>건설기술용역(공사감리·건설사업관리)</b>은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요.<br>💡 반면 <b>정보시스템 감리(SW 감리)</b>는 전자정부법 §57에 따라 <b>협상에 의한 계약(기술 90:가격 10)</b>으로 진행해야 합니다.</div>';
-
-    h += '<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 금액·조건별 필수 절차만 안내해요</span></h3>';
+    // 2. 사전 확인 절차 카드
+    h += '<div class="card" style="margin-top:20px;">'
+      +'<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 필수 절차만 안내해 드려요</span></h3>';
     const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree]];
     if(d.gam){
       pres.push(["기술용역 타당성 심사 (건설기술)", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
@@ -485,14 +492,25 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       h += '<div class="verdict"><span class="big">🎈</span><div><b>필수 사전절차 대상이 없어요</b><small>이 금액·조건에서는 일상감사 · 원가심사 · 재정합의 등 대상이 아니에요</small></div></div>';
     }
+    if(d.gam && d.rec==="nego" && !d.itAudit) h += '<div class="warnbox">🧐 <b>건설기술용역(공사감리·건설사업관리)</b>은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요.<br>💡 반면 <b>정보시스템 감리(SW 감리)</b>는 전자정부법 §57에 따라 <b>협상에 의한 계약(기술 90:가격 10)</b>으로 진행해야 합니다.</div>';
     if(d.rec!=="bid"){
       h += '<div class="warnbox">🔍 수의계약 시 유의 — 금액 기준을 피하려는 <b>분리발주(쪼개기)는 금지</b>돼요(령 §77). 1인 견적은 동일업체와 실·국 연 4회 / 시 전체 연 9회까지, 변경계약도 수의 기준금액(계약금액 소액 2,200만원 · 여성기업 등 5,500만원) 안에서만 가능해요.</div>';
       if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
     }
+    h += '</div>'; // End Left Main Card 2
 
-    h += '<h3>⏱️ 예상 진행 일정</h3>' + buildTimeline(d);
-    h += '<div style="margin-top:16px"><button class="btn" onclick="makeChecklist()">✅ 이 조건으로 체크리스트 만들기</button></div>';
-    h += '</div>';
+    h += '</div>'; // End Left Column (result-col-main)
+
+    // RIGHT COLUMN (예상 진행 일정 & 체크리스트 실행)
+    h += '<div class="result-col-side">'
+      +'<div class="card sticky-side-card">'
+      +'<h3>⏱️ 예상 진행 일정</h3>' + buildTimeline(d)
+      +'<div style="margin-top:20px"><button class="btn" style="width:100%;padding:14px;font-size:1.05rem;" onclick="makeChecklist()">✅ 이 조건으로 체크리스트 만들기</button></div>'
+      +'</div>'
+      +'</div>'; // End Right Column (result-col-side)
+
+    h += '</div>'; // End Grid Layout (result-grid-layout)
+
     resEl.innerHTML = h;
     LAST = d;
     if (window.attachLegalTooltips) window.attachLegalTooltips();
