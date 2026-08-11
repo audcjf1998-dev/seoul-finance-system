@@ -259,13 +259,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const k = KINFO[KIND], p = num($("price"));
     const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
     const severe = $("opt-severe") ? ($("opt-severe").querySelector("input").checked && !k.isC) : false;
-    const nego = $("opt-nego") ? ($("opt-nego").querySelector("input").checked && !k.isC) : false;
-    const festival = nego && $("opt-festival") && $("opt-festival").querySelector("input").checked;
+    const rawNego = $("opt-nego") ? ($("opt-nego").querySelector("input").checked && !k.isC) : false;
+    const festival = rawNego && $("opt-festival") && $("opt-festival").querySelector("input").checked;
     const it = $("opt-it") ? ($("opt-it").querySelector("input").checked && !k.isC) : false;
     const itNew = it && $("opt-itnew") && $("opt-itnew").querySelector("input").checked;
     const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
     const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
+
+    // SW 감리는 법령(전자정부법 §57, SW진흥법)상 협상에 의한 계약 필수 대상!
+    const nego = rawNego || itAudit;
+
     const oneLimit = severe ? Infinity : (special ? 5e7 : 2e7);
     const oneOk = p>0 && p<=oneLimit;
     const twoOk = p>0 && p<=k.two;
@@ -406,14 +410,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(d.rec==="nego"){
       h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
-        +'<p>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)</p>'
-        +'<div class="tags">'+(d.it
-          ? tagHtml("기술 90 : 가격 10 (SW사업 준수사항)", "v") + tagHtml("협상적격 — 기술점수 85%↑", "b")
+        +'<p>'+(d.itAudit
+          ? '전자정부법 §57 및 소프트웨어 진흥법에 따라 <b>정보시스템 감리(SW 감리) 용역은 제안서 평가(기술 90 : 가격 10) 협상 계약</b>으로 발주합니다.'
+          : '전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)')+'</p>'
+        +'<div class="tags">'+((d.it || d.itAudit)
+          ? tagHtml("기술 90 : 가격 10 (SW사업·감리 준수)", "v") + tagHtml("협상적격 — 기술점수 85%↑", "b")
           : tagHtml("배점 100 = 정량 20 + 정성 60 + 가격 20", "v") + tagHtml("협상적격 종합 70점↑", "b"))
         + tagHtml("공고 "+d.noticeDays+"일", "o")
         + tagHtml("령 §43·§44", "g")
-        + tagHtml("낙찰자 결정기준 제7장", "g") +'</div></div>';
-      if(d.oneOk||d.twoOk) h += '<p class="note">금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.</p>';
+        + tagHtml(d.itAudit ? "전자정부법 §57" : "낙찰자 결정기준 제7장", "g") +'</div></div>';
+      if(d.oneOk||d.twoOk) h += '<p class="note">'+(d.itAudit ? 'SW 감리 용역은 전문·기술성 평가를 위해 협상에 의한 계약 절차로 안내해 드려요.' : '금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.')+'</p>';
       h += '<p class="note">분야별 배점은 ±10점 범위에서 조정할 수 있어요. 대상 여부(지식기반사업 등)는 「📚 기준 한눈에」에서 확인하세요.</p>';
     } else {
       if(d.oneOk){
@@ -449,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
     }
 
-    if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 건설기술용역(공사감리·건설사업관리)은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 정보시스템 감리(SW 감리)는 협상 계약 및 SW 관리지침 기준을 적용해요.</div>';
+    if(d.gam && d.rec==="nego" && !d.itAudit) h += '<div class="warnbox">🧐 <b>건설기술용역(공사감리·건설사업관리)</b>은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요.<br>💡 반면 <b>정보시스템 감리(SW 감리)</b>는 전자정부법 §57에 따라 <b>협상에 의한 계약(기술 90:가격 10)</b>으로 진행해야 합니다.</div>';
 
     h += '<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 금액·조건별 필수 절차만 안내해요</span></h3>';
     const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree]];
