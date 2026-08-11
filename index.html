@@ -40,13 +40,24 @@
   </div>
 </div>
 
-<div class="tabs">
-  <button class="tab on" data-p="guide">🧭 맞춤 안내</button>
-  <button class="tab" data-p="check">✅ 체크리스트</button>
-  <button class="tab" data-p="calc">🧮 계산 도우미</button>
-  <button class="tab" data-p="rate">📊 낙찰하한율</button>
-  <button class="tab" data-p="g2b">🌐 조달청 API</button>
-  <button class="tab" data-p="ref">📚 기준 한눈에</button>
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab on" data-p="guide">🧭 맞춤 안내</button>
+    <button class="tab" data-p="check">✅ 체크리스트</button>
+    <button class="tab" data-p="calc">🧮 계산 도우미</button>
+    <button class="tab" data-p="rate">📊 낙찰하한율</button>
+    <button class="tab" data-p="g2b">🌐 조달청 API</button>
+    <button class="tab" data-p="ref">📚 기준 한눈에</button>
+  </div>
+  <div class="save-load-btn-group">
+    <button class="btn-saveload save" onclick="window.saveProgressFile()" title="현재 계약 조건과 체크리스트 상태를 파일로 저장합니다">
+      💾 진행상황 저장
+    </button>
+    <button class="btn-saveload load" onclick="window.triggerLoadFile()" title="저장해둔 계약 점검 파일(.json)을 불러옵니다">
+      📂 불러오기
+    </button>
+    <input type="file" id="load-file-input" accept=".json" style="display:none" onchange="window.loadProgressFile(this.files[0])">
+  </div>
 </div>
 
 <!-- ─────────── 1. 맞춤 안내 ─────────── -->

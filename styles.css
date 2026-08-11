@@ -309,15 +309,70 @@ body {
   box-shadow: 0 2px 10px rgba(37, 99, 235, 0.1);
 }
 
-/* ─────────────────── 탭 바 (Segmented Nav) ─────────────────── */
+/* ─────────────────── 탭 바 & 저장/불러오기 버튼 ─────────────────── */
+.tabs-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
   background: #e2e8f0;
   padding: 6px;
   border-radius: 99px;
+}
+
+.save-load-btn-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-saveload {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  border-radius: 99px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-saveload:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.btn-saveload.save {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.btn-saveload.save:hover {
+  background: #dbeafe;
+}
+
+.btn-saveload.load {
+  border-color: #bbf7d0;
+  color: #047857;
+  background: #f0fdf4;
+}
+
+.btn-saveload.load:hover {
+  background: #dcfce7;
 }
 
 .tab {

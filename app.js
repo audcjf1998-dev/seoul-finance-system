@@ -1089,4 +1089,148 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  /* ───── Save / Load Progress System (파일 저장 & 불러오기 & LocalStorage 자동저장) ───── */
+
+  function getCurrentStateObj() {
+    const p = num($("price"));
+    return {
+      version: "1.0",
+      savedAt: new Date().toLocaleString("ko-KR"),
+      kind: KIND,
+      price: p,
+      options: {
+        none: $("chk-none") ? $("chk-none").checked : false,
+        special: $("opt-special") ? $("opt-special").querySelector("input").checked : false,
+        severe: $("opt-severe") ? $("opt-severe").querySelector("input").checked : false,
+        nego: $("opt-nego") ? $("opt-nego").querySelector("input").checked : false,
+        festival: $("opt-festival") ? $("opt-festival").querySelector("input").checked : false,
+        gam: $("opt-gam") ? $("opt-gam").querySelector("input").checked : false,
+        it: $("opt-it") ? $("opt-it").querySelector("input").checked : false,
+        itNew: $("opt-itnew") ? $("opt-itnew").querySelector("input").checked : false,
+        itPub: $("opt-itpub") ? $("opt-itpub").querySelector("input").checked : false,
+        itAudit: $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false
+      },
+      currStage: CURR_STAGE,
+      viewAllStages: VIEW_ALL_STAGES,
+      checkedIds: Array.from(CKSET)
+    };
+  }
+
+  function autoSaveLocal() {
+    try {
+      const state = getCurrentStateObj();
+      localStorage.setItem("seoul_contract_state", JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  window.saveProgressFile = function() {
+    if(!LAST || !LAST.p) {
+      alert("먼저 조건 입력 후 [진단 결과 보기 →]를 눌러 실행해 주세요 🙂");
+      return;
+    }
+    const state = getCurrentStateObj();
+    const jsonStr = JSON.stringify(state, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const kindName = KINFO[KIND] ? KINFO[KIND].name : "계약";
+    const priceText = state.price ? korUnit(state.price).replace(/\s+/g, "") : "미입력";
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const fileName = `서울계약_점검현황_${kindName}_${priceText}_${dateStr}.json`;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  window.loadProgressFile = function(file) {
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const state = JSON.parse(e.target.result);
+        restoreStateObj(state);
+        const stageName = STAGES[state.currStage] ? STAGES[state.currStage].name : "진행 단계";
+        const count = state.checkedIds ? state.checkedIds.length : 0;
+        alert(`🎉 계약 점검 파일을 성공적으로 불러왔습니다!\n\n• 저장 일시: ${state.savedAt || '기록 없음'}\n• 현재 단계: ${stageName}\n• 체크 완료 항목: 총 ${count}건`);
+      } catch(err) {
+        alert("⚠️ 올바른 저장 파일(.json) 형식이 아니에요.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  window.triggerLoadFile = function() {
+    const fileInput = $("load-file-input");
+    if(fileInput) fileInput.click();
+  };
+
+  function restoreStateObj(state) {
+    if(!state) return;
+    if(state.kind && KINFO[state.kind]) {
+      KIND = state.kind;
+      document.querySelectorAll(".kopt").forEach(b => {
+        b.classList.toggle("on", b.dataset.k === KIND);
+      });
+    }
+    if(state.price !== undefined) {
+      const priceInput = $("price");
+      if(priceInput) {
+        priceInput.value = state.price ? state.price.toLocaleString("ko-KR") : "";
+        syncPriceText();
+      }
+    }
+    if(state.options) {
+      const opts = state.options;
+      const setChk = (id, val) => {
+        const el = $(id);
+        if(!el) return;
+        const input = el.querySelector("input") || (el.tagName === "INPUT" ? el : null);
+        if(input) {
+          input.checked = !!val;
+          el.classList.toggle("on", !!val);
+        }
+      };
+      setChk("chk-none", opts.none);
+      setChk("opt-special", opts.special);
+      setChk("opt-severe", opts.severe);
+      setChk("opt-nego", opts.nego);
+      setChk("opt-festival", opts.festival);
+      setChk("opt-gam", opts.gam);
+      setChk("opt-it", opts.it);
+      setChk("opt-itnew", opts.itNew);
+      setChk("opt-itpub", opts.itPub);
+      setChk("opt-itaudit", opts.itAudit);
+    }
+    if(window.syncOpts) window.syncOpts();
+
+    const d = decide();
+    LAST = d;
+    renderResult();
+
+    CKS = ckItems(d);
+    CKSET = new Set(state.checkedIds || []);
+    CURR_STAGE = state.currStage !== undefined ? state.currStage : 0;
+    VIEW_ALL_STAGES = !!state.viewAllStages;
+
+    renderCk();
+    showTab("check");
+    autoSaveLocal();
+  }
+
+  // Restore from LocalStorage on page load if present
+  try {
+    const localSaved = localStorage.getItem("seoul_contract_state");
+    if(localSaved) {
+      const parsed = JSON.parse(localSaved);
+      if(parsed && parsed.price) {
+        restoreStateObj(parsed);
+      }
+    }
+  } catch(e) {}
 });
