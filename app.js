@@ -1133,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="ev-modal-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
           <div>
-            <h3 style="margin:0;color:#1e40af;font-size:1.15rem;">✍️ 위원 ${memberIdx + 1} 세부 평가 점수 입력</h3>
+            <h3 style="margin:0;color:#1e40af;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 점수 입력</h3>
             <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
           </div>
           <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
@@ -1163,12 +1163,12 @@ document.addEventListener('DOMContentLoaded', () => {
     h += `
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;background:#eff6ff;padding:12px 18px;border-radius:12px;border:1.5px solid #bfdbfe;margin-bottom:20px;">
-          <b style="color:#1d4ed8;font-size:1.05rem;">✨ 이 위원의 정성평가 총점</b>
+          <b style="color:#1d4ed8;font-size:1.05rem;">이 위원의 정성평가 총점</b>
           <span style="font-size:1.2rem;font-weight:900;color:#1d4ed8;" id="modal-calculated-total">0.00 / 60점</span>
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;">
           <button type="button" class="btn ghost close-modal">취소</button>
-          <button type="button" class="btn" id="modal-save-btn" style="background:#2563eb;">💾 점수 저장 완료</button>
+          <button type="button" class="btn" id="modal-save-btn" style="background:#2563eb;">점수 저장 완료</button>
         </div>
       </div>
     `;
@@ -1240,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="ev-modal-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
           <div>
-            <h3 style="margin:0;color:#0f766e;font-size:1.15rem;">🔍 위원 ${memberIdx + 1} 세부 평가 내역</h3>
+            <h3 style="margin:0;color:#0f766e;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 내역</h3>
             <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
           </div>
           <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
@@ -1263,7 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     h += `
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;padding:14px 18px;border-radius:12px;border:1.5px solid #bbf7d0;margin-bottom:20px;">
-          <b style="color:#047857;font-size:1.05rem;">⭐ 이 위원의 정성평가 총점</b>
+          <b style="color:#047857;font-size:1.05rem;">이 위원의 정성평가 총점</b>
           <span style="font-size:1.25rem;font-weight:900;color:#047857;">${totalSum.toFixed(2)} / 60점</span>
         </div>
         <div style="display:flex;justify-content:flex-end;">
@@ -1329,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <button type="button" class="rm" title="행 삭제">✕</button>
       </div>
       <div class="ev-row-bottom">
-        <span style="font-size:0.84rem;font-weight:700;color:var(--sub);white-space:nowrap;">✍️ 위원별 세부평가 점수:</span>
+        <span style="font-size:0.84rem;font-weight:700;color:var(--sub);white-space:nowrap;">위원별 세부평가 점수:</span>
         <div class="ev-quals-wrap" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
       </div>
     `;
@@ -1457,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // TABLE 1: SUMMARY RANKING TABLE
       let h = '<div style="margin-top:20px;margin-bottom:24px;">';
-      h += '<h3 style="color:#1e40af;margin-bottom:8px;">🏆 1. 제안서 종합 평가 및 낙찰 적격 판정 결과</h3>';
+      h += '<h3 style="color:#1e40af;margin-bottom:8px;">1. 제안서 종합 평가 및 낙찰 적격 판정 결과</h3>';
       h += '<div class="res" style="overflow-x:auto"><table>';
       h += '<tr><th>순위</th><th>업체명</th><th>입찰가 (예가 대비)</th><th>정량점수</th><th>정성평균(최고·최저 제외)</th><th>가격평점</th><th>기술점수</th><th>종합점수</th><th>적격 여부</th></tr>';
       rows.forEach(r => {
@@ -1476,13 +1476,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // TABLE 2: DETAILED COMMITTEE MEMBER SCORE BREAKDOWN MATRIX WITH LINKS
       h += '<div style="margin-top:20px;margin-bottom:16px;">';
-      h += '<h3 style="color:#0f766e;margin-bottom:8px;">📝 2. 위원별 정성적 평가 세부 집계표 (최고·최저 총점 제외 내역)</h3>';
+      h += '<h3 style="color:#0f766e;margin-bottom:8px;">2. 위원별 정성적 평가 세부 집계표 (최고·최저 총점 제외 내역)</h3>';
       h += '<div class="res" style="overflow-x:auto"><table>';
       h += '<tr><th>업체명</th>';
       for (let m = 1; m <= memberCount; m++) {
         h += `<th>위원 ${m}</th>`;
       }
-      h += '<th>🔴 최고 총점 (제외 위원)</th><th>🔵 최저 총점 (제외 위원)</th><th>⭐ 최종 정성평균</th></tr>';
+      h += '<th>최고 총점 (제외 위원)</th><th>최저 총점 (제외 위원)</th><th>최종 정성평균</th></tr>';
 
       rows.forEach(r => {
         const qd = r.qualDetail;
@@ -1494,9 +1494,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (scoreVal === null) {
             h += '<td style="color:#94a3b8;">미입력</td>';
           } else if (qd.trim && qd.maxMember && qd.maxMember.memberIdx === m) {
-            h += `<td><button class="btn-member-link max-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">🔴 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
+            h += `<td><button class="btn-member-link max-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">[최고 제외] 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
           } else if (qd.trim && qd.minMember && qd.minMember.memberIdx === m) {
-            h += `<td><button class="btn-member-link min-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">🔵 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
+            h += `<td><button class="btn-member-link min-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">[최저 제외] 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
           } else {
             h += `<td><button class="btn-member-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
           }

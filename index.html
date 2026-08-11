@@ -42,25 +42,25 @@
 
 <div class="tabs-wrap">
   <div class="tabs">
-    <button class="tab on" data-p="guide">🧭 맞춤 안내</button>
-    <button class="tab" data-p="check">✅ 체크리스트</button>
-    <button class="tab" data-p="calc">🧮 계산 도우미</button>
-    <button class="tab" data-p="rate">📊 낙찰하한율</button>
-    <button class="tab" data-p="g2b">🌐 조달청 API</button>
-    <button class="tab" data-p="ref">📚 기준 한눈에</button>
+    <button class="tab on" data-p="guide">맞춤 안내</button>
+    <button class="tab" data-p="check">체크리스트</button>
+    <button class="tab" data-p="calc">계산 도우미</button>
+    <button class="tab" data-p="rate">낙찰하한율</button>
+    <button class="tab" data-p="g2b">조달청 API</button>
+    <button class="tab" data-p="ref">기준 한눈에</button>
   </div>
   <div class="save-load-btn-group">
     <button class="btn-saveload home" onclick="window.goHome()" title="첫 화면(조건 입력)으로 이동">
-      🏠 홈으로
+      홈으로
     </button>
     <button class="btn-saveload reset" onclick="window.resetAll()" title="이전 입력을 초기화하고 새로 시작합니다">
-      🔄 새로 시작
+      새로 시작
     </button>
     <button class="btn-saveload save" onclick="window.saveProgressFile()" title="현재 계약 조건과 체크리스트 상태를 파일로 저장합니다">
-      💾 진행상황 저장
+      진행상황 저장
     </button>
     <button class="btn-saveload load" onclick="window.triggerLoadFile()" title="저장해둔 계약 점검 파일(.json)을 불러옵니다">
-      📂 불러오기
+      불러오기
     </button>
     <input type="file" id="load-file-input" accept=".json" style="display:none" onchange="window.loadProgressFile(this.files[0])">
   </div>
@@ -78,7 +78,7 @@
         </div>
         <div class="speech-content">
           <div class="speech-title">
-            <span class="heart-icon">🩷</span> <b>해치와 소울프렌즈가 안내해 드려요!</b>
+            <b>해치와 소울프렌즈가 안내해 드려요!</b>
           </div>
           <p>어떤 계약을 준비하시나요? 아래 두 가지만 선택해주시면 서울시 맞춤 발주 절차를 꼼꼼하게 챙겨드릴게요.</p>
         </div>
@@ -90,11 +90,11 @@
       <div class="field">
         <label>① 계약 종류</label>
         <div class="chips" id="kind">
-          <button class="chip on" data-k="goods">📦 물품</button>
-          <button class="chip" data-k="service">🧾 용역</button>
-          <button class="chip" data-k="gc">🏗️ 종합공사</button>
-          <button class="chip" data-k="sc">🔧 전문공사</button>
-          <button class="chip" data-k="oc">⚡ 그 밖의 공사</button>
+          <button class="chip on" data-k="goods">물품</button>
+          <button class="chip" data-k="service">용역</button>
+          <button class="chip" data-k="gc">종합공사</button>
+          <button class="chip" data-k="sc">전문공사</button>
+          <button class="chip" data-k="oc">그 밖의 공사</button>
         </div>
         <p class="note">그 밖의 공사: 전기 · 정보통신 · 소방시설 · 문화재수리 등</p>
       </div>
@@ -108,10 +108,10 @@
       <div class="field">
         <label>③ 해당되면 체크해 주세요 <span style="font-weight:400">(선택)</span></label>
         <label class="opt" id="opt-sui"><input type="checkbox" id="chk-sui">
-          <span><span class="t">🤝 일반 수의계약으로 진행 (소액 수의계약)</span><br>
+          <span><span class="t">일반 수의계약으로 진행 (소액 수의계약)</span><br>
           <span class="s">추정가격 소액 수의 한도 이내 (물품·용역 5,500만원 이하 / 공사 2억원 이하) 1인 또는 2인 전자견적 수의계약</span></span></label>
         <label class="opt" id="opt-bid"><input type="checkbox" id="chk-bid">
-          <span><span class="t">📣 일반 경쟁입찰로 진행 (일반 · 제한 · 지명경쟁)</span><br>
+          <span><span class="t">일반 경쟁입찰로 진행 (일반 · 제한 · 지명경쟁)</span><br>
           <span class="s">수의계약 한도를 초과하거나 공개 입찰 경쟁으로 낙찰자를 선정하는 사업</span></span></label>
         <label class="opt" id="opt-none"><input type="checkbox" id="chk-none">
           <span><span class="t">해당 사항 없음 (금액에 맞춰 자동 판정)</span><br>
@@ -279,17 +279,17 @@
   </details>
 
   <details open>
-    <summary>🗣️ 협상 제안서 평가 계산기 (정성 세부항목 · 위원별 개별평가 · 최고최저 제외 자동집계)</summary>
+    <summary>협상 제안서 평가 계산기 (정성 세부항목 · 위원별 개별평가 · 최고최저 제외 자동집계)</summary>
     <div class="in">
       <p class="note" style="margin:2px 0 14px">행안부 예규 및 서울특별시 낙찰자 결정기준에 따라 <b>정성적 평가 세부항목별 점수 산출</b>과 <b>최고·최저 총점 위원 제외 최종 정성평균</b>을 자동으로 처리해요.</p>
 
       <!-- STAGE 1: 정성평가 기준 설정 -->
       <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-          <h4 style="margin:0;color:#1e40af;font-size:1.02rem;display:flex;align-items:center;gap:6px;">
-            ⚙️ 1단계. 평가 기준 및 정성적 평가 세부항목 설정 (총 배점: 60점)
+          <h4 style="margin:0;color:#1e40af;font-size:1.02rem;">
+            1단계. 평가 기준 및 정성적 평가 세부항목 설정 (총 배점: 60점)
           </h4>
-          <button type="button" class="btn ghost" id="ev-reset-criteria" style="padding:4px 10px;font-size:0.82rem;">⚙️ 기본 항목 초기화</button>
+          <button type="button" class="btn ghost" id="ev-reset-criteria" style="padding:4px 10px;font-size:0.82rem;">기본 항목 초기화</button>
         </div>
 
         <div class="grid2" style="margin-bottom:12px;">
@@ -312,7 +312,7 @@
         <!-- Dynamic Items Table for 60 points -->
         <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;padding:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-weight:800;font-size:0.9rem;color:#334155;">📋 정성적 평가 세부항목 및 항목별 배점</span>
+            <span style="font-weight:800;font-size:0.9rem;color:#334155;">정성적 평가 세부항목 및 항목별 배점</span>
             <span id="ev-criteria-sum-badge" style="font-size:0.85rem;font-weight:800;padding:4px 10px;border-radius:99px;background:#dbeafe;color:#1d4ed8;">
               배점 합계: 60 / 60점
             </span>
@@ -328,11 +328,11 @@
       <!-- STAGE 2: 업체별 & 위원별 점수 입력 -->
       <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-          <h4 style="margin:0;color:#0f766e;font-size:1.02rem;display:flex;align-items:center;gap:6px;">
-            ✍️ 2단계. 업체 및 평가위원별 점수 입력
+          <h4 style="margin:0;color:#0f766e;font-size:1.02rem;">
+            2단계. 업체 및 평가위원별 점수 입력
           </h4>
           <div style="display:flex;align-items:center;gap:8px;">
-            <label style="font-size:0.88rem;font-weight:700;color:var(--sub)">👥 평가위원 수:</label>
+            <label style="font-size:0.88rem;font-weight:700;color:var(--sub)">평가위원 수:</label>
             <select id="ev-member-count" style="padding:6px 12px;border-radius:10px;border:1.5px solid #0d9488;font-weight:800;color:#0f766e;background:#ccfbf1;">
               <option value="3">3명</option>
               <option value="5">5명</option>
@@ -349,7 +349,7 @@
         <div id="ev-rows"></div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button type="button" class="btn ghost" id="ev-add">＋ 업체 추가</button>
-          <button type="button" class="btn" id="ev-run" style="background:#0d9488;">📊 3단계. 제안서 평가 계산 및 집계표 산출</button>
+          <button type="button" class="btn" id="ev-run" style="background:#0d9488;">3단계. 제안서 평가 계산 및 집계표 산출</button>
         </div>
       </div>
 
