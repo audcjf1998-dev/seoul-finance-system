@@ -48,7 +48,6 @@
     <button class="tab" data-p="rate">낙찰하한율</button>
     <button class="tab" data-p="g2b">조달청 API</button>
     <button class="tab" data-p="ref">기준 한눈에</button>
-    <button class="tab" data-p="gpt">AI 계약 Q&A</button>
     <button class="tab" data-p="forms">계약서식 모음</button>
   </div>
   <div class="save-load-btn-group">
@@ -655,61 +654,7 @@
 
 </section>
 
-<!-- ─────────── 7. AI 계약 Q&A (GPT API 연동) ─────────── -->
-<section class="panel" id="p-gpt">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-      <div>
-        <h2 style="margin:0;color:#1e40af;display:flex;align-items:center;gap:8px;">🤖 AI 지방계약 전문 Q&A 도우미</h2>
-        <p class="desc" style="margin:4px 0 0;">OpenAI GPT API를 연동하여 지방계약법, 행안부 예규, 서울시 회계규칙 관련 궁금증을 실시간으로 자문해 드립니다.</p>
-      </div>
-      <button type="button" class="btn ghost" id="btn-gpt-clear" style="padding:6px 12px;font-size:0.84rem;">대화 초기화</button>
-    </div>
-
-    <!-- API Key Setting Box -->
-    <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-        <span style="font-weight:800;font-size:0.92rem;color:#1d4ed8;">🔑 OpenAI API Key 설정</span>
-        <small style="color:#64748b;">* Key는 브라우저 LocalStorage에만 안전하게 저장됩니다.</small>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <input type="password" id="gpt-api-key" placeholder="sk-proj-..." style="flex:1;min-width:240px;height:40px;padding:8px 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-family:monospace;">
-        <select id="gpt-model" style="height:40px;padding:0 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-weight:700;color:#334155;">
-          <option value="gpt-4o-mini" selected>gpt-4o-mini (빠름 · 추천)</option>
-          <option value="gpt-4o">gpt-4o (고성능)</option>
-          <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-        </select>
-        <button type="button" class="btn pri-btn" id="btn-save-gpt-key" style="height:40px;padding:0 16px;font-size:0.88rem;">키 저장</button>
-      </div>
-    </div>
-
-    <!-- Preset Prompt Chips -->
-    <div style="margin-bottom:14px;">
-      <span style="font-size:0.85rem;font-weight:800;color:#475569;margin-right:8px;">💡 자주 묻는 질문 퀵 클릭:</span>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-        <button type="button" class="preset-chip-btn" data-q="1인 견적 수의계약 대상 및 5천만원 한도 특례 적용 조건과 수의계약 체결제한 서식에 대해 알려줘.">1인 수의 한도 & 특례 조건</button>
-        <button type="button" class="preset-chip-btn" data-q="SW사업 정보화 추진 시 사전협의, 보안성검토, 과업심의위원회 필수 대상 기준을 정리해줘.">SW사업 사전 절차 기준</button>
-        <button type="button" class="preset-chip-btn" data-q="지연배상금 요율(공사, 용역, 물품) 및 면제 기준, 10% 이상 시 계약 해제 사유에 대해 설명해줘.">지연배상금 요율 및 해제 사유</button>
-        <button type="button" class="preset-chip-btn" data-q="협상에 의한 계약 평가위원회 구성 방법과 정성평가 최고·최저 총점 제외 산출 방식을 알려줘.">협상계약 위원구성 및 산출방식</button>
-      </div>
-    </div>
-
-    <!-- Chat Display Area -->
-    <div class="gpt-chat-box" id="gpt-chat-box">
-      <div class="chat-bubble system-info">
-        🤖 안녕하세요! 지방계약법 및 서울시 회계실무 Q&A 도우미입니다. 위에 API Key를 등록하시거나 질문을 입력해 보세요.
-      </div>
-    </div>
-
-    <!-- Input Box -->
-    <div style="display:flex;gap:8px;align-items:flex-end;">
-      <textarea id="gpt-input-text" rows="2" placeholder="계약법, 수의계약, 입찰 절차 등에 대해 질문해 보세요 (예: 수요기관 1인 수의계약 가능 여부)" style="flex:1;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:0.92rem;resize:none;"></textarea>
-      <button type="button" class="btn pri-btn" id="btn-send-gpt" style="height:54px;padding:0 20px;font-size:0.95rem;background:#2563eb;color:#fff;">질문 보내기 ➔</button>
-    </div>
-  </div>
-</section>
-
-<!-- ─────────── 8. 계약서식 모음 및 사용자 양식 등록 ─────────── -->
+<!-- ─────────── 7. 계약서식 모음 및 사용자 양식 등록 ─────────── -->
 <section class="panel" id="p-forms">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
