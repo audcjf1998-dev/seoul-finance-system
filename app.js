@@ -1,103 +1,711 @@
-/* ==========================================================================
-   한눈에 보이는 서울계약 - 서울시 계약시스템 JavaScript Engine
-   ========================================================================== */
+"use strict";
+
+const $ = id => document.getElementById(id);
+const E = 1e8;
+const won = n => (n == null || isNaN(n)) ? "–" : Math.round(n).toLocaleString("ko-KR") + "원";
+
+function korUnit(n){
+  if(!n) return "";
+  const eok = Math.floor(n/E), man = Math.floor((n%E)/1e4), rest = n%1e4;
+  let s = "";
+  if(eok) s += eok.toLocaleString()+"억 ";
+  if(man) s += man.toLocaleString()+"만 ";
+  if(rest) s += rest.toLocaleString();
+  return (s.trim()||"0")+"원";
+}
+
+const num = el => {
+  if(!el) return 0;
+  return parseInt((el.value||"").replace(/[^0-9]/g,""),10) || 0;
+};
+
+/* 콤마 입력 + 한글 읽기 */
+function attachMoney(inp){
+  if(!inp) return;
+  inp.addEventListener("input", ()=>{
+    const raw = inp.value.replace(/[^0-9]/g,"");
+    inp.value = raw ? parseInt(raw,10).toLocaleString("ko-KR") : "";
+    const hint = inp.id ? $(inp.id+"-kor") : null;
+    if(hint) hint.textContent = raw ? "= "+korUnit(parseInt(raw,10)) : "";
+  });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Lucide Icons
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+  document.querySelectorAll(".money").forEach(attachMoney);
 
-    // 1. Navigation & Tab Switching
-    const navBtns = document.querySelectorAll('.sidebar-nav .nav-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    const currentChapterEl = document.getElementById('currentChapter');
-    const currentPageTitleEl = document.getElementById('currentPageTitle');
+  /* 탭 스위칭 */
+  window.showTab = function(p){
+    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
+    document.querySelectorAll(".panel").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
 
-    const tabTitles = {
-        'dashboard': { chapter: '📌 발주 실무 메인', title: '공사 · 용역 · 물품 발주부서 실무 지원' },
-        'prep-finder': { chapter: '제1장 발주 준비', title: '내 사업 맞춤 계약방법 진단 & 타임라인' },
-        'prep-checklist': { chapter: '제1장 발주 준비', title: '5단계 동적 체크리스트 & 사전심의 점검' },
-        'prep-spec': { chapter: '제1장 발주 준비', title: '사전규격 공개 & 발주계획' },
-        'bid-methods': { chapter: '제2장 입찰·계약 판단', title: '금액별 낙찰자 결정기준' },
-        'bid-private': { chapter: '제2장 입찰·계약 판단', title: '수의계약 판단 & 동일업체 횟수 제한' },
-        'bid-eval': { chapter: '제2장 입찰·계약 판단', title: '15개 적격심사 낙찰하한율 & 예가 산출기' },
-        'bid-proposal': { chapter: '제2장 입찰·계약 판단', title: '제안서 평가위원회 (협상에 의한 계약)' },
-        'exec-advance': { chapter: '제3장 계약이행 & 대가', title: '선금 정산식 & 인지세/공채 산출기' },
-        'exec-payment': { chapter: '제3장 계약이행 & 대가', title: '검사 & 대가지급 5단계 트래커' },
-        'exec-penalty': { chapter: '제3장 계약이행 & 대가', title: '지연배상금 & 하자보수/제재 산정' },
-        'exec-documents': { chapter: '제3장 계약이행 & 대가', title: '서류 양식함 & AI 계약 실무 상담' }
-    };
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.p)));
 
-    navBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetTab = btn.getAttribute('data-tab');
+  /* 옵션 토글 스타일 */
+  document.querySelectorAll(".opt input").forEach(c=>{
+    c.addEventListener("change",()=>c.closest(".opt").classList.toggle("on",c.checked));
+  });
 
-            navBtns.forEach(b => b.classList.remove('active'));
-            tabPanes.forEach(p => p.classList.remove('active'));
-
-            btn.classList.add('active');
-            const targetPane = document.getElementById(`tab-${targetTab}`);
-            if (targetPane) targetPane.classList.add('active');
-
-            if (tabTitles[targetTab]) {
-                currentChapterEl.textContent = tabTitles[targetTab].chapter;
-                currentPageTitleEl.textContent = tabTitles[targetTab].title;
-            }
-
-            // Close sidebar on mobile after choosing a tab
-            if (window.innerWidth <= 992 && sidebar && sidebarOverlay) {
-                sidebar.classList.remove('open');
-                sidebarOverlay.classList.remove('active');
-            }
-        });
+  /* 종류 칩 */
+  let KIND = "goods";
+  const kindEl = $("kind");
+  if (kindEl) {
+    kindEl.querySelectorAll(".chip").forEach(ch=>{
+      ch.addEventListener("click",()=>{
+        KIND = ch.dataset.k;
+        kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
+        syncOpts();
+      });
     });
+  }
 
-    // Mobile Sidebar Drawer Toggle
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const KINFO = {
+    goods:{name:"물품", two:1e8, isC:false},
+    service:{name:"용역", two:1e8, isC:false},
+    gc:{name:"종합공사", two:4e8, isC:true},
+    sc:{name:"전문공사", two:2e8, isC:true},
+    oc:{name:"그 밖의 공사", two:1.6e8, isC:true}
+  };
 
-    if (mobileMenuToggle && sidebar && sidebarOverlay) {
-        function toggleMobileMenu() {
-            sidebar.classList.toggle('open');
-            sidebarOverlay.classList.toggle('active');
+  function syncOpts(){
+    const isC = KINFO[KIND].isC;
+    ["opt-severe","opt-nego","opt-it"].forEach(id=>{
+      const el = $(id);
+      if(el) {
+        el.style.display = isC ? "none" : "";
+        if(isC){ const c = el.querySelector("input"); if(c) c.checked = false; el.classList.remove("on"); }
+      }
+    });
+    const g = $("opt-gam");
+    if(g) {
+      g.style.display = (KIND==="service") ? "" : "none";
+      if(KIND!=="service"){ const gc = g.querySelector("input"); if(gc) gc.checked = false; g.classList.remove("on"); }
+    }
+    syncFestival();
+    syncIt();
+  }
+
+  function syncFestival(){
+    const negoEl = $("opt-nego");
+    const on = negoEl && negoEl.querySelector("input").checked && !KINFO[KIND].isC;
+    const f = $("opt-festival");
+    if(f) {
+      f.style.display = on ? "" : "none";
+      if(!on){ const c = f.querySelector("input"); if(c) c.checked = false; f.classList.remove("on"); }
+    }
+  }
+
+  function syncIt(){
+    const itEl = $("opt-it");
+    const on = itEl && itEl.querySelector("input").checked && !KINFO[KIND].isC;
+    const subs = $("it-subs");
+    if(subs) subs.style.display = on ? "" : "none";
+  }
+
+  const negoChk = $("opt-nego") ? $("opt-nego").querySelector("input") : null;
+  if(negoChk) negoChk.addEventListener("change", syncFestival);
+
+  const itChk = $("opt-it") ? $("opt-it").querySelector("input") : null;
+  if(itChk) itChk.addEventListener("change", syncIt);
+
+  syncOpts();
+
+  /* ───── 판단 로직 ───── */
+  function decide(){
+    const k = KINFO[KIND], p = num($("price"));
+    const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
+    const severe = $("opt-severe") ? ($("opt-severe").querySelector("input").checked && !k.isC) : false;
+    const nego = $("opt-nego") ? ($("opt-nego").querySelector("input").checked && !k.isC) : false;
+    const festival = nego && $("opt-festival") && $("opt-festival").querySelector("input").checked;
+    const it = $("opt-it") ? ($("opt-it").querySelector("input").checked && !k.isC) : false;
+    const itNew = it && $("opt-itnew") && $("opt-itnew").querySelector("input").checked;
+    const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
+    const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
+    const oneLimit = severe ? Infinity : (special ? 5e7 : 2e7);
+    const oneOk = p>0 && p<=oneLimit;
+    const twoOk = p>0 && p<=k.two;
+    const rec = nego ? "nego" : (oneOk ? "one" : (twoOk ? "two" : "bid"));
+    const noticeDays = nego ? (p<1e8?10 : p<10*E?20 : 40)
+                           : (k.isC ? (p<10*E?7 : p<50*E?15 : 30) : 7);
+    const quoteRate = k.isC ? "89.745%" : (p<=2e7 ? "90%" : "88%");
+
+    /* 사전절차 */
+    const audit = (()=>{
+      if(nego) return festival ? (p>=1e8 ? "축제·행사 협상 계약 1억원 이상" : null)
+                               : (p>=5*E ? "협상에 의한 계약 5억원 이상" : null);
+      if(KIND==="gc" && p>=20*E) return "종합공사 20억원 이상";
+      if((KIND==="sc"||KIND==="oc") && p>=10*E) return "공사(종합 외) 10억원 이상";
+      if(KIND==="service" && p>=10*E) return "용역 10억원 이상 (협상계약은 5억↑)";
+      if(KIND==="goods" && p>=5*E) return "물품 5억원 이상 (조달청 제3자단가·다수공급자계약 제외)";
+      if(rec==="one" && p>2e7) return (special && p<=5e7) ? null : "1인 견적 수의계약 2천만원 초과";
+      return null;
+    })();
+
+    const cost = (()=>{
+      if(k.isC && p>=3*E) return "공사 — 공종에 따라 3억(조경·전기·통신·설비 등) 또는 5억(토목·건축) 이상";
+      if(KIND==="service" && p>=2*E) return "용역 2억원 이상";
+      if(KIND==="goods" && p>=2e7) return "물품 2천만원 이상";
+      return null;
+    })();
+
+    const spec = ((rec==="bid"||nego) && p>=5e7)
+      ? "입찰 대상 5천만원 이상 — 나라장터 사전규격 공개"+(nego?" (신규사업은 금액 무관)":"") : null;
+
+    const agree = (()=>{
+      if(k.isC && p>=10*E) return "공사 10억원 이상";
+      if(KIND==="service" && p>=5*E) return "용역 5억원 이상";
+      if(KIND==="goods" && p>=2*E) return "물품 구매 2억원 이상 (제조는 5억↑)";
+      if(nego) return "협상에 의한 계약 — 계약의뢰 시 재정합의 필수";
+      return null;
+    })();
+
+    return {k,p,special,severe,nego,festival,it,itNew,itPub,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+  }
+
+  /* ───── 타임라인 ───── */
+  function buildTimeline(d){
+    const pre = [];
+    if(d.rec==="nego"){
+      pre.push({t:"제안요청서 · 과업지시서 작성", tag:"통상", days:[5,10], soft:true, s:"평가요소·방법 명시 · 부당계약 문구 검토"});
+    } else {
+      pre.push({t:"발주 준비 — 과업내용서·예산 확정", tag:"통상", days:[3,5], soft:true});
+    }
+    if(d.cost) pre.push({t:"원가(계약)심사", tag:"통상", days:[5,10], soft:true, s:d.cost});
+    if(d.agree) pre.push({t:"재정합의 (재무과장)", tag:"통상", days:[2,3], soft:true, s:d.agree});
+    if(d.audit) pre.push({t:"일상감사", tag:"통상", days:[3,7], soft:true, s:d.audit});
+    if(d.gam && d.p>=3e7) pre.push({t:"기술용역 타당성 심사", tag:"통상", days:[7,14], soft:true, s:"기술심사담당관 — 용역 필요성·대가 적정성 (예산 반영 전 원칙, 당해연도 사업은 발주 전)"});
+    if(d.gam && d.p>=2.3*E) pre.push({t:"사업수행능력(PQ) 세부기준 심의", tag:"통상", days:[5,10], soft:true, s:"건설기술심의 — 시 표준기준과 동일하면 서면협의로 대체"});
+    if(d.it){
+      pre.push({t:"과업심의위원회 (SW 과업 확정)", tag:"통상", days:[5,10], soft:true, s:"모든 SW사업 대상 · SW개발 포함 시 적정 사업기간 산정 (1억 이하·상용SW 구매는 간소화 심의)"});
+      if(d.itNew || d.p>=2*E) pre.push({t:"행안부 사전협의", tag:"법정", days:[30,30], s:"발주 40일 전 IRM(irm.go.kr) 신청 · 검토 30일 — 결과를 제안요청서에 반영한 뒤 사전규격 공개"});
+      pre.push({t:"정보통신 보안성 검토", tag:"통상", days:[5,10], soft:true, s:"정보보안과 (중요 사업은 국정원) · 검토 결과 제안요청서 반영"});
+    }
+    if(d.spec) pre.push({t:"사전규격 공개", tag:"통상", days:[5,5], soft:true, s:"공개 5일(긴급 3일)"+(d.it?" · SW사업 영향평가 결과 함께 공개":"")});
+    if(d.rec==="nego"){
+      pre.push({t:"제안서평가위원회 예비명부 구성", tag:"통상", days:[5,7], soft:true, s:"위원 수 3배수(21~30인) · 공공감사담당관(일상감사팀장) 협조결재"});
+      pre.push({t:"입찰공고 (협상)", tag:"법정", days:[d.noticeDays,d.noticeDays], s:"1억 미만 10일(신규 15일) · 1억~10억 20일 · 10억 이상 40일 — 게시일·개찰일 제외, 긴급·재공고 10일"});
+      pre.push({t:"제안서 평가 — 정량·정성·가격", tag:"통상", days:[3,7], soft:true, s:"위원장 포함 7인 이상 출석 · 최고·최저 위원 점수 제외 산술평균"});
+      pre.push({t:"협상 (기술 → 가격) · 낙찰자 결정", tag:"통상", days:[5,10], soft:true, s:"종합 70점 이상 협상적격자 (SW사업은 기술점수 85% 이상) · 1순위 불성립 시 2순위"});
+    } else if(d.rec==="bid"){
+      pre.push({t:"입찰공고", tag:"법정", days:[d.noticeDays,d.noticeDays], s:"추정가격 기준 "+d.noticeDays+"일 이상 (재공고·긴급 5일)"});
+      if(d.gam && d.p>=2.3*E) pre.push({t:"사업수행능력평가(PQ)", tag:"통상", days:[7,14], soft:true, s:"평가서류 심사 — 적격자에 한해 가격개찰 진행"});
+      pre.push({t:"개찰 · 적격심사", tag:"통상", days:[7,14], soft:true, s:"낙찰하한율 참고 — 📊 탭"});
+    } else if(d.rec==="two"){
+      pre.push({t:"전자공개 견적 안내공고", tag:"법정", days:[3,5], s:"3일 이상 (신규 사업자 대상 5일) · 견적률 "+d.quoteRate+" 이상"});
+    } else {
+      pre.push({t:"견적서 징구 · 가격 검토", tag:"통상", days:[1,3], soft:true});
+    }
+    pre.push({t:"계약 체결", tag:"법정", days:[1,10], s:"낙찰(결정) 통지 후 10일 이내 · 보증금·인지세 등 확인"});
+    const post = [
+      {t:"검사", tag:"법정", days:[1,14], s:"이행 완료 통지 후 14일 이내"},
+      {t:"대가 지급", tag:"법정", days:[1,5], s:"검사 후 청구일부터 5일 이내"}
+    ];
+    let lo=0, hi=0;
+    pre.forEach(x=>{lo+=x.days[0];hi+=x.days[1];});
+    let html = '<div class="tl">';
+    pre.forEach(x=>{ html += tlItem(x); });
+    html += '<div class="tl-gap">— 계약이행 기간 (과업 내용에 따라 다름) —</div>';
+    post.forEach(x=>{ html += tlItem(x); });
+    html += '</div>';
+    html += '<div class="tl-sum">⏳ 발주 준비부터 계약 체결까지 <b>약 '+lo+' ~ '+hi+'일</b> · 이행 완료 후 대금 수령까지 최대 <b>19일</b></div>';
+    html += '<p class="note">「통상」 표시는 기관 사정에 따라 달라지는 내부 처리 기간(예시)이고, 「법정」은 법령·지침상 기간이에요. 절차 일부는 동시에 진행해 단축할 수 있어요.</p>';
+    return html;
+  }
+
+  function tlItem(x){
+    const dd = x.days[0]===x.days[1] ? x.days[0]+"일" : x.days[0]+"~"+x.days[1]+"일";
+    return '<div class="tl-i'+(x.soft?' soft':'')+'"><div class="h"><b>'+x.t+'</b>'
+      +'<span class="tag '+(x.tag==="법정"?"b":"g")+'">'+x.tag+' · '+dd+'</span></div>'
+      +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
+  }
+
+  /* ───── 결과 렌더 ───── */
+  let LAST = null;
+  const btnGo = $("go");
+  if(btnGo) {
+    btnGo.addEventListener("click", ()=>{
+      const d = decide();
+      if(!d.p){ $("result").innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력해 주세요 🙂</p></div>'; return; }
+      let h = '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
+
+      if(d.rec==="nego"){
+        h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
+          +'<p>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)</p>'
+          +'<div class="tags">'+(d.it
+            ?'<span class="tag v">기술 90 : 가격 10 (SW사업 준수사항)</span><span class="tag b">협상적격 — 기술점수 85%↑</span>'
+            :'<span class="tag v">배점 100 = 정량 20 + 정성 60 + 가격 20</span><span class="tag b">협상적격 종합 70점↑</span>')
+          +'<span class="tag o">공고 '+d.noticeDays+'일</span><span class="tag g">령 §43·§44 · 낙찰자 결정기준 제7장</span></div></div>';
+        if(d.oneOk||d.twoOk) h += '<p class="note">금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.</p>';
+        h += '<p class="note">분야별 배점은 ±10점 범위에서 조정할 수 있어요. 대상 여부(지식기반사업 등)는 「📚 기준 한눈에」에서 확인하세요.</p>';
+      } else {
+        if(d.oneOk){
+          h += '<div class="mcard rec"><span class="badge">추천</span><b>🤝 1인 견적 수의계약</b>'
+            +'<p>'+(d.severe?'중증장애인생산품 직접 생산 — 금액 제한 없이 가능':(d.special?'특례 대상 기업 — 5천만원 이하 가능':'추정가격 2천만원 이하'))+'</p>'
+            +'<div class="tags"><span class="tag g">령 §25·§30</span><span class="tag k">견적서 1인 제출</span><span class="tag o">동일업체 연 4회/9회 제한</span>'
+            +'<span class="tag v">변경계약 한도 '+(d.special?'5,500만원':'2,200만원')+'</span>'
+            +(d.audit?'<span class="tag r">일상감사 대상</span>':(d.special&&d.p>2e7?'<span class="tag g">일상감사 제외 (5천만 이하 장애인·여성기업)</span>':''))+'</div></div>';
         }
+        if(d.twoOk){
+          h += '<div class="mcard'+(d.rec==="two"?' rec':'')+'">'+(d.rec==="two"?'<span class="badge">추천</span>':'')
+            +'<b>💻 전자공개 수의계약 (2인 이상 견적)</b>'
+            +'<p>'+d.k.name+' '+korUnit(d.k.two)+' 이하 — 나라장터 안내공고 3일(신규 5일), 견적률 '+d.quoteRate+' 이상 최저가</p>'
+            +'<div class="tags"><span class="tag g">령 §25①5호·§30</span><span class="tag g">집행기준 제5장</span></div></div>';
+        }
+        h += '<div class="mcard'+(d.rec==="bid"?' rec':'')+'">'+(d.rec==="bid"?'<span class="badge">추천</span>':'')
+          +'<b>📢 일반(경쟁)입찰</b><p>'+(d.k.isC
+            ?'공고 '+d.noticeDays+'일 이상 (10억 미만 7일 · 10~50억 15일 · 50억~국제입찰 미만 30일 · 국제입찰 40일 · 긴급·재공고 5일)'
+            :'공고 7일 이상 (신규사업 10일 · 긴급·재공고 5일) — 게시일·개찰일 제외')
+          +'</p><div class="tags"><span class="tag g">령 §35</span><span class="tag g">적격심사 — 낙찰자 결정기준 제2~4장</span></div></div>';
+        if(d.rec==="bid" && !d.k.isC) h += '<p class="note">'+(d.it
+          ?'정보화·SW사업은 보통 협상에 의한 계약으로 발주해요. ③에서 「협상에 의한 계약」을 함께 체크하면 절차와 배점을 협상 기준으로 안내해 드려요.'
+          :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
+      }
 
-        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-        sidebarOverlay.addEventListener('click', toggleMobileMenu);
+      if(d.gam && d.rec==="nego") h += '<div class="warnbox">🧐 감리 등 건설기술용역은 협상이 아니라 <b>사업수행능력평가(PQ) + 적격심사</b>로 낙찰자를 정하는 게 원칙이에요. 협상 체크를 해제하고 진행하세요.</div>';
+
+      h += '<h3>📋 발주 전 확인할 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 해당되는 것만 보여드려요</span></h3>';
+      const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의",d.agree]];
+      if(d.gam){
+        pres.push(["기술용역 타당성 심사", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
+          : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
+          : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null]);
+        pres.push(["용역발주심의 (건설기술심의)", d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
+          : d.p>=1*E ? "전기·기계·조경 1억↑ 대상 (토목·건축은 2억↑)" : null]);
+        pres.push(["사업수행능력(PQ) 세부기준 심의", d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null]);
+      }
+      if(d.it){
+        pres.push(["과업심의위원회","모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
+        pres.push(["행안부 사전협의",(d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
+        pres.push(["정보통신 보안성 검토","정보시스템 신·증설 — 정보보안과"]);
+        pres.push(["SW사업 영향평가","자체평가 후 사전규격 공개 시 결과 공개"]);
+        pres.push(["예산타당성 심사",d.itNew?"신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인":null]);
+      }
+      const hit = pres.filter(x=>x[1]);
+      if(hit.length){
+        h += '<div class="pre">';
+        hit.forEach(([n,v])=>{ h += '<div class="p on"><div class="n">⚠️ '+n+'</div><div class="y">'+v+'</div></div>'; });
+        h += '</div>';
+      } else {
+        h += '<div class="verdict"><span class="big">🎈</span><div><b>필수 사전절차 대상이 없어요</b><small>이 금액·조건에서는 일상감사 · 원가심사 · 재정합의 등 대상이 아니에요</small></div></div>';
+      }
+      if(d.rec!=="bid"){
+        h += '<div class="warnbox">🔍 수의계약 시 유의 — 금액 기준을 피하려는 <b>분리발주(쪼개기)는 금지</b>돼요(령 §77). 1인 견적은 동일업체와 실·국 연 4회 / 시 전체 연 9회까지, 변경계약도 수의 기준금액(계약금액 소액 2,200만원 · 여성기업 등 5,500만원) 안에서만 가능해요.</div>';
+        if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
+      }
+
+      h += '<h3>⏱️ 예상 진행 일정</h3>' + buildTimeline(d);
+      h += '<div style="margin-top:16px"><button class="btn" onclick="makeChecklist()">✅ 이 조건으로 체크리스트 만들기</button></div>';
+      h += '</div>';
+      $("result").innerHTML = h;
+      LAST = d;
+    });
+  }
+
+  /* ───── 체크리스트 ───── */
+  const stampDuty = a => a<=1e7?0 : a<=3e7?2e4 : a<=5e7?4e4 : a<=1*E?7e4 : a<=10*E?15e4 : 35e4;
+  function ckItems(d){
+    const items = [];
+    const add = (ph,label,sub,lv,show)=>{ if(show) items.push({ph,label,sub,lv,id:"ck"+items.length}); };
+    const P = "📝 발주 준비", N = "📣 공고 · 업체 선정", C = "✍️ 계약 체결", I = "🚚 이행 관리", F = "💳 검사 · 대가";
+    add(P,"예산 편성·배정 확인","지출원인행위 전 예산 확보","권장",true);
+    add(P,"과업내용서 · 시방서 · 설계서 확정","산출 근거 포함","권장",true);
+    add(P,"분리발주(쪼개기) 여부 점검","수의 기준 회피 목적 분할 금지 — 시행령 §77","필수",true);
+    add(P,"동일업체 수의계약 횟수 확인","실·국 연 4회 / 시 전체 연 9회 이내","필수",d.rec==="one");
+    add(P,"원가(계약)심사 의뢰",d.cost||"","필수",!!d.cost);
+    add(P,"재정합의 (재무과장)",d.agree||"","필수",!!d.agree);
+    add(P,"일상감사 의뢰",d.audit||"","필수",!!d.audit);
+    add(P,"사전규격 공개 (나라장터)",d.spec||"","필수",!!d.spec);
+    add(P,"협상 대상 여부 확인","단순노무용역·단순물품구매 제외 — 지식기반사업 등 (령 §44①)","필수",d.rec==="nego");
+    add(P,"제안요청서 · 과업지시서 작성","평가요소·평가방법·제안서 규격 명시, 부당계약 체크리스트 검토","필수",d.rec==="nego");
+    add(P,"평가위원 예비명부 구성 (3배수, 21~30인)","공공감사담당관(일상감사팀장) 협조결재 · 위원정보 비공개","필수",d.rec==="nego");
+    add(P,"예산타당성 심사 이행 확인","신규 구축·SW개발 포함 사업 — 정보시스템과 (전년도 정기 7~9월 · 소요 30일)","필수",d.it&&d.itNew);
+    add(P,"과업심의위원회 심의","모든 SW사업 · 과업내용 확정, SW개발 시 적정 사업기간 산정 — 1억 이하·상용SW 구매는 간소화","필수",d.it);
+    add(P,"행안부 사전협의 (irm.go.kr)","발주 40일 전 신청 · 검토 30일 — 미이행 시 사전협의 이행 후 재공고 대상","필수",d.it&&(d.itNew||d.p>=2*E));
+    add(P,"SW사업 영향평가 (자체)","사전규격 공개 시 결과 공개 · 1억 이상 신규 개발은 발주 30일 전 과기부 검토요청","필수",d.it);
+    add(P,"정보통신 보안성 검토","정보보안과 의뢰 — 결과 제안요청서 반영 (준공 1주 전 보안점검표 별도)","필수",d.it);
+    add(P,"상용SW 직접구매 대상 검토","3억 이상 + 조달 등록 SW 포함 시 구매계획 첨부 · 경쟁입찰 구매 시 BMT 검토","필수",d.it&&d.p>=3*E);
+    add(P,"클라우드 우선 이용 검토","SaaS → 민간 클라우드 → 데이터센터 순 비교 검토서","권장",d.it&&d.itNew);
+    add(P,"기술용역 타당성 심사 요청","기술심사담당관 — 토목·도시계획 1억↑ · 건축 5천만↑ · 기계·전기·조경 3천만↑ (예산 반영 전, 당해연도는 발주 전)","필수",d.gam&&d.p>=3e7);
+    add(P,"용역발주심의 (건설기술심의)","토목·건축 2억↑ · 전기·기계·조경 1억↑ — 발주 타당성·과업 적정성","필수",d.gam&&d.p>=1*E);
+    add(P,"PQ 세부평가기준 건설기술심의","설계·건설사업관리 2.3억↑ (정밀안전진단 1억↑) — 시 표준기준과 동일 시 서면협의 대체","필수",d.gam&&d.p>=2.3*E);
+    add(P,"대가 산정 적정성 확인","엔지니어링사업대가 기준·표준품셈 — 설계요율·개략공사비·추가업무 산정","권장",d.gam);
+    add(P,"지역제한 발주 검토","3.3억 미만 건설기술·설계·감리용역은 지역제한 경쟁 가능","권장",d.gam&&d.p<3.3e8);
+    add(P,"중소기업자간 경쟁제품 해당 여부 확인","해당 시 중기부 기준 적용 (판로지원법) · 1천만원 이상 구매는 직접생산 증명서 확인","권장",!d.k.isC);
+    add(P,"수의계약 배제 사유 확인","부정당업자 제재 중인 업체 등 (법 §31·령 §92) · 나라장터 제재정보 조회","필수",d.rec==="one"||d.rec==="two");
+    add(P,"특례 대상 증빙 확보","장애인·여성기업 확인서 등 유효기간 확인","필수",d.special&&d.rec==="one");
+    add(P,"중증장애인생산품 직접생산 확인","생산시설 지정 및 직접생산 여부","필수",d.severe);
+    if(d.rec==="nego"){
+      add(N,"입찰공고 게시 — 협상 ("+d.noticeDays+"일)","게시일·개찰일 제외 · 긴급·재공고 10일 · 1억 미만 신규사업은 15일","법정",true);
+      add(N,"가격 투찰(나라장터) = 밀봉 가격제안서 금액 일치 확인","제안서·가격제안서는 발주부서에 직접 제출","필수",true);
+      add(N,"평가위원 추첨 (참가업체가 제출 시 추첨 · 다빈도순)","동수는 연장자순 · 예비평가위원 2명 이상 추가 선정","필수",true);
+      add(N,"제안서 평가 — 정량 20 · 정성 60 · 가격 20","정성 최저점은 항목 배점의 60% 이상 · 최고·최저 위원 제외 평균","필수",true);
+      add(N,"평가 결과 서울계약마당 등록 · 협상 순위 통보",d.it?"협상적격 — 기술능력 점수가 배점한도의 85% 이상 (SW 기준)":"협상적격 — 종합평점 70점 이상","필수",true);
+      add(N,"기술능력 배점 90% 적용","SW사업 준수사항 — 기술 90 : 가격 10 · SW기술성 평가기준으로 평가항목 구성","필수",d.it);
+      add(N,"제안요청 설명회 개최","추정가격 20억 이상 의무 — 입찰공고는 설명일 전일부터 7일 전","법정",d.it&&d.p>=20*E);
+      add(N,"시민감사옴부즈만 입회 요청","용역 5억·물품 1억 이상 — 평가위 개최 7일 전 입회요청서 제출","필수",(KIND==="service"&&d.p>=5*E)||(KIND==="goods"&&d.p>=1*E));
+      add(N,"제안서 보상 여부 명기","총사업비 20억 이상 SW사업 — 우수 제안서 보상 검토·명기","필수",d.it&&d.p>=20*E);
+      add(N,"기술협상 → 가격협상","제안 내용 가감 시 예정가격 범위 내 조정 · 가감 없으면 제안가 조정 불가","필수",true);
+    } else if(d.rec==="bid"){
+      add(N,"입찰공고 게시 ("+d.noticeDays+"일 이상)",d.k.isC?"나라장터 — 게시일·개찰일 제외 · 재공고·긴급 5일 (령 §35)":"나라장터 — 신규사업은 10일 · 재공고·긴급 5일 (령 §35)","법정",true);
+      add(N,"입찰참가자격 · 실적 기준 확인","면허·등록, 지역제한 여부 등","권장",true);
+      add(N,"사업수행능력평가(PQ) 서류심사","적격자에 한해 가격개찰 — 하한율은 기술용역(PQ) 79.995~86.745%","필수",d.gam&&d.p>=2.3*E);
+      add(N,"개찰 · 적격심사","낙찰하한율 참고 — 📊 탭","권장",true);
+    } else if(d.rec==="two"){
+      add(N,"전자공개 견적 안내공고 (3일, 신규 5일)","나라장터 전자견적","법정",true);
+      add(N,"견적률 확인 — "+d.quoteRate+" 이상","예정가격 대비 · 최저가격 순 결정","권장",true);
+    } else {
+      add(N,"전자공개 의무발주 대상 확인","폐기물처리·재해예방기술지도 용역은 금액과 무관하게 전자공개 수의로 발주 (시범 연장)","필수",KIND==="service");
+      add(N,"수의계약 체결제한 여부 확인서 징구","이해충돌방지법 §12 · 발주부서 퇴직공무원(2년) · 유착비리 지정업체 제한 — 서식 모음 참고","필수",true);
+      add(N,"수의계약 사유 명시","사유서 작성 — 시행령 §25 근거 명확히","필수",true);
+      add(N,"견적서 징구 · 가격 적정성 검토","시장가격·과거 계약단가 비교","권장",true);
+      add(N,"변경계약 한도 확인","계약금액 기준 소액 2,200만원 · 여성기업 등 5,500만원 초과 변경 불가 (불가피 시 부시장 보고)","필수",true);
     }
+    add(C,"계약보증금 확인 — 약 "+won(Math.round(d.p*0.1)),d.p<=5e7?"계약금액 5천만원 이하 — 지급확약서로 면제 가능 (령 §53)":"계약금액의 10% 이상 (법 §15·령 §51) — 한시특례는 '26.6.30. 종료","필수",true);
+    add(C,"손해배상보증서 제출 확인","전기공사 · 소방시설공사·설계·감리·관리용역 · 건설기술용역 등 개별법상 의무 — 건설사업관리는 공사착공일~완공일 (건진법 §34·령 §50)","권장",KIND==="oc"||KIND==="service");
+    add(C,"인지세 납부 확인 — "+(stampDuty(d.p)?won(stampDuty(d.p)):"비과세(1천만원 이하)"),"전자수입인지 · 공동 부담","필수",true);
+    add(C,"도시철도공채 매입 확인","건설공사 도급 2천만원 이상 — 계약금액의 2%","필수",d.k.isC&&d.p>=2e7);
+    add(C,"청렴계약서 · 행동강령 서약","법 §6의2 청렴계약 · 서울시 청렴계약제","필수",true);
+    add(C,"국세·지방세 및 4대보험 완납증명서 확인","령 §25①각 호 수의계약은 생략 가능(제7호 가목 제외)","필수",true);
+    add(C,"근로자권리보호 · 안전보건관리준수 서약서","협상 공고 시 3대 서약서 제출 의무","필수",d.rec==="nego");
+    add(C,"협상 결과 반영 과업지시서 · 산출내역서 확인","협상 계약금액에 맞게 조정 후 계약부서 송부","필수",d.rec==="nego");
+    add(C,"계약서 작성 · 전자서명","낙찰(결정) 통지 후 10일 이내","법정",true);
+    add(C,"하도급 제한사항 확인","SW사업 50% 초과 하도급 금지 · 재하도급 원칙 금지 · 하도급계획서 (공고문 명시)","필수",d.it);
+    add(I,"착수계 제출 확인","발주부서·계약부서 각 1부 (전자제출 원칙)","권장",d.rec==="nego");
+    add(I,"사업수행계획서 검토·승인","계약 후 10일 이내 착수계(수행계획서·보안서약서 포함) 검토","권장",d.it);
+    add(I,"정보시스템 감리","5억 이상 구축 의무 (대국민·다수부서 공동은 1억 이상) — 20억 미만 2단계 가능","필수",d.it&&d.p>=5*E);
+    add(I,"과업 변경 시 과업심의위원회","계약금액·기간 조정이 따르는 변경은 심의 후 변경계약","권장",d.it);
+    add(I,"감독 · 검사공무원 지정","공사·용역 이행 관리","권장",true);
+    add(I,"건설기계 임대료 지급 확인","'26년 신설 제도 — 건설기계 대여대금 체불 방지, 지급 확인 (매뉴얼 p.278)","권장",d.k.isC);
+    add(I,"감리원(참여기술인) 배치·교체 승인","배치계획 승인 후 착수 — 교체는 발주청 사전 승인","필수",d.gam);
+    add(I,"감리 정기·수시 보고 확인","월간 보고 · 검측·기성 검토 결과 관리","권장",d.gam);
+    add(I,"선금 지급 (청구 시 14일 이내)","한도 70% (재무건전성 우수 100%) — 물품 구매 제외","법정",KIND!=="goods");
+    add(I,"계약변경 사유 발생 시 변경계약","설계변경·물가변동·기타 계약내용 변경 (법 §16·령 §73~§75)","권장",true);
+    add(I,"지연 발생 시 지연배상금 산정","🧮 탭에서 계산 — 10% 이상이면 해제·해지 검토","권장",true);
+    add(F,"검사 — 완료 통지 후 14일 이내","필요 시 전문기관 검사","법정",true);
+    add(F,"보안취약점 점검 · 보안점검표 제출","준공 1주 전 정보보안과 제출 · SW개발 1억 이상은 보안약점(시큐어코딩) 진단","필수",d.it);
+    add(F,"대시민 오픈 심의 · 성별영향평가","오픈 15일 전 취약점 점검 → 콘텐츠담당관 오픈 심의 (웹사이트는 성별영향평가 병행)","필수",d.itPub);
+    add(F,"SW사업정보 제출 (spir.kr)","1억 이상 — 계약 후 1개월 · 검수 후 1개월 이내 각 1회","법정",d.it&&d.p>=1*E);
+    add(F,"정보자원 등록·현행화 (irm.go.kr)","계약·완료 시 등록, 사전협의 이행결과 증빙 (요청 후 21일 이내)","법정",d.it);
+    add(F,"감리 최종보고서 · 성과품 인수","최종보고서·검측대장 등 성과품 확인 후 대가 지급","권장",d.gam);
+    add(F,"하자보수보증금 납부 확인","공종별 2~5% — 3천만원 이하 공사(조경 제외) 면제","필수",d.k.isC);
+    add(F,"대가 지급 — 청구 후 5일 이내","지연 시 지연이자 발생","법정",true);
+    add(F,"선금 정산 확인","정산액 = 선금 × 기성액 ÷ 계약금액","권장",KIND!=="goods");
+    add(F,"계약 서류 정리 · 보존","실적 등록, 증빙 편철","권장",true);
+    return items;
+  }
 
-    // 2. Dark / Light Theme Toggle
-    const themeToggleBtn = document.getElementById('themeToggle');
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            document.body.classList.toggle('dark-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            themeToggleBtn.innerHTML = isLight ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
-            if (window.lucide) lucide.createIcons();
+  let CKS = null, CKSET = new Set();
+  window.makeChecklist = function(){
+    if(!LAST) return;
+    CKS = ckItems(LAST); CKSET = new Set();
+    renderCk(); showTab("check");
+  };
+
+  function renderCk(){
+    const byPh = {};
+    CKS.forEach(it=>{(byPh[it.ph]=byPh[it.ph]||[]).push(it);});
+    const missReq = CKS.filter(it=>(it.lv!=="권장")&&!CKSET.has(it.id));
+    let h = '<div class="card"><h2>이 계약의 점검 목록</h2>'
+      +'<p class="desc">'+LAST.k.name+' · '+korUnit(LAST.p)+' · 총 '+CKS.length+'개 항목 — 체크하면서 빠진 것이 없는지 확인하세요.</p>';
+    h += missReq.length
+      ? '<div class="miss"><b>🔔 아직 확인 안 된 필수·법정 항목 '+missReq.length+'건</b><div class="list">'+missReq.map(it=>'<span class="tag '+(it.lv==="법정"?"b":"r")+'">'+it.label.split(" — ")[0]+'</span>').join("")+'</div></div>'
+      : '<div class="miss ok"><b>🎉 필수·법정 항목을 모두 확인했어요!</b><div class="s" style="font-size:.85rem;color:var(--sub);margin-top:4px">권장 항목도 한 번 더 훑어보면 좋아요.</div></div>';
+    for(const ph in byPh){
+      const list = byPh[ph], done = list.filter(it=>CKSET.has(it.id)).length;
+      h += '<div class="phase"><div class="phase-h"><b>'+ph+'</b><span class="pbar"><i style="width:'+(done/list.length*100)+'%"></i></span><span class="pcnt">'+done+'/'+list.length+'</span></div>';
+      list.forEach(it=>{
+        const on = CKSET.has(it.id);
+        h += '<label class="ck'+(on?' on':'')+'"><input type="checkbox" data-id="'+it.id+'"'+(on?' checked':'')+'>'
+          +'<span><span class="l">'+it.label+'</span> <span class="tag '+(it.lv==="법정"?"b":it.lv==="필수"?"r":"g")+'">'+it.lv+'</span>'
+          +(it.sub?'<div class="s">'+it.sub+'</div>':'')+'</span></label>';
+      });
+      h += '</div>';
+    }
+    h += '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost" onclick="window._clearCk()">전체 해제</button>'
+      +'<button class="btn ghost" onclick="showTab(\'guide\')">조건 바꾸기</button></div>';
+    h += '<p class="note">체크 상태는 화면을 새로고침하면 초기화돼요.</p></div>';
+    
+    const ckArea = $("ck-area");
+    if(ckArea) {
+      ckArea.innerHTML = h;
+      ckArea.querySelectorAll("input[type=checkbox]").forEach(c=>{
+        c.addEventListener("change",()=>{
+          c.checked ? CKSET.add(c.dataset.id) : CKSET.delete(c.dataset.id);
+          renderCk();
         });
+      });
     }
+  }
 
-    // 3. G2B Public Procurement Service Open API Integration Engine
-    const btnTestG2bApi = document.getElementById('btnTestG2bApi');
-    const apiServiceKey = document.getElementById('apiServiceKey');
-    const apiInstCd = document.getElementById('apiInstCd');
-    const g2bApiResultArea = document.getElementById('g2bApiResultArea');
-    const g2bApiLog = document.getElementById('g2bApiLog');
+  window._clearCk = function() {
+    CKSET.clear();
+    renderCk();
+  };
 
-    if (btnTestG2bApi) {
-        btnTestG2bApi.addEventListener('click', async () => {
-            const key = (apiServiceKey ? apiServiceKey.value.trim() : '');
-            const instCd = (apiInstCd ? apiInstCd.value.trim() : '6110000');
+  /* ───── 계산: 보증금 ───── */
+  const btnGRun = $("g-run");
+  if(btnGRun) {
+    btnGRun.addEventListener("click",()=>{
+      const a = num($("g-amt"));
+      if(!a){ $("g-out").innerHTML='<p class="placeholder">계약금액을 입력해 주세요.</p>'; return; }
+      const cut = $("g-cut") && $("g-cut").querySelector("input").checked ? 0.5 : 1;
+      const bid = Math.round(a*0.05*cut), con = Math.round(a*0.10*cut);
+      const hv = $("g-haja") ? $("g-haja").value : "0";
+      let h = '<div class="res">입찰보증금(5%'+(cut<1?" × ½":"")+') <b class="money">'+won(bid)+'</b> — 전자입찰은 지급각서 갈음<br>'
+        +'계약보증금(10%'+(cut<1?" × ½":"")+') <b class="money">'+won(con)+'</b>'
+        +(a<=5e7?' — <b>5천만원 이하: 지급확약서로 면제 가능</b>':'');
+      if(["5","4","3","2"].includes(hv)) h += '<br>공사이행보증서 선택 시('+(cut<1?"특례 20%":"40%")+') <b class="money">'+won(Math.round(a*(cut<1?0.20:0.40)))+'</b> — 계약보증금 납부 대신 이행보증서 제출 방식';
+      if(hv!=="0"){
+        const r = hv==="s2"?2 : hv==="m3"?3 : hv==="m2"?2 : parseInt(hv,10);
+        h += '<br>하자보수보증금('+r+'%) <b class="money">'+won(Math.round(a*r/100))+'</b>';
+        if(["5","4","3","2"].includes(hv) && a<=3e7) h += ' — 3천만원 이하 공사(조경 제외) 면제 가능';
+      }
+      h += '</div>';
+      h += '<p class="note">근거 — 입찰보증금 법 §12·령 §37, 계약보증금 법 §15·령 §51~§53, 하자보수보증금 법 §21·령 §70~§71</p>';
+      if(cut<1) h += '<div class="warnbox">이 한시특례는 \'26.6.30.자로 종료됐어요. 현재는 원칙(입찰 5% · 계약 10%)이 적용되니, 연장·재시행 여부를 현행 행안부 고시로 확인하세요.</div>';
+      $("g-out").innerHTML = h;
+    });
+  }
 
-            g2bApiResultArea.classList.remove('hidden');
-            g2bApiLog.innerHTML = `<span class="text-primary">⏳ 조달청 나라장터 API 요청 서버와 연결 시도 중...</span><br>`;
+  /* ───── 계산: 지연배상금 ───── */
+  const btnDRun = $("d-run");
+  if(btnDRun) {
+    btnDRun.addEventListener("click",()=>{
+      const a = num($("d-amt")), r = parseFloat($("d-rate").value);
+      let days = parseInt(($("d-days").value||"").replace(/[^0-9]/g,""),10)||0;
+      if(!days && $("d-from").value && $("d-to").value){
+        const diff = (new Date($("d-to").value)-new Date($("d-from").value))/(864e5);
+        days = diff>=0 ? Math.round(diff)+1 : 0;
+      }
+      if(!a||!days){ $("d-out").innerHTML='<p class="placeholder">계약금액과 지연 일수를 입력해 주세요.</p>'; return; }
+      const pay = Math.round(a*days*r/1000), ratio = pay/a*100;
+      let h = '<div class="res">'+won(a)+' × '+days+'일 × '+r+'/1000 = <b class="money">'+won(pay)+'</b> <span style="color:var(--sub)">(계약금액의 '+ratio.toFixed(2)+'%)</span></div>';
+      if(ratio>=10) h += '<div class="badbox">🚨 지연배상금이 계약금액의 10% 이상 — 계약 해제·해지 검토 사유예요.</div>';
+      else if(ratio>=7) h += '<div class="warnbox">10%에 가까워지고 있어요. 이행 독촉·계약변경 여부를 점검하세요.</div>';
+      h += '<p class="note">근거 — 지방계약법 §30의2, 시행령 §90 · 집행기준 제9장 (면제사유: 불가항력, 관급자재 공급 지연, 발주기관 책임 등)</p>';
+      $("d-out").innerHTML = h;
+    });
+  }
 
-            if (!key) {
-                g2bApiLog.innerHTML += `
-<span class="text-warning">⚠️ 안내: 공공데이터포털(data.go.kr) 서비스키가 입력되지 않았습니다.</span><br>
+  /* ───── 계산: 선금 ───── */
+  const btnSRun = $("s-run");
+  if(btnSRun) {
+    btnSRun.addEventListener("click",()=>{
+      const a = num($("s-amt")), req = num($("s-req")), done = num($("s-done"));
+      if(!a){ $("s-out").innerHTML='<p class="placeholder">계약금액을 입력해 주세요.</p>'; return; }
+      const cap = Math.round(a*0.7), duty = Math.round(a*0.3);
+      let h = '<div class="res">최초 의무 지급률(30%) <b class="money">'+won(duty)+'</b> · 지급 한도(70%) <b class="money">'+won(cap)+'</b>';
+      if(req){
+        const pr = req/a*100;
+        if(req<=a*0.3) h += '<br>신청액 '+won(req)+' ('+pr.toFixed(1)+'%) — <b>신청한 대로 지급</b> (30% 이하)';
+        else if(req<=cap) h += '<br>신청액 '+won(req)+' ('+pr.toFixed(1)+'%) — 30% 초과분은 계약 목적·성질을 고려해 지급 가능 (한도 내)';
+        else h += '<br><span style="color:var(--bad)">신청액 '+won(req)+' ('+pr.toFixed(1)+'%) — 한도(70%) 초과!</span>';
+      }
+      if(req&&done){
+        const set = Math.round(req*done/a);
+        h += '<br>선금 정산액 = '+won(req)+' × '+won(done)+' ÷ '+won(a)+' = <b class="money">'+won(set)+'</b>';
+      }
+      h += '</div><p class="note">근거 — 지방계약법 §18, 지방회계법 시행령 §44, 집행기준 제1장 · 선금 지급한도 확대 세부기준(서울시) · 청구 후 14일 이내 지급, 하수급인 배분 15일 이내</p>';
+      $("s-out").innerHTML = h;
+    });
+  }
+
+  /* ───── 계산: 인지세·공채 ───── */
+  const btnTRun = $("t-run");
+  if(btnTRun) {
+    btnTRun.addEventListener("click",()=>{
+      const a = num($("t-amt"));
+      if(!a){ $("t-out").innerHTML='<p class="placeholder">계약금액을 입력해 주세요.</p>'; return; }
+      const st = stampDuty(a);
+      let h = '<div class="res">인지세: <b class="money">'+(st?won(st):"비과세 (1천만원 이하)")+'</b> — 전자수입인지, 계약당사자 공동 부담';
+      if($("t-const") && $("t-const").querySelector("input").checked){
+        if(a>=2e7){
+          const raw = a*0.02, base = Math.floor(raw/5000)*5000;
+          const bond = (raw-base>=2500)?base+5000:base;
+          h += '<br>도시철도공채(2%): <b class="money">'+won(bond)+'</b> <span style="color:var(--sub)">(5천원 단위 — 2,500원 이상 절상)</span>';
+        } else h += '<br>도시철도공채: 계약금액 2천만원 미만 — 매입 대상 아님';
+      }
+      h += '</div><p class="note">근거 — 인지세법 §3 (전자수입인지) · 도시철도법 §20 및 서울특별시 도시철도채권 매입 기준 (건설공사 도급 2천만원 이상, 계약금액의 2%)</p>';
+      $("t-out").innerHTML = h;
+    });
+  }
+
+  /* ───── 협상 제안서 평가 계산 ───── */
+  function evRow(){
+    const rowsEl = $("ev-rows");
+    if(!rowsEl) return;
+    const div = document.createElement("div");
+    div.className = "ev-row";
+    div.innerHTML = '<input type="text" class="ev-name" placeholder="업체명">'
+      +'<input type="text" class="money ev-bid" inputmode="numeric" placeholder="입찰가격(원)">'
+      +'<input type="text" class="ev-quant" inputmode="numeric" placeholder="정량">'
+      +'<input type="text" class="ev-qual" placeholder="위원 정성점수 — 쉼표 구분 (예: 52,55,48,50,53,51,49)">'
+      +'<button type="button" class="rm" title="행 삭제">✕</button>';
+    attachMoney(div.querySelector(".ev-bid"));
+    div.querySelector(".rm").addEventListener("click", ()=>div.remove());
+    rowsEl.appendChild(div);
+  }
+
+  const btnEvAdd = $("ev-add");
+  if(btnEvAdd) {
+    btnEvAdd.addEventListener("click", evRow);
+    evRow(); evRow(); evRow();
+  }
+
+  const swChk = $("ev-sw") ? $("ev-sw").querySelector("input") : null;
+  if(swChk) {
+    swChk.addEventListener("change", e=>{
+      if($("ev-tech")) $("ev-tech").value = e.target.checked ? "90" : "80";
+      if($("ev-price-w")) $("ev-price-w").value = e.target.checked ? "10" : "20";
+    });
+  }
+
+  function trimmedMean(a){
+    if(a.length>=3){ const s=[...a].sort((x,y)=>x-y);
+      return {v:s.slice(1,-1).reduce((p,c)=>p+c,0)/(s.length-2), trim:true}; }
+    return {v:a.length ? a.reduce((p,c)=>p+c,0)/a.length : 0, trim:false};
+  }
+
+  const btnEvRun = $("ev-run");
+  if(btnEvRun) {
+    btnEvRun.addEventListener("click", ()=>{
+      const base = num($("ev-base"));
+      const techW = parseFloat($("ev-tech").value)||0, priceW = parseFloat($("ev-price-w").value)||0;
+      const sw = $("ev-sw") ? $("ev-sw").querySelector("input").checked : false;
+      const out = $("ev-out");
+      if(!base){ out.innerHTML='<p class="placeholder">예정가격을 입력해 주세요.</p>'; return; }
+      const rows = [...document.querySelectorAll("#ev-rows .ev-row")].map((r,i)=>{
+        const bid = parseInt((r.querySelector(".ev-bid").value||"").replace(/[^0-9]/g,""),10)||0;
+        const quant = parseFloat(r.querySelector(".ev-quant").value)||0;
+        const quals = (r.querySelector(".ev-qual").value||"").split(/[,\s]+/).map(Number).filter(n=>!isNaN(n)&&n>0);
+        return {name: r.querySelector(".ev-name").value || ("업체 "+(i+1)), bid, quant, quals};
+      }).filter(r=>r.bid>0);
+
+      if(!rows.length){ out.innerHTML='<p class="placeholder">업체 입찰가격을 1건 이상 입력해 주세요.</p>'; return; }
+      const floorR = sw?0.8:0.7, p80 = base*0.8, p70 = base*0.7, floorV = base*floorR;
+      const rawMin = Math.min(...rows.map(r=>r.bid));
+      const minBid = Math.max(rawMin, floorV);
+      const notes = new Set();
+
+      if(rawMin < floorV) notes.add("최저입찰가격이 예정가격의 "+(floorR*100)+"% 미만이라 "+(floorR*100)+"% 상당가격("+won(Math.round(floorV))+")으로 보정해 계산했어요.");
+      rows.forEach(r=>{
+        const q = trimmedMean(r.quals);
+        r.qual = q.v;
+        if(r.quals.length && !q.trim) notes.add("위원 점수가 3개 미만인 업체는 최고·최저 제외 없이 전체 평균으로 계산했어요.");
+        if(r.bid < floorV){ r.pricePt = priceW*0.3; r.tagP = "하한 미만 → 배점의 30%"; }
+        else if(r.bid >= p80){ r.pricePt = priceW*minBid/r.bid; r.tagP = ""; }
+        else { r.pricePt = priceW*minBid/p80 + 2*((p80-r.bid)/(p80-p70)); r.tagP = "80% 미만 산식";
+          notes.add("예정가격의 80% 미만 입찰은 예규 제2산식(가산 최대 2점)으로 계산했어요."); }
+        r.tech = r.quant + r.qual;
+        r.total = r.tech + r.pricePt;
+        r.pass = sw ? (r.tech >= techW*0.85) : (r.total >= 70);
+      });
+      rows.sort((a,b)=>b.total-a.total).forEach((r,i)=>r.rank=i+1);
+      let h = '<div class="res" style="overflow-x:auto"><table>';
+      h += '<tr><th>순위</th><th>업체</th><th>입찰가 (예가 대비)</th><th>정량</th><th>정성(제외 평균)</th><th>가격평점</th><th>기술점수</th><th>종합</th><th>적격</th></tr>';
+      rows.forEach(r=>{
+        h += '<tr'+(r.rank===1&&r.pass?' class="win"':'')+'><td>'+r.rank+'</td><td>'+r.name+'</td>'
+          +'<td class="num">'+won(r.bid)+'<br><span style="color:var(--sub)">'+(r.bid/base*100).toFixed(2)+'%</span>'
+          +(r.tagP?' <span class="tag o">'+r.tagP+'</span>':'')+'</td>'
+          +'<td class="num">'+r.quant.toFixed(2)+'</td><td class="num">'+r.qual.toFixed(2)+'</td>'
+          +'<td class="num">'+r.pricePt.toFixed(2)+'</td><td class="num">'+r.tech.toFixed(2)+'</td>'
+          +'<td class="num"><b>'+r.total.toFixed(2)+'</b></td>'
+          +'<td>'+(r.pass?'<span class="tag k">적격</span>':'<span class="tag r">미달</span>')+'</td></tr>';
+      });
+      h += '</table></div>';
+      h += '<p class="note">적격 기준 — '+(sw
+        ? 'SW사업: 기술점수(정량+정성)가 기술배점 '+techW+'점의 85%인 '+(techW*0.85).toFixed(2)+'점 이상'
+        : '일반: 종합평점 70점 이상')+' · 적격자 중 1순위부터 기술협상 → 가격협상 순으로 진행해요.</p>';
+      if(notes.size) h += '<div class="warnbox">'+[...notes].map(n=>'· '+n).join('<br>')+'</div>';
+      out.innerHTML = h;
+    });
+  }
+
+  /* ───── 낙찰하한율 ───── */
+  const RATE_TABLE = {
+    gongsa:{label:"공사 (행안부 적격심사)",note:"추정가격 300억원 이상은 종합평가 낙찰자 결정 등 별도 기준",
+      brackets:[[100*E,300*E,81.995],[50*E,100*E,87.495],[30*E,50*E,88.745],[10*E,30*E,88.745],[3*E,10*E,89.745],[2*E,3*E,87.745],[0,2*E,87.745]]},
+    ilban:{label:"일반용역 적격심사",
+      brackets:[[30*E,Infinity,72.995],[10*E,30*E,77.995],[5*E,10*E,85.495],[2*E,5*E,86.745],[0,2*E,87.745]]},
+    danso:{label:"일반용역 — 단순노무",flat:87.745,note:"금액과 관계없이 87.745%"},
+    gisulPQ:{label:"기술용역 (PQ)",note:"건설엔지니어링(설계·건설사업관리·감리 등) — 사업수행능력평가 통과자 대상",brackets:[[10*E,Infinity,79.995],[5*E,10*E,85.495],[0,5*E,86.745]]},
+    gisulNPQ:{label:"기술용역 (비PQ)",note:"PQ 비대상 기술용역 적격심사",brackets:[[10*E,Infinity,79.995],[5*E,10*E,85.495],[2*E,5*E,86.745],[0,2*E,87.745]]},
+    haksul:{label:"학술용역",flat:80.495},
+    mulpumH:{label:"물품 (행안부 적격심사)",goshi:[80.495,84.245],
+      note:"고시금액 이상 80.495% · 미만 84.245% — 고시금액은 2년마다 변경되니 현행 고시 확인"},
+    mulpumJ:{label:"물품 — 중소기업자간 경쟁제품 (계약이행능력심사)",flat:89.995,note:"'26.7.31. 매뉴얼 개정 — 87.995%에서 89.995%로 상향"},
+    gunpye:{label:"건설폐기물처리용역 (환경부)",
+      brackets:[[100*E,Infinity,72.995],[30*E,100*E,77.995],[15*E,30*E,82.995],[5*E,15*E,85.495],[2*E,5*E,86.745],[0,2*E,87.745]]},
+    ilpye:{label:"일반폐기물처리용역 (서울시)",note:"생활폐기물 수집·운반만 평가 시 금액 무관 87.745%",
+      brackets:[[30*E,Infinity,72.995],[10*E,30*E,77.995],[5*E,10*E,85.495],[2*E,5*E,86.745],[1*E,2*E,87.745],[0,1*E,87.745]]},
+    boheom:{label:"보험용역",flat:47.995},
+    ganhaeng:{label:"간행물 (간행물평가기준)",flat:89.995},
+    "su-gongsa":{label:"2인 견적 수의 — 공사",flat:89.745,note:"예정가격 대비 89.745% 이상 최저가 순"},
+    "su-yong":{label:"2인 견적 수의 — 용역·물품",suyong:true,note:"2천만원 초과 88% · 이하 90% 이상"},
+    "su-ganhaeng":{label:"2인 견적 수의 — 간행물",flat:90,note:"출판문화산업 진흥법 §22 간행물 — 90% 이상"}
+  };
+
+  function bracketLabel(lo,hi){
+    const f = x => x>=E ? (x/E).toLocaleString()+"억" : (x/1e4).toLocaleString()+"만";
+    if(hi===Infinity) return f(lo)+"원 이상";
+    if(lo===0) return f(hi)+"원 미만";
+    return f(lo)+"원 ~ "+f(hi)+"원 미만";
+  }
+
+  const btnRRun = $("r-run");
+  if(btnRRun) {
+    btnRRun.addEventListener("click",()=>{
+      const cat = RATE_TABLE[$("r-cat").value], p = num($("r-price")), base = num($("r-base"));
+      let rate=null, cond="";
+      if(cat.flat!=null){ rate=cat.flat; cond="금액 구간과 무관"; }
+      else if(cat.suyong){
+        if(!p){ $("r-out").innerHTML='<p class="placeholder">추정가격을 입력해 주세요.</p>'; return; }
+        rate = p<=2e7?90:88; cond = p<=2e7?"추정가격 2천만원 이하":"추정가격 2천만원 초과";
+      }
+      else if(cat.goshi){
+        if(p>=10*E){ rate=cat.goshi[0]; cond="10억원 이상 (고시금액 이상 확실)"; }
+      }
+      else{
+        if(!p){ $("r-out").innerHTML='<p class="placeholder">추정가격을 입력해 주세요.</p>'; return; }
+        for(const [lo,hi,r] of cat.brackets){ if(p>=lo&&p<hi){ rate=r; cond=bracketLabel(lo,hi); break; } }
+      }
+      let h="";
+      if(rate!==null){
+        h += '<div class="verdict blue"><span class="big">'+rate+'%</span><div><b>'+cat.label+'</b><small>'+cond+(p?' · 추정가격 '+korUnit(p):'')+'</small></div></div>';
+        if(base){
+          const floor = Math.ceil(base*rate/100);
+          h += '<div class="res">예정가격 '+won(base)+' × '+rate+'% = 투찰 하한액 <b class="money">'+won(floor)+'</b><br><span style="color:var(--sub);font-size:.84rem">이 금액 이상 ~ 예정가격 이하에서 하한율 직상 최저가격이 1순위</span></div>';
+        }
+      } else if(cat.goshi){
+        h += '<div class="verdict blue"><span class="big">🔎</span><div><b>'+cat.label+'</b><small>고시금액 이상 80.495% · 미만 84.245% — 현행 고시금액과 비교 필요</small></div></div>';
+      } else {
+        h += '<div class="verdict blue"><span class="big">📐</span><div><b>별도 기준</b><small>'+(cat.note||"해당 구간은 별도 기준(종합평가 등) 적용")+'</small></div></div>';
+      }
+      if(cat.note) h += '<p class="note">'+cat.note+'</p>';
+      $("r-out").innerHTML = h;
+    });
+  }
+
+  /* ───── 조달청 Open API 연동 ───── */
+  const btnTestG2bApi = $("btnTestG2bApi");
+  if(btnTestG2bApi) {
+    btnTestG2bApi.addEventListener("click", async () => {
+      const keyEl = $("apiServiceKey");
+      const instEl = $("apiInstCd");
+      const resultArea = $("g2bApiResultArea");
+      const logEl = $("g2bApiLog");
+
+      const key = keyEl ? keyEl.value.trim() : "";
+      const instCd = instEl ? instEl.value.trim() : "6110000";
+
+      if(resultArea) resultArea.style.display = "block";
+      if(logEl) logEl.innerHTML = `<span style="color:var(--pri)">⏳ 조달청 나라장터 API 요청 서버와 연결 시도 중...</span><br>`;
+
+      if (!key) {
+        if(logEl) {
+          logEl.innerHTML += `
+<span style="color:var(--warn)">⚠️ 안내: 공공데이터포털(data.go.kr) 서비스키가 입력되지 않았습니다.</span><br>
 ----------------------------------------------------------------<br>
 <b>[조달청 나라장터 Open API 실제 호출 가이드]</b><br>
 • 엔드포인트: https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01<br>
@@ -111,834 +719,24 @@ document.addEventListener('DOMContentLoaded', () => {
 ----------------------------------------------------------------<br>
 공공데이터포털(data.go.kr)에서 [조달청_나라장터 입찰공고 정보] 신청 후 발급받은 ServiceKey를 위 입력란에 붙여넣고 버튼을 다시 눌러주세요.
 `;
-                return;
-            }
+        }
+        return;
+      }
 
-            try {
-                const targetUrl = `https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01?serviceKey=${encodeURIComponent(key)}&numOfRows=10&pageNo=1&inqryDiv=1&type=json&instCd=${encodeURIComponent(instCd)}`;
-                
-                g2bApiLog.innerHTML += `<span>요청 URL: ${targetUrl.substring(0, 80)}...</span><br>`;
-                
-                const resp = await fetch(targetUrl);
-                if (resp.ok) {
-                    const json = await resp.json();
-                    g2bApiLog.innerHTML += `<span class="text-green">✓ 조달청 API 응답 성공! (Status 200 OK)</span><br><pre>${JSON.stringify(json, null, 2)}</pre>`;
-                } else {
-                    g2bApiLog.innerHTML += `<span class="text-red">❌ API 응답 오류 (HTTP Status: ${resp.status})</span><br>인증키 유효 여부 및 공공데이터포털 활용신청 상태를 확인하세요.`;
-                }
-            } catch (err) {
-                g2bApiLog.innerHTML += `<span class="text-warning">ℹ️ 네트워크 / CORS 브라우저 보안 제약 알림:</span><br>클라이언트 웹 브라우저에서 공공데이터포털 direct fetch 시 CORS 방지 정책에 따라 백엔드 서버(Node.js / Python 등) 프록시를 통해 호출하는 것을 권장합니다.<br><br><b>[서버측 프록시 예시 (Node.js/Express)]</b><br><code>app.get('/api/g2b/bids', async (req, res) => {<br>  const resp = await fetch(\`https://apis.data.go.kr/1230000/.../getBidPblancListInfoInfo01?serviceKey=\${process.env.G2B_KEY}&inqryDiv=1&type=json\`);<br>  res.json(await resp.json());<br>});</code>`;
-            }
-        });
-    }
-
-    // 5. Contract Method Wizard Engine (Finding right method)
-    let wizardState = { type: '공사', subType: '종합공사', price: 45000000, isFemaleSocial: false, isPatented: false };
-
-    const wizardPages = document.querySelectorAll('.wizard-page');
-    const wizardSteps = document.querySelectorAll('.wizard-steps .step');
-
-    // Step 1 Options
-    const optCards = document.querySelectorAll('#w-page-1 .option-card');
-    optCards.forEach(card => {
-        card.addEventListener('click', () => {
-            optCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            wizardState.type = card.getAttribute('data-val');
-
-            renderWizardSubTypes(wizardState.type);
-            switchWizardPage(2);
-        });
-    });
-
-    function renderWizardSubTypes(type) {
-        const container = document.getElementById('wSubTypes');
-        container.innerHTML = '';
-
-        let subTypes = [];
-        if (type === '공사') subTypes = ['종합공사', '전문공사', '기타공사(전기/통신/소방 등)'];
-        else if (type === '용역') subTypes = ['일반용역 (행사/운영 등)', '기술용역 (설계/감리)', '학술연구용역'];
-        else subTypes = ['물품 제조구매', '단순 물품구매', '녹색/장애인 우선조달물품'];
-
-        subTypes.forEach(st => {
-            const div = document.createElement('div');
-            div.className = 'option-card';
-            div.innerHTML = `<h5>${st}</h5><p>${type} 세부 분류 선택</p>`;
-            div.addEventListener('click', () => {
-                wizardState.subType = st;
-                switchWizardPage(3);
-            });
-            container.appendChild(div);
-        });
-    }
-
-    function switchWizardPage(pageNum) {
-        wizardPages.forEach(p => p.classList.remove('active'));
-        wizardSteps.forEach(s => s.classList.remove('active'));
-
-        const pageEl = document.getElementById(`w-page-${pageNum}`);
-        const stepEl = document.getElementById(`step-node-${pageNum}`);
-        if (pageEl) pageEl.classList.add('active');
-        if (stepEl) stepEl.classList.add('active');
-    }
-
-    // Input Price Format Hint
-    const inputEstimatePrice = document.getElementById('inputEstimatePrice');
-    const priceHintText = document.getElementById('priceHintText');
-    if (inputEstimatePrice) {
-        inputEstimatePrice.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            wizardState.price = val;
-            if (val >= 100000000) {
-                priceHintText.textContent = `${(val / 100000000).toFixed(2)} 억원 (VAT 별도)`;
-            } else {
-                priceHintText.textContent = `${(val / 10000).toLocaleString()} 만원 (VAT 별도)`;
-            }
-        });
-    }
-
-    // Calculate Wizard Result
-    const btnCalculateWizard = document.getElementById('btnCalculateWizard');
-    if (btnCalculateWizard) {
-        btnCalculateWizard.addEventListener('click', () => {
-            const chkFemaleSocial = document.getElementById('chkFemaleSocial').checked;
-            const chkPatented = document.getElementById('chkPatented').checked;
-            const price = parseFloat(inputEstimatePrice.value) || 0;
-
-            let method = '';
-            let desc = '';
-            let details = [];
-
-            if (chkPatented) {
-                method = '1인 견적 수의계약 (특허/신기술 수의)';
-                desc = '특허공법, 신기술 또는 1인 생산물품에 해당하여 추정가격에 관계없이 1인 수의계약이 가능합니다.';
-                details.push('지방계약법 시행령 제25조 제1항 제4호 적용');
-                details.push('특정제품 선정심사위원회 및 사유서 첨부 필수');
-            } else if (price <= 20000000 || (chkFemaleSocial && price <= 50000000)) {
-                method = '1인 견적 수의계약 (소액 수의)';
-                desc = `추정가격 ${price <= 20000000 ? '2천만원' : '5천만원(희망기업)'} 이하 소액 계약에 해당하여 지정업체 1인 견적으로 계약 체결이 가능합니다.`;
-                details.push('지방계약법 시행령 제25조 제1항 제5호 적용');
-                details.push('동일업체 연간 수의계약 5회/10회 제한 여부 확인 필수');
-            } else if (
-                (wizardState.type === '공사' && wizardState.subType === '종합공사' && price <= 400000000) ||
-                (wizardState.type === '공사' && wizardState.subType === '전문공사' && price <= 200000000) ||
-                (wizardState.type === '공사' && price <= 160000000) ||
-                (wizardState.type !== '공사' && price <= 100000000)
-            ) {
-                method = '2인 이상 견적 수의계약 (전자공개 수의)';
-                desc = '소액 전자공개 범위에 해당하여 나라장터를 통해 2인 이상견적을 받아 낙찰자를 결정합니다 (적격심사 없음).';
-                details.push('지방계약법 시행령 제30조 적용');
-                details.push('안내공고기간: 원칙 3일 이상 (공휴일 제외)');
-            } else if (wizardState.type === '용역' && wizardState.subType.includes('일반')) {
-                method = '협상에 의한 계약 (제안서 평가)';
-                desc = '전문성 및 창의성이 요구되는 일반용역 사업으로 제안서를 제출받아 제안서평가위원회 평가 후 협상하여 계약합니다.';
-                details.push('기술능력평가 (80~85%) + 가격평가 (15~20%)');
-                details.push('합산점수 70점 이상 고득점자순 우선협상');
-            } else {
-                method = '적격심사 낙찰제 (공개경쟁입찰)';
-                desc = '예정가격 이하 최저가 입찰자순으로 적격심사(수행능력+가격)를 실시하여 종합 95점 이상자를 낙찰자로 결정합니다.';
-                details.push('입찰공고기간: 7일 ~ 40일 (추정가격별 차등)');
-                details.push('적격심사 서류 제출 7일 이내');
-            }
-
-            document.getElementById('resContractMethod').textContent = method;
-            document.getElementById('resContractDesc').textContent = desc;
-
-            const resDetailsList = document.getElementById('resDetailsList');
-            resDetailsList.innerHTML = details.map(d => `<div class="badge blue mt-1 mr-1">✓ ${d}</div>`).join('');
-
-            switchWizardPage(4);
-        });
-    }
-
-    const btnResetWizard = document.getElementById('btnResetWizard');
-    if (btnResetWizard) {
-        btnResetWizard.addEventListener('click', () => {
-            switchWizardPage(1);
-        });
-    }
-
-    // 6. Checkable Checklist Progress Tracker
-    const chkItems = document.querySelectorAll('#interactiveChecklist input[type="checkbox"]');
-    chkItems.forEach(item => {
-        item.addEventListener('change', updateChecklistProgress);
-    });
-
-    function updateChecklistProgress() {
-        const total = chkItems.length;
-        const checked = document.querySelectorAll('#interactiveChecklist input[type="checkbox"]:checked').length;
-        const percent = Math.round((checked / total) * 100);
-
-        document.getElementById('chkProgressPercent').textContent = `${percent}%`;
-        document.getElementById('chkProgressFill').style.width = `${percent}%`;
-    }
-
-    // 7. Vendor Sole Source Limit Checker
-    const btnCheckVendorLimit = document.getElementById('btnCheckVendorLimit');
-    if (btnCheckVendorLimit) {
-        btnCheckVendorLimit.addEventListener('click', () => {
-            const inputVal = document.getElementById('inputVendorBizNo').value.trim();
-            if (!inputVal) {
-                alert('사업자등록번호 또는 업체명을 입력해주세요.');
-                return;
-            }
-
-            const resArea = document.getElementById('vendorStatusResult');
-            resArea.classList.remove('hidden');
-
-            const isBlocked = inputVal.includes('제한') || inputVal.includes('초과');
-            if (isBlocked) {
-                document.getElementById('vResultName').textContent = inputVal;
-                document.getElementById('vResultBadge').textContent = '체결불가 (한도초과)';
-                document.getElementById('vResultBadge').className = 'badge danger';
-                document.getElementById('vDeptCount').textContent = '5 회';
-                document.getElementById('vTotalCount').textContent = '11 회';
-                document.getElementById('vMessageText').textContent = '⚠️ 해당 업체는 연간 수의계약 한도(본청 5회 / 서울시 10회)를 초과하여 수의계약 체결이 불가합니다.';
-            } else {
-                document.getElementById('vResultName').textContent = inputVal;
-                document.getElementById('vResultBadge').textContent = '계약가능';
-                document.getElementById('vResultBadge').className = 'badge success';
-                document.getElementById('vDeptCount').textContent = '2 회';
-                document.getElementById('vTotalCount').textContent = '4 회';
-                document.getElementById('vMessageText').textContent = '✓ 현재 수의계약 체결 한도 내에 있으므로 정상적으로 수의계약 체결이 가능합니다.';
-            }
-        });
-    }
-
-    // 8. Multiple Estimate & Reserve Price Calculator (15 prices -> Pick 4)
-    const btnGenEstimates = document.getElementById('btnGenEstimates');
-    if (btnGenEstimates) {
-        btnGenEstimates.addEventListener('click', () => {
-            const baseAmount = parseFloat(document.getElementById('inputBaseAmount').value) || 100000000;
-            const priceGrid15 = document.getElementById('priceGrid15');
-            priceGrid15.innerHTML = '';
-
-            let prices = [];
-            for (let i = 0; i < 15; i++) {
-                // ±3% variation
-                const factor = 0.97 + Math.random() * 0.06;
-                const p = Math.round(baseAmount * factor);
-                prices.push(p);
-            }
-
-            // Shuffle and pick 4
-            const indices = Array.from({ length: 15 }, (_, i) => i).sort(() => Math.random() - 0.5);
-            const pickedIndices = indices.slice(0, 4);
-
-            let pickedSum = 0;
-            pickedIndices.forEach(idx => pickedSum += prices[idx]);
-            const avgEstPrice = Math.round(pickedSum / 4);
-
-            prices.forEach((p, idx) => {
-                const isPicked = pickedIndices.includes(idx);
-                const div = document.createElement('div');
-                div.className = `price-badge ${isPicked ? 'picked' : ''}`;
-                div.innerHTML = `<strong>#${idx + 1}</strong><br>${p.toLocaleString()}원`;
-                priceGrid15.appendChild(div);
-            });
-
-            document.getElementById('finalEstPrice').textContent = `${avgEstPrice.toLocaleString()} 원`;
-            document.getElementById('estResultsArea').classList.remove('hidden');
-        });
-    }
-
-    // 적격심사 점수 계산기
-    const btnCalcEvalScore = document.getElementById('btnCalcEvalScore');
-    if (btnCalcEvalScore) {
-        btnCalcEvalScore.addEventListener('click', () => {
-            const scorePerf = parseFloat(document.getElementById('scorePerf').value) || 0;
-            const scoreBidPriceVal = parseFloat(document.getElementById('scoreBidPrice').value) || 0;
-            const scoreCredit = parseFloat(document.getElementById('scoreCredit').value) || 0;
-            const scorePenalty = parseFloat(document.getElementById('scorePenalty').value) || 0;
-
-            // Simple Price Evaluation Formula simulation (70 points max)
-            const priceScore = Math.max(60, 70 - Math.abs(87750000 - scoreBidPriceVal) / 1000000);
-            const totalScore = (scorePerf + priceScore + scoreCredit - scorePenalty).toFixed(2);
-
-            document.getElementById('totalEvalScore').textContent = `${totalScore} 점`;
-            const area = document.getElementById('evalResultArea');
-            area.classList.remove('hidden');
-
-            const badge = document.getElementById('evalPassBadge');
-            if (totalScore >= 95.0) {
-                badge.textContent = '✓ 적격심사 통과 (낙찰예정자 선정)';
-                badge.className = 'badge-status pass mt-2 text-green';
-            } else {
-                badge.textContent = '❌ 점수 미달 (통과 기준 95.0점 미만)';
-                badge.className = 'badge-status fail mt-2 text-red';
-            }
-        });
-    }
-
-    // 9. Committee Simulation (Proposal Evaluation)
-    const btnRunCommitteeSim = document.getElementById('btnRunCommitteeSim');
-    if (btnRunCommitteeSim) {
-        btnRunCommitteeSim.addEventListener('click', () => {
-            const grid = document.getElementById('committeeGrid');
-            grid.innerHTML = '';
-
-            const candidates = Array.from({ length: 21 }, (_, i) => ({
-                id: i + 1,
-                name: `평가위원 ${i + 1}호`,
-                dept: i % 3 === 0 ? '교수' : i % 2 === 0 ? '연구원' : '기술사',
-                pickedCount: Math.floor(Math.random() * 8)
-            }));
-
-            // Sort by count desc
-            candidates.sort((a, b) => b.pickedCount - a.pickedCount);
-
-            candidates.forEach((c, idx) => {
-                const isSelected = idx < 7; // Top 7 chosen
-                const div = document.createElement('div');
-                div.className = `c-card ${isSelected ? 'selected' : ''}`;
-                div.innerHTML = `
-                    <strong>${c.name}</strong><br>
-                    <small>${c.dept}</small><br>
-                    <span class="badge ${isSelected ? 'success' : 'blue'} mt-1">${c.pickedCount}회 추첨</span>
-                `;
-                grid.appendChild(div);
-            });
-        });
-    }
-
-    // 10. Advance Payment Calculator
-    const btnCalcAdvance = document.getElementById('btnCalcAdvance');
-    if (btnCalcAdvance) {
-        btnCalcAdvance.addEventListener('click', () => {
-            const totalAmt = parseFloat(document.getElementById('advContractAmt').value) || 0;
-            const givenAmt = parseFloat(document.getElementById('advGivenAmt').value) || 0;
-            const progressAmt = parseFloat(document.getElementById('advProgressAmt').value) || 0;
-
-            if (totalAmt <= 0) return;
-
-            const deductAmt = Math.round(givenAmt * (progressAmt / totalAmt));
-            const netPay = Math.round(progressAmt - deductAmt);
-
-            document.getElementById('resAdvDeduct').textContent = `${deductAmt.toLocaleString()} 원`;
-            document.getElementById('resAdvNetPay').textContent = `${netPay.toLocaleString()} 원`;
-            document.getElementById('advCalcResult').classList.remove('hidden');
-        });
-    }
-
-    // 11. Penalty Calculator
-    const btnCalcPenalty = document.getElementById('btnCalcPenalty');
-    if (btnCalcPenalty) {
-        btnCalcPenalty.addEventListener('click', () => {
-            const rate = parseFloat(document.getElementById('penType').value) || 0.0013;
-            const amt = parseFloat(document.getElementById('penContractAmt').value) || 0;
-            const days = parseInt(document.getElementById('penDays').value) || 0;
-
-            const penAmt = Math.round(amt * days * rate);
-            document.getElementById('resPenaltyAmt').textContent = `${penAmt.toLocaleString()} 원`;
-            document.getElementById('penResultArea').classList.remove('hidden');
-        });
-    }
-
-    // 12. Modal & Draft Registration
-    const draftModal = document.getElementById('draftModal');
-    const btnNewDraft = document.getElementById('btnNewDraft');
-    const btnCloseModal = document.getElementById('btnCloseModal');
-
-    if (btnNewDraft && draftModal) {
-        btnNewDraft.addEventListener('click', () => draftModal.classList.remove('hidden'));
-    }
-    if (btnCloseModal && draftModal) {
-        btnCloseModal.addEventListener('click', () => draftModal.classList.add('hidden'));
-    }
-
-    const formNewDraft = document.getElementById('formNewDraft');
-    if (formNewDraft) {
-        formNewDraft.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('신규 계약의뢰 기안문이 전자결재시스템(e-호조)으로 전송되었습니다.');
-            draftModal.classList.add('hidden');
-        });
-    }
-
-    // Data Export
-    const btnExportData = document.getElementById('btnExportData');
-    if (btnExportData) {
-        btnExportData.addEventListener('click', () => {
-            const exportData = {
-                title: "서울특별시 발주부서 계약실무 도우미 서식 및 진단 데이터",
-                exportedAt: new Date().toISOString(),
-                lastHelperData: LAST_HELPER_DATA || "미진단 (계약방법 진단 도구 실행 전)",
-                activeChecklistCount: activeCheckedItems ? activeCheckedItems.size : 0
-            };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "seoul_procurement_helper_export.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        });
-    }
-
-    /* ==========================================================================
-       Seoul Contract Helper Engine Extensions
-       ========================================================================== */
-
-    const E_AMT = 1e8; // 1억원
-    const formatWon = n => (n == null || isNaN(n)) ? "–" : Math.round(n).toLocaleString("ko-KR") + "원";
-    
-    function getKorUnitStr(n) {
-        if (!n) return "";
-        const eok = Math.floor(n / E_AMT);
-        const man = Math.floor((n % E_AMT) / 1e4);
-        const rest = n % 1e4;
-        let s = "";
-        if (eok) s += eok.toLocaleString() + "억 ";
-        if (man) s += man.toLocaleString() + "만 ";
-        if (rest) s += rest.toLocaleString();
-        return (s.trim() || "0") + "원";
-    }
-
-    const parseNum = val => parseInt((String(val) || "").replace(/[^0-9]/g, ""), 10) || 0;
-
-    // Money Input formatting with Korean hints
-    document.querySelectorAll('.money').forEach(inp => {
-        inp.addEventListener('input', () => {
-            const raw = parseNum(inp.value);
-            inp.value = raw ? raw.toLocaleString('ko-KR') : '';
-            const hint = document.getElementById(inp.id + 'Kor');
-            if (hint) hint.textContent = raw ? '= ' + getKorUnitStr(raw) : '';
-        });
-    });
-
-    // Helper Contract Kind Chips
-    let selectedHelperKind = 'goods';
-    const helperKindChips = document.querySelectorAll('#helperKindChips .chip');
-    helperKindChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            selectedHelperKind = chip.getAttribute('data-k');
-            helperKindChips.forEach(c => c.classList.remove('on'));
-            chip.classList.add('on');
-        });
-    });
-
-    const KINFO_DICT = {
-        goods: { name: '물품', two: 1e8, isC: false },
-        service: { name: '용역', two: 1e8, isC: false },
-        gc: { name: '종합공사', two: 4e8, isC: true },
-        sc: { name: '전문공사', two: 2e8, isC: true },
-        oc: { name: '그 밖의 공사', two: 1.6e8, isC: true }
-    };
-
-    let LAST_HELPER_DATA = null;
-
-    function decideHelperContract() {
-        const k = KINFO_DICT[selectedHelperKind];
-        const p = parseNum(document.getElementById('helperPrice').value);
-        const chkSpecialEl = document.getElementById('chkOptSpecial');
-        const chkSevereEl = document.getElementById('chkOptSevere');
+      try {
+        const targetUrl = `https://apis.data.go.kr/1230000/BidPublicInfoService04/getBidPblancListInfoInfo01?serviceKey=${encodeURIComponent(key)}&numOfRows=10&pageNo=1&inqryDiv=1&type=json&instCd=${encodeURIComponent(instCd)}`;
+        if(logEl) logEl.innerHTML += `<span>요청 URL: ${targetUrl.substring(0, 80)}...</span><br>`;
         
-        const special = chkSpecialEl ? chkSpecialEl.checked : false;
-        const severe = (chkSevereEl ? chkSevereEl.checked : false) && !k.isC;
-
-        const oneLimit = severe ? Infinity : (special ? 5e7 : 2e7);
-        const oneOk = p > 0 && p <= oneLimit;
-        const twoOk = p > 0 && p <= k.two;
-        const rec = oneOk ? 'one' : (twoOk ? 'two' : 'bid');
-
-        const noticeDays = p < 10 * E_AMT ? 7 : (p < 50 * E_AMT ? 15 : 30);
-        const quoteRate = k.isC ? '89.745%' : (p <= 2e7 ? '90%' : '88%');
-
-        // Audit pre-procedures
-        const audit = (() => {
-            if (selectedHelperKind === 'gc' && p >= 20 * E_AMT) return '종합공사 20억원 이상';
-            if ((selectedHelperKind === 'sc' || selectedHelperKind === 'oc') && p >= 10 * E_AMT) return '공사(종합 외) 10억원 이상';
-            if (selectedHelperKind === 'service' && p >= 10 * E_AMT) return '용역 10억원 이상 (협상계약 5억↑)';
-            if (selectedHelperKind === 'goods' && p >= 5 * E_AMT) return '물품 5억원 이상';
-            if (rec === 'one' && p > 2e7) return '1인 견적 수의계약 2천만원 초과';
-            return null;
-        })();
-
-        const cost = (() => {
-            if (k.isC && p >= 3 * E_AMT) return '공사 — 공종에 따라 3억(조경·전기·통신·설비 등) 또는 5억(토목·건축) 이상';
-            if (selectedHelperKind === 'service' && p >= 2 * E_AMT) return '용역 2억원 이상';
-            if (selectedHelperKind === 'goods' && p >= 2e7) return '물품 2천만원 이상';
-            return null;
-        })();
-
-        const spec = (rec === 'bid' && p >= 5e7) ? '입찰 대상 5천만원 이상 — 나라장터 사전규격 공개 5일' : null;
-        const agree = (() => {
-            if (k.isC && p >= 10 * E_AMT) return '공사 10억원 이상';
-            if (selectedHelperKind === 'service' && p >= 5 * E_AMT) return '용역 5억원 이상';
-            if (selectedHelperKind === 'goods' && p >= 2 * E_AMT) return '물품 구매 2억원 이상 (제조는 5억↑)';
-            return null;
-        })();
-
-        return { k, p, special, severe, oneLimit, oneOk, twoOk, rec, noticeDays, quoteRate, audit, cost, spec, agree };
-    }
-
-    function buildTimelineHtml(d) {
-        const pre = [];
-        pre.push({ t: '발주 준비 — 과업내용서·예산 확정', tag: '통상', days: [3, 5], soft: true });
-        if (d.cost) pre.push({ t: '원가(계약)심사', tag: '통상', days: [5, 10], soft: true, s: d.cost });
-        if (d.agree) pre.push({ t: '재정합의 (재무과장)', tag: '통상', days: [2, 3], soft: true, s: d.agree });
-        if (d.audit) pre.push({ t: '일상감사', tag: '통상', days: [3, 7], soft: true, s: d.audit });
-        if (d.spec) pre.push({ t: '사전규격 공개', tag: '통상', days: [5, 5], soft: true, s: '통상 5일 내외 (나라장터)' });
-
-        if (d.rec === 'bid') {
-            pre.push({ t: '입찰공고', tag: '법정', days: [d.noticeDays, d.noticeDays], s: '추정가격 기준 ' + d.noticeDays + '일 이상 (재공고·긴급 5일)' });
-            pre.push({ t: '개찰 · 적격심사', tag: '통상', days: [7, 14], soft: true, s: '낙찰하한율 기준 점수 심사' });
-        } else if (d.rec === 'two') {
-            pre.push({ t: '전자공개 견적 안내공고', tag: '법정', days: [3, 5], s: '3일 이상 (신규 사업자 대상 5일) · 견적률 ' + d.quoteRate + ' 이상' });
+        const resp = await fetch(targetUrl);
+        if (resp.ok) {
+          const json = await resp.json();
+          if(logEl) logEl.innerHTML += `<span style="color:var(--ok)">✓ 조달청 API 응답 성공! (Status 200 OK)</span><br><pre style="white-space:pre-wrap">${JSON.stringify(json, null, 2)}</pre>`;
         } else {
-            pre.push({ t: '견적서 징구 · 가격 검토', tag: '통상', days: [1, 3], soft: true });
+          if(logEl) logEl.innerHTML += `<span style="color:var(--bad)">❌ API 응답 오류 (HTTP Status: ${resp.status})</span><br>인증키 유효 여부 및 공공데이터포털 활용신청 상태를 확인하세요.`;
         }
-        pre.push({ t: '계약 체결', tag: '법정', days: [1, 10], s: '낙찰(결정) 통지 후 10일 이내 · 보증금·인지세 확인' });
-
-        const post = [
-            { t: '검사 · 검수', tag: '법정', days: [1, 14], s: '이행 완료 통지 후 14일 이내' },
-            { t: '대가 지급', tag: '법정', days: [1, 5], s: '검사 후 청구일부터 5일 이내' }
-        ];
-
-        let lo = 0, hi = 0;
-        pre.forEach(x => { lo += x.days[0]; hi += x.days[1]; });
-
-        let html = '<div class="tl">';
-        pre.forEach(x => {
-            const dd = x.days[0] === x.days[1] ? x.days[0] + "일" : x.days[0] + "~" + x.days[1] + "일";
-            html += `<div class="tl-i ${x.soft ? 'soft' : ''}">
-                <div class="h">
-                    <b>${x.t}</b>
-                    <span class="tag ${x.tag === '법정' ? 'b' : 'g'}">${x.tag} · ${dd}</span>
-                </div>
-                ${x.s ? `<div class="d">${x.s}</div>` : ''}
-            </div>`;
-        });
-        html += '<div class="tl-gap">— 계약이행 기간 (과업 내용 및 시방서 기준) —</div>';
-        post.forEach(x => {
-            const dd = x.days[0] === x.days[1] ? x.days[0] + "일" : x.days[0] + "~" + x.days[1] + "일";
-            html += `<div class="tl-i ${x.soft ? 'soft' : ''}">
-                <div class="h">
-                    <b>${x.t}</b>
-                    <span class="tag ${x.tag === '법정' ? 'b' : 'g'}">${x.tag} · ${dd}</span>
-                </div>
-                ${x.s ? `<div class="d">${x.s}</div>` : ''}
-            </div>`;
-        });
-        html += '</div>';
-        html += `<div class="tl-sum">⏳ 발주 준비부터 계약 체결까지 <b>약 ${lo} ~ ${hi}일</b> · 이행 완료 후 대금 수령까지 최대 <b>19일</b></div>`;
-        return html;
-    }
-
-    const btnRunHelperGuide = document.getElementById('btnRunHelperGuide');
-    if (btnRunHelperGuide) {
-        btnRunHelperGuide.addEventListener('click', () => {
-            const d = decideHelperContract();
-            const resArea = document.getElementById('helperGuideResult');
-            if (!d.p) {
-                resArea.innerHTML = '<div class="card"><p class="placeholder text-red">추정가격을 입력해 주세요 🙂</p></div>';
-                return;
-            }
-
-            let h = `<div class="card">
-                <h2>진단 결과 & 발주 가이드</h2>
-                <p class="desc">${d.k.name} · 추정가격 ${getKorUnitStr(d.p)}</p>`;
-
-            if (d.oneOk) {
-                h += `<div class="mcard rec">
-                    <span class="badge">추천</span>
-                    <b>🤝 1인 견적 수의계약</b>
-                    <p>${d.severe ? '중증장애인생산품 직접 생산 — 금액 제한 없이 수의 체결 가능' : (d.special ? '특례 대상 기업 — 5천만원 이하 가능' : '추정가격 2천만원 이하 소액 수의계약')}</p>
-                    <div class="tags">
-                        <span class="tag k">견적서 1인 제출</span>
-                        <span class="tag o">동일업체 연 4회/9회 제한</span>
-                        ${d.p > 2e7 ? '<span class="tag r">일상감사 대상</span>' : ''}
-                    </div>
-                </div>`;
-            }
-
-            if (d.twoOk) {
-                h += `<div class="mcard ${d.rec === 'two' ? 'rec' : ''}">
-                    ${d.rec === 'two' ? '<span class="badge">추천</span>' : ''}
-                    <b>💻 전자공개 수의계약 (2인 이상 견적)</b>
-                    <p>${d.k.name} ${getKorUnitStr(d.k.two)} 이하 — 나라장터 안내공고 3일(신규 5일), 견적률 ${d.quoteRate} 이상 최저가</p>
-                </div>`;
-            }
-
-            h += `<div class="mcard ${d.rec === 'bid' ? 'rec' : ''}">
-                ${d.rec === 'bid' ? '<span class="badge">추천</span>' : ''}
-                <b>📢 일반(경쟁)입찰</b>
-                <p>공고 ${d.noticeDays}일 이상 · 적격심사 낙찰제</p>
-            </div>`;
-
-            h += `<h3>📋 발주 전 확인할 사전절차</h3><div class="pre">`;
-            const pres = [["일상감사", d.audit], ["원가(계약)심사", d.cost], ["사전규격 공개", d.spec], ["재정합의", d.agree]];
-            pres.forEach(([n, v]) => {
-                h += `<div class="p ${v ? 'on' : ''}">
-                    <div class="n">${v ? '⚠️ ' : '✓ '}${n}</div>
-                    <div class="y">${v ? v : '대상 아님'}</div>
-                </div>`;
-            });
-            h += `</div>`;
-
-            h += `<h3 class="mt-4">⏱️ 예상 진행 일정 타임라인</h3>` + buildTimelineHtml(d);
-            h += `<div class="mt-3"><button class="btn btn-success" id="btnMakeChecklistFromGuide"><i data-lucide="list-checks"></i> 이 조건으로 5단계 체크리스트 생성</button></div></div>`;
-
-            resArea.innerHTML = h;
-            if (window.lucide) lucide.createIcons();
-
-            LAST_HELPER_DATA = d;
-
-            const btnMakeChecklistFromGuide = document.getElementById('btnMakeChecklistFromGuide');
-            if (btnMakeChecklistFromGuide) {
-                btnMakeChecklistFromGuide.addEventListener('click', () => {
-                    renderDynamicChecklist();
-                    // Switch to tab-prep-checklist
-                    const navBtnChecklist = document.querySelector('.sidebar-nav .nav-btn[data-tab="prep-checklist"]');
-                    if (navBtnChecklist) navBtnChecklist.click();
-                });
-            }
-        });
-    }
-
-    // Dynamic 5-Phase Checklist Engine
-    let activeCheckedItems = new Set();
-
-    function getDynamicChecklistItems(d) {
-        if (!d) d = { k: { name: '일반계약', two: 1e8, isC: false }, p: 45000000, rec: 'two', noticeDays: 7, quoteRate: '88%' };
-        const items = [];
-        const add = (ph, label, sub, lv) => items.push({ ph, label, sub, lv, id: 'ck_' + items.length });
-        const P = "📝 발주 준비", N = "📣 공고 · 업체 선정", C = "✍️ 계약 체결", I = "🚚 이행 관리", F = "💳 검사 · 대가";
-
-        add(P, "예산 편성·배정 확인", "지출원인행위 전 예산 확정", "권장");
-        add(P, "과업내용서 · 시방서 · 설계서 확정", "산출 근거 및 설계도서 포함", "권장");
-        add(P, "분리발주(쪼개기) 여부 점검", "수의 기준 회피 목적 분할 금지 — 시행령 §77", "필수");
-        if (d.rec === 'one') add(P, "동일업체 수의계약 횟수 확인", "실·국 연 4회 / 서울시 전체 연 9회 이내", "필수");
-        if (d.cost) add(P, "원가(계약)심사 의뢰", d.cost, "필수");
-        if (d.agree) add(P, "재정합의 (재무과장)", d.agree, "필수");
-        if (d.audit) add(P, "일상감사 의뢰", d.audit, "필수");
-        if (d.spec) add(P, "사전규격 공개 (나라장터)", d.spec, "필수");
-
-        if (d.rec === 'bid') {
-            add(N, `입찰공고 게시 (${d.noticeDays}일 이상)`, "나라장터 — 재공고·긴급은 5일", "법정");
-            add(N, "입찰참가자격 · 실적 기준 확인", "면허·등록, 지역제한 여부 등", "권장");
-            add(N, "개찰 · 적격심사", "낙찰하한율 기준 점수 심사", "권장");
-        } else if (d.rec === 'two') {
-            add(N, "전자공개 견적 안내공고 (3일, 신규 5일)", "나라장터 전자견적", "법정");
-            add(N, `견적률 확인 — ${d.quoteRate} 이상`, "예정가격 대비 · 최저가격 순 결정", "권장");
-        } else {
-            add(N, "수의계약 사유 명시", "사유서 작성 — 시행령 §25 근거 명확히", "필수");
-            add(N, "견적서 징구 · 가격 적정성 검토", "시장가격·과거 계약단가 비교", "권장");
-        }
-
-        add(C, `계약보증금 확인 — 약 ${formatWon(Math.round(d.p * 0.1))}`, d.p <= 5e7 ? "계약금액 5천만원 이하 — 지급확약서로 면제 가능" : "계약금액의 10% 이상", "필수");
-        add(C, "인지세 납부 확인", "전자수입인지 · 공동 부담", "필수");
-        if (d.k.isC && d.p >= 2e7) add(C, "도시철도공채 매입 확인", "건설공사 도급 2천만원 이상 — 계약금액의 2%", "필수");
-        add(C, "청렴계약서 · 행동강령 서약", "서울시 청렴계약제 적용", "필수");
-        add(C, "계약서 작성 · 전자서명", "낙찰 통지 후 10일 이내", "법정");
-
-        add(I, "감독 · 검사공무원 지정", "공사·용역 이행 관리", "권장");
-        add(I, "선금 지급 (청구 시 14일 이내)", "한도 70% (재무건전성 우수 100%)", "법정");
-        add(I, "지연 발생 시 지연배상금 산정", "10% 이상이면 해제·해지 검토", "권장");
-
-        add(F, "검사 — 완료 통지 후 14일 이내", "필요 시 전문기관 검사", "법정");
-        if (d.k.isC) add(F, "하자보수보증금 납부 확인", "공종별 2~5% — 3천만원 이하 공사 면제 가능", "필수");
-        add(F, "대가 지급 — 청구 후 5일 이내", "지연 시 지연이자 발생", "법정");
-
-        return items;
-    }
-
-    function renderDynamicChecklist() {
-        const area = document.getElementById('dynamicChecklistArea');
-        if (!area) return;
-
-        const items = getDynamicChecklistItems(LAST_HELPER_DATA);
-        const byPh = {};
-        items.forEach(it => { (byPh[it.ph] = byPh[it.ph] || []).push(it); });
-
-        const missReq = items.filter(it => it.lv !== '권장' && !activeCheckedItems.has(it.id));
-
-        let h = `<div class="card-header flex-between mb-3">
-            <div>
-                <h4>이 계약의 5단계 점검 목록</h4>
-                <p class="text-muted text-sm">총 ${items.length}개 항목 — 법정 및 필수 사전절차를 확인하세요.</p>
-            </div>
-        </div>`;
-
-        h += missReq.length
-            ? `<div class="miss"><b>🔔 아직 확인되지 않은 필수·법정 항목 (${missReq.length}건)</b><div class="list">${missReq.map(it => `<span class="tag ${it.lv === '법정' ? 'b' : 'r'}">${it.label}</span>`).join('')}</div></div>`
-            : `<div class="miss ok"><b>🎉 필수 및 법정 체크항목이 모두 확인되었습니다!</b></div>`;
-
-        for (const ph in byPh) {
-            const list = byPh[ph];
-            const done = list.filter(it => activeCheckedItems.has(it.id)).length;
-            const pct = Math.round((done / list.length) * 100);
-            h += `<div class="phase">
-                <div class="phase-h">
-                    <b>${ph}</b>
-                    <span class="pbar"><i style="width:${pct}%"></i></span>
-                    <span class="pcnt">${done}/${list.length}</span>
-                </div>`;
-            list.forEach(it => {
-                const on = activeCheckedItems.has(it.id);
-                h += `<label class="ck ${on ? 'on' : ''}">
-                    <input type="checkbox" data-id="${it.id}" ${on ? 'checked' : ''}>
-                    <span>
-                        <span class="l">${it.label}</span>
-                        <span class="tag ${it.lv === '법정' ? 'b' : it.lv === '필수' ? 'r' : 'g'}">${it.lv}</span>
-                        ${it.sub ? `<div class="s">${it.sub}</div>` : ''}
-                    </span>
-                </label>`;
-            });
-            h += `</div>`;
-        }
-
-        area.innerHTML = h;
-
-        area.querySelectorAll('input[type="checkbox"]').forEach(c => {
-            c.addEventListener('change', () => {
-                if (c.checked) activeCheckedItems.add(c.getAttribute('data-id'));
-                else activeCheckedItems.delete(c.getAttribute('data-id'));
-                renderDynamicChecklist();
-            });
-        });
-    }
-
-    const btnResetDynamicChecklist = document.getElementById('btnResetDynamicChecklist');
-    if (btnResetDynamicChecklist) {
-        btnResetDynamicChecklist.addEventListener('click', () => {
-            activeCheckedItems.clear();
-            renderDynamicChecklist();
-        });
-    }
-
-    // Bidding Floor & Rate Calculator
-    const RATE_TABLE_DICT = {
-        gongsa: { label: "공사 (행안부 적격심사)", brackets: [[100 * E_AMT, 300 * E_AMT, 81.995], [50 * E_AMT, 100 * E_AMT, 87.495], [30 * E_AMT, 50 * E_AMT, 88.745], [10 * E_AMT, 30 * E_AMT, 88.745], [3 * E_AMT, 10 * E_AMT, 89.745], [2 * E_AMT, 3 * E_AMT, 87.745], [0, 2 * E_AMT, 87.745]] },
-        ilban: { label: "일반용역 적격심사", brackets: [[30 * E_AMT, Infinity, 72.995], [10 * E_AMT, 30 * E_AMT, 77.995], [5 * E_AMT, 10 * E_AMT, 85.495], [2 * E_AMT, 5 * E_AMT, 86.745], [0, 2 * E_AMT, 87.745]] },
-        danso: { label: "일반용역 — 단순노무", flat: 87.745 },
-        gisulPQ: { label: "기술용역 (PQ)", brackets: [[10 * E_AMT, Infinity, 79.995], [5 * E_AMT, 10 * E_AMT, 85.495], [0, 5 * E_AMT, 86.745]] },
-        gisulNPQ: { label: "기술용역 (비PQ)", brackets: [[10 * E_AMT, Infinity, 79.995], [5 * E_AMT, 10 * E_AMT, 85.495], [2 * E_AMT, 5 * E_AMT, 86.745], [0, 2 * E_AMT, 87.745]] },
-        haksul: { label: "학술용역", flat: 80.495 },
-        mulpumH: { label: "물품 (행안부 적격심사)", goshi: [80.495, 84.245] },
-        mulpumJ: { label: "물품 — 중소기업자간 경쟁제품", flat: 87.995 },
-        gunpye: { label: "건설폐기물처리용역 (환경부)", brackets: [[100 * E_AMT, Infinity, 72.995], [30 * E_AMT, 100 * E_AMT, 77.995], [15 * E_AMT, 30 * E_AMT, 82.995], [5 * E_AMT, 15 * E_AMT, 85.495], [2 * E_AMT, 5 * E_AMT, 86.745], [0, 2 * E_AMT, 87.745]] },
-        ilpye: { label: "일반폐기물처리용역 (서울시)", brackets: [[30 * E_AMT, Infinity, 72.995], [10 * E_AMT, 30 * E_AMT, 77.995], [5 * E_AMT, 10 * E_AMT, 85.495], [2 * E_AMT, 5 * E_AMT, 86.745], [1 * E_AMT, 2 * E_AMT, 87.745], [0, 1 * E_AMT, 87.745]] },
-        boheom: { label: "보험용역", flat: 47.995 },
-        ganhaeng: { label: "간행물", flat: 89.995 },
-        "su-gongsa": { label: "2인 견적 수의 — 공사", flat: 89.745 },
-        "su-yong": { label: "2인 견적 수의 — 용역·물품", suyong: true },
-        "su-ganhaeng": { label: "2인 견적 수의 — 간행물", flat: 90 }
-    };
-
-    const btnRunRateCalc = document.getElementById('btnRunRateCalc');
-    if (btnRunRateCalc) {
-        btnRunRateCalc.addEventListener('click', () => {
-            const catKey = document.getElementById('rCat').value;
-            const cat = RATE_TABLE_DICT[catKey];
-            const p = parseNum(document.getElementById('rPrice').value);
-            const base = parseNum(document.getElementById('rBase').value);
-            const out = document.getElementById('rOut');
-
-            let rate = null;
-            let cond = "";
-
-            if (cat.flat != null) {
-                rate = cat.flat;
-                cond = "금액 구간과 무관";
-            } else if (cat.suyong) {
-                if (!p) { out.innerHTML = '<p class="placeholder text-red">추정가격을 입력해 주세요.</p>'; return; }
-                rate = p <= 2e7 ? 90 : 88;
-                cond = p <= 2e7 ? "추정가격 2천만원 이하" : "추정가격 2천만원 초과";
-            } else if (cat.goshi) {
-                if (p >= 10 * E_AMT) { rate = cat.goshi[0]; cond = "10억원 이상 (고시금액 이상)"; }
-                else { rate = cat.goshi[1]; cond = "고시금액 미만"; }
-            } else {
-                if (!p) { out.innerHTML = '<p class="placeholder text-red">추정가격을 입력해 주세요.</p>'; return; }
-                for (const [lo, hi, r] of cat.brackets) {
-                    if (p >= lo && p < hi) { rate = r; cond = `${getKorUnitStr(lo)} ~ ${hi === Infinity ? '이상' : getKorUnitStr(hi) + ' 미만'}`; break; }
-                }
-            }
-
-            let h = "";
-            if (rate !== null) {
-                h += `<div class="verdict blue">
-                    <span class="big">${rate}%</span>
-                    <div>
-                        <b>${cat.label}</b>
-                        <small>${cond} ${p ? ' · 추정가격 ' + getKorUnitStr(p) : ''}</small>
-                    </div>
-                </div>`;
-                if (base) {
-                    const floor = Math.ceil(base * rate / 100);
-                    h += `<div class="res">
-                        예정가격 ${formatWon(base)} × 낙찰하한율 ${rate}% = <strong>투찰 하한액 <b class="money">${formatWon(floor)}</b></strong><br>
-                        <span class="text-sm text-muted">이 금액 이상 ~ 예정가격 이하 범위에서 하한율 직상 최저가격 입찰자가 1순위</span>
-                    </div>`;
-                }
-            } else {
-                h += `<div class="verdict blue"><span class="big">📐</span><div><b>별도 기준 적용</b></div></div>`;
-            }
-            out.innerHTML = h;
-        });
-    }
-
-    // Stamp Duty & Metro Rail Bond Calculator
-    const getStampDutyAmt = a => a <= 1e7 ? 0 : a <= 3e7 ? 2e4 : a <= 5e7 ? 4e4 : a <= 1 * E_AMT ? 7e4 : a <= 10 * E_AMT ? 15e4 : 35e4;
-
-    const btnRunTaxBondCalc = document.getElementById('btnRunTaxBondCalc');
-    if (btnRunTaxBondCalc) {
-        btnRunTaxBondCalc.addEventListener('click', () => {
-            const a = parseNum(document.getElementById('tAmt').value);
-            const out = document.getElementById('tOut');
-            if (!a) { out.innerHTML = '<p class="placeholder text-red">계약금액을 입력해 주세요.</p>'; return; }
-
-            const st = getStampDutyAmt(a);
-            let h = `<div class="res">
-                <strong>인 지 세:</strong> <b class="money">${st ? formatWon(st) : "비과세 (1천만원 이하)"}</b> — 전자수입인지 매입 (계약당사자 공동 부담)<br>`;
-
-            const chkConstBond = document.getElementById('chkConstBond');
-            if (chkConstBond && chkConstBond.checked) {
-                if (a >= 2e7) {
-                    const raw = a * 0.02;
-                    const base = Math.floor(raw / 5000) * 5000;
-                    const bond = (raw - base >= 2500) ? base + 5000 : base;
-                    h += `<strong>도시철도공채 (2%):</strong> <b class="money">${formatWon(bond)}</b> <span class="text-sm text-muted">(5,000원 단위 매입 — 2,500원 이상 절상)</span>`;
-                } else {
-                    h += `<strong>도시철도공채:</strong> 계약금액 2천만원 미만으로 매입 대상 제외`;
-                }
-            }
-            h += `</div>`;
-            out.innerHTML = h;
-        });
-    }
-
-    // AI Contract Advisory Assistant Chat Logic
-    const btnSendChatMessage = document.getElementById('btnSendChatMessage');
-    const chatInputText = document.getElementById('chatInputText');
-    const chatLogArea = document.getElementById('chatLogArea');
-
-    if (btnSendChatMessage && chatInputText && chatLogArea) {
-        function handleAIChatMessage() {
-            const q = chatInputText.value.trim();
-            if (!q) return;
-
-            chatLogArea.insertAdjacentHTML('beforeend', `<div class="bubble user">${q}</div>`);
-            chatInputText.value = '';
-
-            let a = "서울시 계약 매뉴얼 기준: 수의계약은 원칙적으로 2천만원 이하(여성/장애인/사회적기업 5천만원)이며, 1억원 이하 용역/물품은 나라장터 2인 이상 전자공개 수의계약이 가능합니다.";
-
-            if (q.includes('8천') || q.includes('8,000')) {
-                a = "추정가격 8천만원 용역계약은 2인 이상 전자공개 수의계약(나라장터 안내공고 3일, 견적률 88% 이상 최저가) 대상에 해당합니다. 사전규격 공개 및 사전협의 대상 여부도 확인하세요.";
-            } else if (q.includes('선금') || q.includes('정산')) {
-                a = "선금은 공사·용역·물품제조 계약 시 총금액의 70%(재무건전성 우수 시 100%) 한도 내에서 청구 후 14일 이내 지급하며, 기성 정산 시 [선금정산액 = 선금액 × (기성액 ÷ 총계약금액)] 공식으로 공제됩니다.";
-            } else if (q.includes('지연') || q.includes('배상금')) {
-                a = "지연배상금률은 공사 0.5/1000, 용역 1.3/1000, 물품 0.8/1000 이며, 지연배상금이 총 계약금액의 10% 이상에 달하는 경우 계약 해제·해지 및 부정당업자 제재 검토 대상이 됩니다.";
-            }
-
-            chatLogArea.insertAdjacentHTML('beforeend', `<div class="bubble ai">${a}</div>`);
-            chatLogArea.scrollTop = chatLogArea.scrollHeight;
-        }
-
-        btnSendChatMessage.addEventListener('click', handleAIChatMessage);
-        chatInputText.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleAIChatMessage();
-        });
-    }
+      } catch (err) {
+        if(logEl) logEl.innerHTML += `<span style="color:var(--warn)">ℹ️ 브라우저 보안 제약 (CORS):</span><br>클라이언트 웹 브라우저에서 공공데이터포털 direct fetch 시 CORS 보안 정책이 적용될 수 있습니다. 백엔드 프록시 서버를 구축하거나 공공데이터포털 도메인을 허용하여 호출하는 것을 권장합니다.`;
+      }
+    });
+  }
 });
-
