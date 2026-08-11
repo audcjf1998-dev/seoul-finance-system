@@ -1038,16 +1038,25 @@ document.addEventListener('DOMContentLoaded', () => {
     return el ? parseInt(el.value, 10) || 7 : 7;
   }
 
+  function getQualTargetScore() {
+    const el = $("ev-qual-max");
+    return el ? (parseFloat(el.value) || 60) : 60;
+  }
+
   function getCriteriaTotalWeight() {
     return CRITERIA_LIST.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
   }
 
   function updateCriteriaSumBadge() {
     const badge = $("ev-criteria-sum-badge");
+    const targetLabel = $("ev-qual-target-display");
+    const target = getQualTargetScore();
+    if (targetLabel) targetLabel.textContent = target;
+
     if (!badge) return;
     const total = getCriteriaTotalWeight();
-    badge.textContent = `배점 합계: ${total} / 60점`;
-    if (total === 60) {
+    badge.textContent = `배점 합계: ${total} / ${target}점`;
+    if (total === target) {
       badge.style.background = "#dbeafe";
       badge.style.color = "#1d4ed8";
     } else {
@@ -1065,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="ev-criteria-row" data-idx="${idx}">
           <span style="font-weight:700;color:var(--sub);font-size:0.85rem;width:24px;">${idx + 1}.</span>
           <input type="text" class="crit-name" value="${crit.name}" placeholder="평가항목명">
-          <input type="number" class="crit-weight" value="${crit.weight}" min="1" max="60" placeholder="배점">
+          <input type="number" class="crit-weight" value="${crit.weight}" min="1" max="100" placeholder="배점">
           <span style="font-size:0.85rem;color:var(--sub);">점</span>
           <button type="button" class="rm-crit" style="background:none;border:none;color:var(--bad);cursor:pointer;font-weight:800;padding:2px 6px;" title="항목 삭제">✕</button>
         </div>
@@ -1116,11 +1125,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const qualMaxInput = $("ev-qual-max");
+  if (qualMaxInput) {
+    qualMaxInput.addEventListener("input", updateCriteriaSumBadge);
+  }
+
   renderCriteriaRows();
 
   // Helper to open Member Criteria Score Entry Modal
   window.openMemberEntryModal = function(companyId, companyName, memberIdx) {
     const memberCount = getMemberCount();
+    const targetQualScore = getQualTargetScore();
     EVAL_SCORES_STORE[companyId] = EVAL_SCORES_STORE[companyId] || {};
     EVAL_SCORES_STORE[companyId][memberIdx] = EVAL_SCORES_STORE[companyId][memberIdx] || {};
 
@@ -1131,21 +1146,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let h = `
       <div class="ev-modal-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
-          <div>
-            <h3 style="margin:0;color:#1e40af;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 점수 입력</h3>
-            <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+        <div class="ev-modal-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;color:#1e40af;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 점수 입력</h3>
+              <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+            </div>
+            <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
           </div>
-          <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
+          <p class="note" style="margin-top:6px;margin-bottom:0;">각 항목의 점수는 배점을 초과할 수 없으며, 합계는 자동으로 산출됩니다.</p>
         </div>
-        <p class="note" style="margin-top:0;margin-bottom:14px;">각 항목의 점수는 배점을 초과할 수 없으며, 합계는 자동으로 산출됩니다.</p>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+        <div class="ev-modal-body">
     `;
 
     CRITERIA_LIST.forEach((crit, cIdx) => {
       const val = currentScores[cIdx] !== undefined ? currentScores[cIdx] : '';
       h += `
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:12px;border:1px solid #e2e8f0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:12px;border:1px solid #e2e8f0;flex-shrink:0;">
           <div>
             <b style="font-size:0.94rem;color:#1e293b;">${crit.name}</b>
             <span style="font-size:0.82rem;color:#64748b;margin-left:6px;">(배점: ${crit.weight}점)</span>
@@ -1162,13 +1179,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     h += `
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#eff6ff;padding:12px 18px;border-radius:12px;border:1.5px solid #bfdbfe;margin-bottom:20px;">
-          <b style="color:#1d4ed8;font-size:1.05rem;">이 위원의 정성평가 총점</b>
-          <span style="font-size:1.2rem;font-weight:900;color:#1d4ed8;" id="modal-calculated-total">0.00 / 60점</span>
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:10px;">
-          <button type="button" class="btn ghost close-modal">취소</button>
-          <button type="button" class="btn" id="modal-save-btn" style="background:#2563eb;">점수 저장 완료</button>
+        <div class="ev-modal-footer">
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#eff6ff;padding:12px 18px;border-radius:12px;border:1.5px solid #bfdbfe;">
+            <b style="color:#1d4ed8;font-size:1.05rem;">이 위원의 정성평가 총점</b>
+            <span style="font-size:1.2rem;font-weight:900;color:#1d4ed8;" id="modal-calculated-total">0.00 / ${targetQualScore}점</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button type="button" class="btn ghost close-modal">취소</button>
+            <button type="button" class="btn" id="modal-save-btn" style="background:#2563eb;">점수 저장 완료</button>
+          </div>
         </div>
       </div>
     `;
@@ -1185,7 +1204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const v = parseFloat(inp.value) || 0;
         sum += v;
       });
-      totalEl.textContent = `${sum.toFixed(2)} / 60점`;
+      totalEl.textContent = `${sum.toFixed(2)} / ${targetQualScore}점`;
     }
     updateModalTotal();
 
@@ -1231,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helper to open Member Detail Breakdown Modal
   window.openMemberDetailModal = function(companyId, companyName, memberIdx) {
+    const targetQualScore = getQualTargetScore();
     const scores = (EVAL_SCORES_STORE[companyId] && EVAL_SCORES_STORE[companyId][memberIdx]) || {};
 
     const overlay = document.createElement("div");
@@ -1238,14 +1258,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let h = `
       <div class="ev-modal-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
-          <div>
-            <h3 style="margin:0;color:#0f766e;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 내역</h3>
-            <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+        <div class="ev-modal-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 style="margin:0;color:#0f766e;font-size:1.15rem;">위원 ${memberIdx + 1} 세부 평가 내역</h3>
+              <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+            </div>
+            <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
           </div>
-          <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+        <div class="ev-modal-body">
     `;
 
     let totalSum = 0;
@@ -1253,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const val = scores[cIdx] !== undefined ? scores[cIdx] : 0;
       totalSum += val;
       h += `
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0;flex-shrink:0;">
           <span style="font-weight:700;color:#334155;">• ${crit.name}</span>
           <b style="font-size:0.96rem;color:#0f766e;">${val.toFixed(1)} / ${crit.weight}점</b>
         </div>
@@ -1262,12 +1284,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     h += `
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;padding:14px 18px;border-radius:12px;border:1.5px solid #bbf7d0;margin-bottom:20px;">
-          <b style="color:#047857;font-size:1.05rem;">이 위원의 정성평가 총점</b>
-          <span style="font-size:1.25rem;font-weight:900;color:#047857;">${totalSum.toFixed(2)} / 60점</span>
-        </div>
-        <div style="display:flex;justify-content:flex-end;">
-          <button type="button" class="btn close-modal" style="background:#0f766e;">닫기</button>
+        <div class="ev-modal-footer">
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;padding:14px 18px;border-radius:12px;border:1.5px solid #bbf7d0;">
+            <b style="color:#047857;font-size:1.05rem;">이 위원의 정성평가 총점</b>
+            <span style="font-size:1.25rem;font-weight:900;color:#047857;">${totalSum.toFixed(2)} / ${targetQualScore}점</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button type="button" class="btn close-modal" style="background:#0f766e;">닫기</button>
+          </div>
         </div>
       </div>
     `;
@@ -1365,6 +1389,8 @@ document.addEventListener('DOMContentLoaded', () => {
     swChk.addEventListener("change", e => {
       if ($("ev-tech")) $("ev-tech").value = e.target.checked ? "90" : "80";
       if ($("ev-price-w")) $("ev-price-w").value = e.target.checked ? "10" : "20";
+      if ($("ev-qual-max")) $("ev-qual-max").value = e.target.checked ? "70" : "60";
+      updateCriteriaSumBadge();
     });
   }
 
@@ -1395,11 +1421,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const sw = $("ev-sw") ? $("ev-sw").querySelector("input").checked : false;
       const memberCount = getMemberCount();
       const totalCriteriaWeight = getCriteriaTotalWeight();
+      const targetQualScore = getQualTargetScore();
       const out = $("ev-out");
 
       if (!base) { alert("⚠️ 예정가격을 입력해 주세요."); return; }
-      if (totalCriteriaWeight !== 60) {
-        alert(`⚠️ 정성적 평가 항목 배점의 합계는 60점이어야 합니다. (현재 합계: ${totalCriteriaWeight}점)`);
+      if (totalCriteriaWeight !== targetQualScore) {
+        alert(`⚠️ 정성적 평가 항목 배점의 합계(${totalCriteriaWeight}점)가 설정하신 정성평가 총 배점 한도(${targetQualScore}점)와 일치해야 합니다.`);
         return;
       }
 
