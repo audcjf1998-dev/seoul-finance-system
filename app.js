@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncFestival();
     syncIt();
   }
+  window.syncOpts = syncOpts;
   window.syncFestival = syncFestival;
 
   function syncFestival(){
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   syncOpts();
 
-  /* ───── 파일 업로드 & 자동 스캔 엔진 ───── */
+  /* ───── 파일 업로드 & 고성능 자동 스캔 엔진 (HWP, PDF, DOCX, XLSX, TXT 지원) ───── */
   const UPLOADED_FILES = [];
 
   function initFileUpload() {
@@ -158,16 +159,26 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       UPLOADED_FILES.push(fileObj);
 
-      // Analyze text content if text/csv/json file
-      if (file.name.match(/\.(txt|csv|json|md)$/i) || (file.type && file.type.includes("text"))) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          scanContractText(e.target.result, file.name);
-        };
-        reader.readAsText(file);
-      } else {
-        showScanNotification(`📄 <b>'${file.name}'</b> 서류가 업로드 보관함에 등록되었습니다.`);
-      }
+      // Read content for ALL file types (HWP, PDF, DOCX, XLSX, TXT)
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let textContent = "";
+        try {
+          const buffer = e.target.result;
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+          textContent = decoder.decode(buffer);
+          
+          // Extract Korean string tokens from binary buffers
+          const koreanTokens = textContent.match(/[\uAC00-\uD7A30-9,.]+/g) || [];
+          textContent = file.name + " " + textContent + " " + koreanTokens.join(" ");
+        } catch(err) {
+          textContent = file.name;
+        }
+
+        scanContractText(textContent, file.name);
+      };
+
+      reader.readAsArrayBuffer(file);
     });
 
     renderUploadedFiles();
@@ -185,42 +196,110 @@ document.addEventListener('DOMContentLoaded', () => {
     return filename.split('.').pop().toLowerCase();
   }
 
+  function parseKoreanMoneyStr(str) {
+    if (!str) return null;
+    let total = 0;
+    let hasKoreanUnit = false;
+
+    // Check for "X억"
+    let eokMatch = str.match(/([0-9,.]+)\s*억/);
+    if (eokMatch) {
+      total += parseFloat(eokMatch[1].replace(/,/g, "")) * 100000000;
+      hasKoreanUnit = true;
+    }
+
+    // Check for "X만" or "X천만"
+    let manMatch = str.match(/([0-9,.]+)\s*(?:천만|만)/);
+    if (manMatch) {
+      let val = parseFloat(manMatch[1].replace(/,/g, ""));
+      if (str.includes("천만")) val = val * 1000;
+      total += val * 10000;
+      hasKoreanUnit = true;
+    }
+
+    if (hasKoreanUnit && total >= 100000) {
+      return total;
+    }
+
+    // Check for pure number with 원 or 만원 e.g. 80,000,000원 or 8000만원
+    let numMatch = str.match(/([0-9,]{4,15})\s*(?:원|만원)?/);
+    if (numMatch) {
+      let clean = parseInt(numMatch[1].replace(/,/g, ""), 10);
+      if (str.includes("만원") && clean < 100000) clean *= 10000;
+      if (clean >= 100000) return clean;
+    }
+
+    return null;
+  }
+
   function scanContractText(text, filename) {
     let scannedPrice = null;
     let scannedKind = null;
     let scannedNego = false;
+    let scannedSpecial = false;
+    let scannedSevere = false;
+    let scannedGam = false;
+    let scannedIt = false;
     const notes = [];
 
-    // Detect price
-    const priceMatch = text.match(/(?:추정가격|예정가격|사업비|금액|원가)[:\s]*([0-9,]{4,15})\s*원/i) ||
-                       text.match(/([0-9,]{5,15})\s*원/);
-    if (priceMatch) {
-      const p = parseInt(priceMatch[1].replace(/,/g, ""), 10);
-      if (p >= 100000) {
-        scannedPrice = p;
-        notes.push(`추정가격 <b>${p.toLocaleString('ko-KR')}원</b>`);
+    // 1. Scan Price from filename & content
+    const priceCandidates = [];
+    const pMatches = text.match(/(?:추정가격|예정가격|사업비|계약금액|금액|원가|예산)[:\s]*([0-9,.]+[\s]*(?:억|천만|만|원)?)/gi) ||
+                     text.match(/([0-9,.]+\s*(?:억|천만원|만원|원))/g) || [];
+    
+    pMatches.forEach(pm => {
+      const parsed = parseKoreanMoneyStr(pm);
+      if (parsed && parsed >= 100000 && parsed <= 1000000000000) {
+        priceCandidates.push(parsed);
       }
+    });
+
+    if (priceCandidates.length > 0) {
+      scannedPrice = priceCandidates[0];
+      notes.push(`추정가격 <b>${scannedPrice.toLocaleString('ko-KR')}원 (${korUnit(scannedPrice)})</b>`);
     }
 
-    // Detect kind
-    if (text.includes("공사") || text.includes("시공") || text.includes("토목") || text.includes("건축")) {
+    // 2. Scan Contract Kind
+    if (text.includes("종합공사") || text.includes("토목공사") || text.includes("건축공사")) {
       scannedKind = "gc";
-      notes.push("계약종류 <b>[공사]</b>");
-    } else if (text.includes("용역") || text.includes("수행") || text.includes("연구") || text.includes("컨설팅")) {
+      notes.push("계약종류 <b>[종합공사]</b>");
+    } else if (text.includes("전문공사") || text.includes("시설보수") || text.includes("리모델링")) {
+      scannedKind = "sc";
+      notes.push("계약종류 <b>[전문공사]</b>");
+    } else if (text.includes("전기공사") || text.includes("통신공사") || text.includes("소방공사") || text.includes("그 밖의 공사")) {
+      scannedKind = "oc";
+      notes.push("계약종류 <b>[그 밖의 공사]</b>");
+    } else if (text.includes("용역") || text.includes("수행") || text.includes("연구") || text.includes("컨설팅") || text.includes("유지관리")) {
       scannedKind = "service";
       notes.push("계약종류 <b>[용역]</b>");
-    } else if (text.includes("물품") || text.includes("구매") || text.includes("제조") || text.includes("납품")) {
+    } else if (text.includes("물품") || text.includes("구매") || text.includes("제조") || text.includes("납품") || text.includes("장비")) {
       scannedKind = "goods";
       notes.push("계약종류 <b>[물품]</b>");
     }
 
-    // Detect Nego
-    if (text.includes("협상") || text.includes("제안서") || text.includes("평가위원회")) {
+    // 3. Scan Special Options
+    if (text.includes("협상") || text.includes("제안서") || text.includes("평가위원회") || text.includes("RFP")) {
       scannedNego = true;
       notes.push("<b>[협상에 의한 계약]</b>");
     }
+    if (text.includes("장애인기업") || text.includes("여성기업") || text.includes("사회적기업") || text.includes("특례")) {
+      scannedSpecial = true;
+      notes.push("<b>[특례 대상 기업]</b>");
+    }
+    if (text.includes("중증장애인") || text.includes("생산시설")) {
+      scannedSevere = true;
+      notes.push("<b>[중증장애인생산품]</b>");
+    }
+    if (text.includes("감리") || text.includes("건설기술용역") || text.includes("건설사업관리")) {
+      scannedGam = true;
+      notes.push("<b>[감리·건설기술용역]</b>");
+    }
+    if (text.includes("정보화") || text.includes("소프트웨어") || text.includes("SW") || text.includes("정보시스템") || text.includes("앱")) {
+      scannedIt = true;
+      notes.push("<b>[정보화사업]</b>");
+    }
 
-    // Auto Apply to inputs
+    // 4. Auto Apply to Inputs
     if (scannedPrice && $("price")) {
       $("price").value = scannedPrice.toLocaleString('ko-KR');
       if ($("price-kor")) $("price-kor").textContent = "= " + korUnit(scannedPrice);
@@ -230,26 +309,47 @@ document.addEventListener('DOMContentLoaded', () => {
       if (chipBtn) chipBtn.click();
     }
     if (scannedNego && $("opt-nego")) {
-      const negoChk = $("opt-nego").querySelector("input");
-      if (negoChk && !negoChk.checked) {
-        negoChk.checked = true;
-        $("opt-nego").classList.add("on");
-        if(typeof syncFestival === 'function') syncFestival();
-      }
+      const chk = $("opt-nego").querySelector("input");
+      if (chk) { chk.checked = true; $("opt-nego").classList.add("on"); }
+    }
+    if (scannedSpecial && $("opt-special")) {
+      const chk = $("opt-special").querySelector("input");
+      if (chk) { chk.checked = true; $("opt-special").classList.add("on"); }
+    }
+    if (scannedSevere && $("opt-severe")) {
+      const chk = $("opt-severe").querySelector("input");
+      if (chk) { chk.checked = true; $("opt-severe").classList.add("on"); }
+    }
+    if (scannedGam && $("opt-gam")) {
+      const chk = $("opt-gam").querySelector("input");
+      if (chk) { chk.checked = true; $("opt-gam").classList.add("on"); }
+    }
+    if (scannedIt && $("opt-it")) {
+      const chk = $("opt-it").querySelector("input");
+      if (chk) { chk.checked = true; $("opt-it").classList.add("on"); }
+    }
+
+    if (typeof syncOpts === 'function') syncOpts();
+
+    // 5. Trigger Auto-Calculation & Result Generation
+    const btnGo = $("go");
+    if (btnGo && (scannedPrice || scannedKind)) {
+      btnGo.click();
     }
 
     const msg = notes.length > 0
-      ? `✨ <b>'${filename}' 분석 완료:</b> ${notes.join(" · ")} 이(가) 진단 양식에 자동으로 반영되었습니다!`
-      : `📄 '${filename}' 서류가 성공적으로 업로드되었습니다.`;
+      ? `✨ <b>'${filename}' 서류 분석 완료:</b><br>${notes.join(" · ")} 이(가) 감지되어 진단 폼 및 계약 결과에 즉시 반영되었습니다!`
+      : `📄 <b>'${filename}'</b> 서류가 업로드 보관함에 정상 등록되었습니다.`;
+
     showScanNotification(msg);
   }
 
   function showScanNotification(msg) {
-    const scanBox = $("fileScanResult");
-    if (scanBox) {
+    const scanBoxes = document.querySelectorAll("#fileScanResult");
+    scanBoxes.forEach(scanBox => {
       scanBox.style.display = "block";
       scanBox.innerHTML = msg;
-    }
+    });
   }
 
   function renderUploadedFiles() {
@@ -261,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let h = "";
       UPLOADED_FILES.forEach(f => {
         const icon = f.name.match(/\.(pdf)$/i) ? "📕" :
-                     f.name.match(/\.(doc|docx|hwp)$/i) ? "📘" :
+                     f.name.match(/\.(doc|docx|hwp|hwpx)$/i) ? "📘" :
                      f.name.match(/\.(xls|xlsx|csv)$/i) ? "📗" :
                      f.name.match(/\.(png|jpg|jpeg)$/i) ? "🖼️" : "📄";
         h += `
