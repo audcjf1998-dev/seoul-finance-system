@@ -1727,6 +1727,257 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /* ───── 6. 기준 한눈에 서브 탭 switching ───── */
+  document.querySelectorAll(".ref-subtab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".ref-subtab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".ref-panel").forEach(p => p.classList.remove("on"));
+
+      btn.classList.add("active");
+      const refKey = btn.dataset.ref;
+      const target = $("ref-panel-" + refKey);
+      if (target) target.classList.add("on");
+    });
+  });
+
+  /* ───── 7. AI 계약 Q&A (OpenAI GPT API 연동) ───── */
+  const gptKeyInput = $("gpt-api-key");
+  const gptModelSelect = $("gpt-model");
+  const btnSaveGptKey = $("btn-save-gpt-key");
+  const gptChatBox = $("gpt-chat-box");
+  const gptInputText = $("gpt-input-text");
+  const btnSendGpt = $("btn-send-gpt");
+  const btnGptClear = $("btn-gpt-clear");
+
+  // Restore API key if saved
+  try {
+    const savedKey = localStorage.getItem("seoul_gpt_api_key");
+    if (savedKey && gptKeyInput) gptKeyInput.value = savedKey;
+  } catch(e) {}
+
+  if (btnSaveGptKey) {
+    btnSaveGptKey.addEventListener("click", () => {
+      const key = gptKeyInput ? gptKeyInput.value.trim() : "";
+      if (!key) {
+        alert("⚠️ OpenAI API Key를 입력해 주세요.");
+        return;
+      }
+      try {
+        localStorage.setItem("seoul_gpt_api_key", key);
+        alert("✅ OpenAI API Key가 성공적으로 보관되었습니다.");
+      } catch(e) {
+        alert("⚠️ Key 저장 중 오류: " + e.message);
+      }
+    });
+  }
+
+  function appendChatBubble(role, text) {
+    if (!gptChatBox) return;
+    const div = document.createElement("div");
+    div.className = `chat-bubble ${role}`;
+    div.innerHTML = text.replace(/\n/g, "<br>");
+    gptChatBox.appendChild(div);
+    gptChatBox.scrollTop = gptChatBox.scrollHeight;
+  }
+
+  if (btnGptClear) {
+    btnGptClear.addEventListener("click", () => {
+      if (gptChatBox) {
+        gptChatBox.innerHTML = '<div class="chat-bubble system-info">🤖 대화 내용이 초기화되었습니다. 질문을 입력해 주세요.</div>';
+      }
+    });
+  }
+
+  // Preset chips click
+  document.querySelectorAll(".preset-chip-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const q = btn.dataset.q;
+      if (gptInputText) {
+        gptInputText.value = q;
+        sendGptMessage();
+      }
+    });
+  });
+
+  if (btnSendGpt) {
+    btnSendGpt.addEventListener("click", sendGptMessage);
+  }
+
+  async function sendGptMessage() {
+    const prompt = gptInputText ? gptInputText.value.trim() : "";
+    if (!prompt) { alert("⚠️ 질문 내용을 입력해 주세요."); return; }
+
+    const apiKey = gptKeyInput ? gptKeyInput.value.trim() : localStorage.getItem("seoul_gpt_api_key") || "";
+    if (!apiKey) {
+      alert("⚠️ OpenAI API Key가 필요합니다. 상단 키 설정 칸에 sk-... 형태로 입력 후 [키 저장]을 눌러주세요.");
+      return;
+    }
+
+    appendChatBubble("user", prompt);
+    if (gptInputText) gptInputText.value = "";
+
+    const loadingId = "gpt-loading-" + Date.now();
+    const loadingDiv = document.createElement("div");
+    loadingDiv.className = "chat-bubble ai";
+    loadingDiv.id = loadingId;
+    loadingDiv.innerHTML = "⌛ 해치가 지방계약 규정을 검토 중입니다... (GPT 답변 생성 중)";
+    if (gptChatBox) {
+      gptChatBox.appendChild(loadingDiv);
+      gptChatBox.scrollTop = gptChatBox.scrollHeight;
+    }
+
+    const model = gptModelSelect ? gptModelSelect.value : "gpt-4o-mini";
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: "system",
+              content: "당신은 서울특별시 지방계약법 및 행안부 예규, 서울시 회계규칙 전문 AI 계약 자문관입니다. 지방계약법 시행령, 낙찰자 결정기준, 수의계약 특례, 계약 절차 등에 대해 친절하고 정확하며 명확한 조항과 함께 전문적으로 답변해 주세요."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error ? errData.error.message : response.statusText);
+      }
+
+      const data = await response.json();
+      const aiMessage = data.choices && data.choices[0] ? data.choices[0].message.content : "답변을 수신하지 못했습니다.";
+      
+      const targetLoading = document.getElementById(loadingId);
+      if (targetLoading) {
+        targetLoading.innerHTML = aiMessage.replace(/\n/g, "<br>");
+      }
+    } catch(err) {
+      console.error("GPT API Error:", err);
+      const targetLoading = document.getElementById(loadingId);
+      if (targetLoading) {
+        targetLoading.innerHTML = `<span style="color:#e11d48;font-weight:700;">⚠️ API 호출 오류: ${err.message}</span><br><small style="color:#64748b;">API Key 및 네트워크 상태를 확인하세요.</small>`;
+      }
+    }
+  }
+
+  /* ───── 8. 계약서식 모음 및 사용자 파일 등록 ───── */
+  window.downloadSampleForm = function(filename) {
+    const sampleText = `[서울특별시 발주실무 서식 양식]\n\n서식명: ${filename}\n작성일자: ${new Date().toLocaleDateString("ko-KR")}\n발주기관: 서울특별시\n\n※ 본 서식은 서울계약 도우미 실무 표준 가이드 양식입니다. 해당 업무에 맞춰 수정하여 사용하세요.`;
+    const blob = new Blob([sampleText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const btnAddUserForm = $("btn-add-user-form");
+  const userFormFileInput = $("user-form-file-input");
+  const userFormTitle = $("user-form-title");
+  const userFormDesc = $("user-form-desc");
+  const userFormsList = $("user-forms-list");
+
+  function getUserForms() {
+    try {
+      const saved = localStorage.getItem("seoul_user_contract_forms");
+      return saved ? JSON.parse(saved) : [];
+    } catch(e) { return []; }
+  }
+
+  function saveUserForms(list) {
+    try {
+      localStorage.setItem("seoul_user_contract_forms", JSON.stringify(list));
+      renderUserFormsList();
+    } catch(e) {
+      alert("⚠️ 파일 저장용량 한도를 초과하였거나 저장에 실패했습니다.");
+    }
+  }
+
+  function renderUserFormsList() {
+    if (!userFormsList) return;
+    const forms = getUserForms();
+    if (!forms.length) {
+      userFormsList.innerHTML = '<p style="color:#94a3b8;font-size:0.88rem;padding:8px 0;">아직 등록된 사용자 지정 서식이 없습니다. 위에서 파일을 선택해 추가해 보세요.</p>';
+      return;
+    }
+
+    let h = '<div class="res" style="overflow-x:auto"><table>';
+    h += '<tr><th>서식 제목</th><th>파일명</th><th>크기</th><th>등록일</th><th>관리 / 다운로드</th></tr>';
+    forms.forEach((f, idx) => {
+      h += `<tr>
+        <td><b>${f.title}</b>${f.desc ? '<br><small style="color:#64748b;">'+f.desc+'</small>' : ''}</td>
+        <td><code style="font-size:0.82rem;">${f.name}</code></td>
+        <td class="num">${(f.size / 1024).toFixed(1)} KB</td>
+        <td>${f.date}</td>
+        <td>
+          <a href="${f.data}" download="${f.name}" class="btn ghost" style="padding:4px 10px;font-size:0.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">💾 다운로드</a>
+          <button type="button" class="btn ghost" onclick="window.deleteUserForm(${idx})" style="padding:4px 8px;font-size:0.82rem;color:#e11d48;">❌ 삭제</button>
+        </td>
+      </tr>`;
+    });
+    h += '</table></div>';
+    userFormsList.innerHTML = h;
+  }
+
+  window.deleteUserForm = function(idx) {
+    if (confirm("정말 이 서식을 삭제하시겠습니까?")) {
+      const forms = getUserForms();
+      forms.splice(idx, 1);
+      saveUserForms(forms);
+    }
+  };
+
+  if (btnAddUserForm) {
+    btnAddUserForm.addEventListener("click", () => {
+      const title = userFormTitle ? userFormTitle.value.trim() : "";
+      const desc = userFormDesc ? userFormDesc.value.trim() : "";
+      const file = userFormFileInput && userFormFileInput.files[0] ? userFormFileInput.files[0] : null;
+
+      if (!title) { alert("⚠️ 서식 제목을 입력해 주세요."); return; }
+      if (!file) { alert("⚠️ 내 PC에서 등록할 파일(.hwp, .xlsx, .pdf 등)을 선택해 주세요."); return; }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileData = e.target.result;
+        const newForm = {
+          title: title,
+          desc: desc,
+          name: file.name,
+          size: file.size,
+          date: new Date().toLocaleDateString("ko-KR"),
+          data: fileData
+        };
+
+        const list = getUserForms();
+        list.push(newForm);
+        saveUserForms(list);
+
+        if (userFormTitle) userFormTitle.value = "";
+        if (userFormDesc) userFormDesc.value = "";
+        if (userFormFileInput) userFormFileInput.value = "";
+        alert(`🎉 '${file.name}' 서식이 성공적으로 등록되었습니다!`);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  renderUserFormsList();
+
   function getCurrentStateObj() {
     const p = num($("price"));
     return {

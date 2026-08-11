@@ -48,6 +48,8 @@
     <button class="tab" data-p="rate">낙찰하한율</button>
     <button class="tab" data-p="g2b">조달청 API</button>
     <button class="tab" data-p="ref">기준 한눈에</button>
+    <button class="tab" data-p="gpt">AI 계약 Q&A</button>
+    <button class="tab" data-p="forms">계약서식 모음</button>
   </div>
   <div class="save-load-btn-group">
     <button class="btn-saveload home" onclick="window.goHome()" title="첫 화면(조건 입력)으로 이동">
@@ -454,20 +456,60 @@
   </div>
 </section>
 
-<!-- ─────────── 6. 기준 한눈에 ─────────── -->
+<!-- ─────────── 6. 기준 한눈에 (서브 탭 목록화 개편) ─────────── -->
 <section class="panel" id="p-ref">
 
-  <details>
-    <summary>📖 법령 · 예규 근거 (계약 단계별)</summary>
-    <div class="in">
+  <!-- REFERENCE SUB-TABS -->
+  <div class="ref-subtabs-wrap">
+    <button type="button" class="ref-subtab-btn active" data-ref="sui">🤝 수의계약 금액 기준</button>
+    <button type="button" class="ref-subtab-btn" data-ref="law">📖 법령 · 예규 근거</button>
+    <button type="button" class="ref-subtab-btn" data-ref="time">⏱️ 공고기간 · 법정 기한</button>
+    <button type="button" class="ref-subtab-btn" data-ref="chk">🔎 발주 전 확인 절차</button>
+    <button type="button" class="ref-subtab-btn" data-ref="it">💻 정보화사업 절차</button>
+    <button type="button" class="ref-subtab-btn" data-ref="gam">🧐 감리 · 건설기술용역</button>
+    <button type="button" class="ref-subtab-btn" data-ref="nego">🗣️ 협상에 의한 계약</button>
+    <button type="button" class="ref-subtab-btn" data-ref="delay">📉 지연배상금 · 하자보수</button>
+    <button type="button" class="ref-subtab-btn" data-ref="guar">💰 보증금 기본 요율</button>
+    <button type="button" class="ref-subtab-btn" data-ref="new26">🆕 '26년 주요 개정</button>
+  </div>
+
+  <!-- PANEL 1: 수의계약 금액 기준 (Active by default) -->
+  <div class="ref-panel on" id="ref-panel-sui">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">🤝 수의계약 금액 기준 (추정가격)</h3>
+      <table>
+        <tr><th>구분</th><th>기준</th></tr>
+        <tr><td>1인 견적 수의</td><td>2천만원 이하 (특례기업 5천만원 이하)</td></tr>
+        <tr><td>중증장애인생산품</td><td>직접 생산 물품·용역 — 금액 제한 없음</td></tr>
+        <tr><td rowspan="4">2인 이상 견적<br>(전자공개 수의)</td><td>종합공사 4억원 이하</td></tr>
+        <tr><td>전문공사 2억원 이하</td></tr>
+        <tr><td>그 밖의 공사 1.6억원 이하</td></tr>
+        <tr><td>용역 · 물품 1억원 이하</td></tr>
+        <tr><td>동일업체 횟수 제한</td><td>실·국별 연 4회 / 시 전체 연 9회 (1인 견적)</td></tr>
+        <tr><td>금액 외 법정 사유</td><td>령 §25 — 천재지변·재난복구 등 긴급, 특허공법·신기술로 경쟁 불가, 생산자·소지자가 1인, 학술연구 용역, 중소기업자 직접생산 제품(성능인증·우수조달 등), 국가유공자·장애인 단체 직접생산 / 령 §26 — 재공고 입찰 유찰 / 령 §27 — 계약 해제·해지 (§26·§27은 최초 입찰 조건 변경 불가)</td></tr>
+        <tr><td>적격심사 대상 구간</td><td>종합공사 4억 초과 · 전문 2억 초과 · 그 밖의 공사 1.6억 초과 ~ 300억 미만 · 용역·물품 1억 초과</td></tr>
+        <tr><td>분리발주 금지</td><td>수의 기준 회피 목적 분할 계약 금지 (령 §77)</td></tr>
+        <tr><td>유찰 수의</td><td>재공고입찰 유찰 시 수의계약 가능 — '26.7.1.부터 일반규정 환원 (단독응찰 1회 유찰 특례는 '26.6.30. 체결분까지)</td></tr>
+        <tr><td>변경계약 한도</td><td>수의 기준금액 내에서만 변경 — 계약금액 소액 2,200만원 · 여성기업 등 5,500만원 (초과 시 실국장 방침·부시장 보고 예외)</td></tr>
+        <tr><td>전자공개 의무발주</td><td>폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 전자공개 수의로 발주 (시범사업 연장)</td></tr>
+        <tr><td>체결제한 확인</td><td>이해충돌방지법 §12 · 발주부서 퇴직공무원(2년) · 유착비리 지정업체 — 확인서 징구 (경쟁 유찰 수의는 예외)</td></tr>
+      </table>
+      <p class="note">법정 사유에 해당해도 획일적으로 수의계약할 것이 아니라, 경쟁이 불가능하거나 수의계약의 필연성이 인정되는 경우에 한해 제한적으로 추진해야 해요.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 2: 법령 · 예규 근거 -->
+  <div class="ref-panel" id="ref-panel-law">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">📖 법령 · 예규 근거 (계약 단계별)</h3>
       <p class="note" style="margin:2px 0 10px">계약 업무의 근거 규정을 단계별로 모았어요. 법령은 개정되니 실제 적용 전 국가법령정보센터(law.go.kr)에서 원문을 확인하세요.</p>
       <table>
         <tr><th>구분</th><th>근거 규정</th></tr>
         <tr><td>기본 법령</td><td>지방자치단체를 당사자로 하는 계약에 관한 법률 · 시행령 · 시행규칙 (행안부)</td></tr>
         <tr><td>행안부 예규</td><td>지방자치단체 입찰 및 계약 집행기준 (제1장 선금·대가, 제4장 제한입찰, 제5장 수의계약, 제8장 입찰유의서, 제9장 계약일반조건) · 지방자치단체 입찰시 낙찰자 결정기준 (제2~4장 적격심사, 제7장 협상에 의한 계약)</td></tr>
-        <tr><td>계약방법</td><td>법 §9 (경쟁·수의) · <span class="tag g" data-tip="령 §25·§30">령 §25~§32 (수의계약)</span> · 령 §20·§22 (제한·지명경쟁) · <span class="tag g" data-tip="령 §43·§44">령 §43·§44 (협상에 의한 계약)</span> · 령 §77 (분할계약 금지)</td></tr>
-        <tr><td>공고 · 입찰</td><td>법 §10 · <span class="tag g" data-tip="령 §35">령 §33~§36 (입찰공고 방법·기간·내용)</span> · 령 §32의2 (사전규격 공개)</td></tr>
-        <tr><td>낙찰자 결정</td><td>법 §13 · <span class="tag g" data-tip="적격심사 — 낙찰자 결정기준 제2~4장">령 §42 (적격심사)</span> · 서울특별시 일반용역 적격심사 세부기준(시 예규) · 중소기업자간 경쟁제품 계약이행능력심사 세부기준(중기부 고시)</td></tr>
+        <tr><td>계약방법</td><td>법 §9 (경쟁·수의) · 령 §25~§32 (수의계약) · 령 §20·§22 (제한·지명경쟁) · 령 §43·§44 (협상에 의한 계약) · 령 §77 (분할계약 금지)</td></tr>
+        <tr><td>공고 · 입찰</td><td>법 §10 · 령 §33~§36 (입찰공고 방법·기간·내용) · 령 §32의2 (사전규격 공개)</td></tr>
+        <tr><td>낙찰자 결정</td><td>법 §13 · 령 §42 (적격심사) · 서울특별시 일반용역 적격심사 세부기준(시 예규) · 중소기업자간 경쟁제품 계약이행능력심사 세부기준(중기부 고시)</td></tr>
         <tr><td>보증금</td><td>법 §12·령 §37 (입찰보증금) · 법 §15·령 §51~§53 (계약보증금) · 법 §21·령 §70~§71 (하자보수보증금)</td></tr>
         <tr><td>계약 이행</td><td>법 §16 (계약금액 조정) · 법 §30의2·령 §90 (지연배상금) · 법 §18·지방회계법 시행령 §44 (선금) · 법 §17~§19·령 §64~§68 (검사·대가지급)</td></tr>
         <tr><td>제재 · 청렴</td><td>법 §31·령 §92 (부정당업자 입찰참가자격 제한) · 법 §6의2 (청렴계약) · 서울시 청렴계약제 운영</td></tr>
@@ -475,179 +517,272 @@
         <tr><td>서울시 자치법규</td><td>서울특별시 회계관리에 관한 규칙 (재정합의) · 제안서평가위원회 설치 및 운영에 관한 규칙 · 계약심사 업무처리 규칙 · 일상감사 규정 · 특정제품 선정심사위원회 조례</td></tr>
         <tr><td>정보화사업</td><td>전자정부법 §57·령 §71 (감리), §67·령 §82~§83 (사전협의) · 소프트웨어 진흥법 §50·령 §45~§47 (과업심의위원회), §43 (영향평가), §46 (SW사업정보) · 소프트웨어사업 계약 및 관리감독에 관한 지침 · 행정기관 및 공공기관 정보시스템 구축·운영 지침 · 서울특별시 정보화사업 추진절차에 관한 규칙</td></tr>
       </table>
-      <div class="warnbox">⏳ 한시 규정 확인 — 「지방계약 한시적 특례」(보증금 50% 인하, 단독응찰 1회 유찰 시 수의계약 등)는 <b>'26.6.30.자로 종료</b>됐어요. 연장·재시행 여부는 현행 행안부 고시를 확인하세요.</div>
     </div>
-  </details>
+  </div>
 
-  <details open>
-    <summary>🤝 수의계약 금액 기준 (추정가격)</summary>
-    <div class="in"><table>
-      <tr><th>구분</th><th>기준</th></tr>
-      <tr><td>1인 견적 수의</td><td>2천만원 이하 (특례기업 5천만원 이하)</td></tr>
-      <tr><td>중증장애인생산품</td><td>직접 생산 물품·용역 — 금액 제한 없음</td></tr>
-      <tr><td rowspan="4">2인 이상 견적<br>(전자공개 수의)</td><td>종합공사 4억원 이하</td></tr>
-      <tr><td>전문공사 2억원 이하</td></tr>
-      <tr><td>그 밖의 공사 1.6억원 이하</td></tr>
-      <tr><td>용역 · 물품 1억원 이하</td></tr>
-      <tr><td>동일업체 횟수 제한</td><td>실·국별 연 4회 / 시 전체 연 9회 (1인 견적)</td></tr>
-      <tr><td>금액 외 법정 사유</td><td>령 §25 — 천재지변·재난복구 등 긴급, 특허공법·신기술로 경쟁 불가, 생산자·소지자가 1인, 학술연구 용역, 중소기업자 직접생산 제품(성능인증·우수조달 등), 국가유공자·장애인 단체 직접생산 / 령 §26 — 재공고 입찰 유찰 / 령 §27 — 계약 해제·해지 (§26·§27은 최초 입찰 조건 변경 불가)</td></tr>
-      <tr><td>적격심사 대상 구간</td><td>종합공사 4억 초과 · 전문 2억 초과 · 그 밖의 공사 1.6억 초과 ~ 300억 미만 · 용역·물품 1억 초과</td></tr>
-      <tr><td>분리발주 금지</td><td>수의 기준 회피 목적 분할 계약 금지 (령 §77)</td></tr>
-      <tr><td>유찰 수의</td><td>재공고입찰 유찰 시 수의계약 가능 — '26.7.1.부터 일반규정 환원 (단독응찰 1회 유찰 특례는 '26.6.30. 체결분까지)</td></tr>
-      <tr><td>변경계약 한도</td><td>수의 기준금액 내에서만 변경 — 계약금액 소액 2,200만원 · 여성기업 등 5,500만원 (초과 시 실국장 방침·부시장 보고 예외)</td></tr>
-      <tr><td>전자공개 의무발주</td><td>폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 전자공개 수의로 발주 (시범사업 연장)</td></tr>
-      <tr><td>체결제한 확인</td><td>이해충돌방지법 §12 · 발주부서 퇴직공무원(2년) · 유착비리 지정업체 — 확인서 징구 (경쟁 유찰 수의는 예외)</td></tr>
-    </table>
-    <p class="note">법정 사유에 해당해도 획일적으로 수의계약할 것이 아니라, 경쟁이 불가능하거나 수의계약의 필연성이 인정되는 경우에 한해 제한적으로 추진해야 해요.</p></div>
-  </details>
-
-  <details>
-    <summary>⏱️ 공고기간 · 법정 처리기한</summary>
-    <div class="in"><table>
-      <tr><th>절차</th><th>기간</th></tr>
-      <tr><td>공사 입찰공고</td><td>10억 미만 7일 · 10~50억 미만 15일 · 50억~국제입찰 대상 미만 30일 · 국제입찰 대상 이상 40일</td></tr>
-      <tr><td>용역·물품 입찰공고</td><td>7일 (신규사업 10일)</td></tr>
-      <tr><td>재공고 · 긴급입찰</td><td>5일 (령 §35④)</td></tr>
-      <tr><td>협상에 의한 계약 공고</td><td>1억 미만 10일 · 1억~10억 미만 20일 · 10억 이상 40일 · 긴급·재공고 10일 (제안서 제출 마감일 전날 기산)</td></tr>
-      <tr><td>전자공개 수의 안내공고</td><td>3일 이상 (신규 사업자 대상 5일)</td></tr>
-      <tr><td>계약 체결</td><td>낙찰 통지 후 10일 이내</td></tr>
-      <tr><td>검사</td><td>완료 통지 후 14일 이내</td></tr>
-      <tr><td>대가 지급</td><td>검사 후 청구일부터 5일 이내 (공휴일·토요일 제외)</td></tr>
-      <tr><td>선금</td><td>최초 30% 의무 지급 · 한도 70% · 전용계좌 확약 ('26 예규) — 청구 후 14일, 하수급 배분 통지 15일</td></tr>
-      <tr><td colspan="2" style="color:var(--sub)">※ 공고기간은 게시일과 개찰일을 제외한 기간 — 령 §35</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>🔎 발주 전 확인 절차 (서울시)</summary>
-    <div class="in"><table>
-      <tr><th>절차</th><th>대상</th></tr>
-      <tr><td>일상감사</td><td>종합공사 20억↑ · 그 외 공사 10억↑ · 용역 10억↑ (협상 5억↑, 안전관리계획 수립 축제·행사 협상 1억↑) · 물품 5억↑ (제3자단가·다수공급자계약 제외) · 지명 3억↑ · 설계공모 10억↑ · 1인 견적 수의 2천만원 초과 — <b>제외</b>: 재공고 유찰 · 설계공모 당선자 · 5천만 이하 장애인·여성기업 · 해제·해지 등 / 학술용역 비대상 · 의뢰시점 추정가격 기준</td></tr>
-      <tr><td>원가(계약)심사</td><td>추정금액 기준 — 토목·건축공사 5억↑ · 조경·전기·통신·설비 3억↑ · 용역 2억↑ · 물품 2천만원↑</td></tr>
-      <tr><td>사전규격 공개</td><td>입찰 대상 5천만원 이상 (나라장터)</td></tr>
-      <tr><td>재정합의</td><td>공사 10억↑ · 용역·물품 제조 5억↑ · 물품 구매 2억↑ → 재무과장 (미만은 계약1·2팀장) — 서울특별시 회계관리에 관한 규칙</td></tr>
-      <tr><td>계약심의위원회</td><td>20억원 이상 물품구매·용역 계약 — 계약의 적절성·적법성 심의 (서울특별시 계약심의위원회 조례)</td></tr>
-      <tr><td>기타 사전심의</td><td>기술용역타당성(기술심사담당관) · 정보화심의(정보시스템과) · 학술용역심의(조직담당관) · 홍보물·영상물·간행물 심의(홍보담당관) · 공법선정위원회(발주부서) · 특정제품 선정심사(계약심사과)</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>💻 정보화사업 절차 (서울시 정보화사업 추진절차 지침)</summary>
-    <div class="in"><table>
-      <tr><th>절차</th><th>대상 · 기준</th></tr>
-      <tr><td>예산타당성 심사</td><td>신규 정보시스템 구축, SW 개발·재개발 포함 사업 — 정보시스템과, 정기 7~9월 (소요 30일)</td></tr>
-      <tr><td>과업심의위원회</td><td>모든 SW사업 (상용SW 구매·감리·ISP 포함) — 1억 이하·상용SW 구매 등은 간소화 심의</td></tr>
-      <tr><td>행안부 사전협의</td><td>신규사업 전체 · 기능개선 포함 2억 이상 계속사업 — 발주 40일 전 IRM 신청, 검토 30일, 결과 반영 후 사전규격 공개</td></tr>
-      <tr><td>제안요청서 검토</td><td>예산타당성 심사 사업 중 요청 시 (선택) — 정보시스템과, 15일</td></tr>
-      <tr><td>보안성 검토</td><td>정보시스템 신·증설 등 — 정보보안과(중요 사업은 국정원) · 준공 1주 전 보안점검표 제출</td></tr>
-      <tr><td>사전규격 공개</td><td>5천만 이상 입찰 물품·용역 — 5일간(긴급 3일) · SW사업 영향평가 결과 공개</td></tr>
-      <tr><td>제안요청 설명회</td><td>추정가격 20억 이상 의무 — 입찰공고는 설명일 전일부터 7일 전</td></tr>
-      <tr><td>협상 평가 (SW)</td><td>기술능력 배점 90% 적용 (기술 90 : 가격 10) · 협상적격은 기술점수가 배점한도의 85% 이상</td></tr>
-      <tr><td>정보시스템 감리</td><td>5억 이상 구축 의무 (대국민·다수부서 공동은 1억 이상) — 20억 미만·6개월 미만은 2단계 가능</td></tr>
-      <tr><td>하도급</td><td>SW사업 50% 초과 하도급 금지 · 재하도급 원칙 금지 · 승인제</td></tr>
-      <tr><td>완료 후 법정 제출</td><td>SW사업정보 1억 이상 spir.kr (계약·검수 후 각 1개월) · 정보자원 IRM 등록·현행화</td></tr>
-      <tr><td>대시민 서비스</td><td>보안취약점 점검(오픈 15일 전) → 콘텐츠담당관 오픈 심의 · 웹사이트는 성별영향평가 병행</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>🧐 감리 · 건설기술용역</summary>
-    <div class="in"><table>
-      <tr><th>구분</th><th>내용</th></tr>
-      <tr><td>유형 · 근거</td><td>건설사업관리(공사감리 포함) — 건설기술진흥법 §39 · 전력시설물 감리 — 전력기술관리법 · 정보통신공사 감리 — 정보통신공사업법 · 소방공사 감리 — 소방시설공사업법 · 건축 설계·감리 — 건축사법 (정보시스템 감리는 💻 표 참조)</td></tr>
-      <tr><td>기술용역 타당성 심사</td><td>기술심사담당관 — 토목·도시계획 1억↑ · 건축 5천만↑ · 기계·전기·조경 등 3천만↑ (이하 자체심사) · 예산 반영 전, 당해연도 사업은 발주 전 · 설계공모는 공모 전</td></tr>
-      <tr><td>건설기술심의</td><td>용역발주심의 — 토목·건축 2억↑, 전기·기계·조경 1억↑ (발주 타당성·과업 적정성) · PQ 세부평가기준 심의 — 설계·건설사업관리 2.3억↑, 정밀안전진단 1억↑ (시 표준기준과 동일 시 서면협의 대체)</td></tr>
-      <tr><td>낙찰자 결정</td><td>사업수행능력평가(PQ) 적격자 대상 적격심사 — 하한율 PQ 79.995 / 85.495 / 86.745%, 비PQ는 2억 미만 87.745% (📊 탭) · 협상에 의한 계약 방식 아님</td></tr>
-      <tr><td>대가 산정</td><td>엔지니어링사업대가의 기준 · 표준품셈 등 — 설계요율·개략공사비 적정성은 타당성 심사에서 검토</td></tr>
-      <tr><td>지역제한</td><td>추정가격 3.3억 미만 건설기술·설계·공사감리·엔지니어링 용역은 지역제한 경쟁 가능</td></tr>
-      <tr><td>손해배상보증</td><td>건설기술용역 — 건진법 §34·령 §50 · 건설사업관리는 공사착공일~완공일까지 보증</td></tr>
-      <tr><td>이행 관리</td><td>감리원(참여기술인) 배치계획 승인 후 착수 · 교체 시 발주청 사전 승인 · 월간 보고와 검측·기성 검토 관리</td></tr>
-      <tr><td>일상감사</td><td>용역 10억원 이상 (협상 발주 시 5억 이상 — 단, 건설기술용역은 협상 방식 비대상)</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>🗣️ 협상에 의한 계약 (령 §43 · §44)</summary>
-    <div class="in"><table>
-      <tr><th>구분</th><th>내용</th></tr>
-      <tr><td>대상</td><td>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 (단순노무용역·단순물품구매 제외) 및 지식기반사업 — 엔지니어링, 정보통신·정보화, 산업디자인, 문화산업, 디지털콘텐츠, 학술연구, 조형물, 공간정보 등. <b>공사는 대상 아님</b></td></tr>
-      <tr><td>평가 배점</td><td>총 100점 = 정량평가 20 (사업담당자) + 정성평가 60 (평가위원) + 가격평가 20 — 분야별 배점은 ±10점 범위 조정 가능</td></tr>
-      <tr><td>협상적격자</td><td>종합평점 70점 이상 (소프트웨어사업은 기술능력 점수가 배점한도의 85% 이상)</td></tr>
-      <tr><td>정성평가</td><td>항목별 최저점은 배점의 60% 이상 부여 · 위원별 최고·최저 점수를 제외한 산술평균</td></tr>
-      <tr><td>안전보건 항목</td><td>중대산업재해·중대시민재해 예방 확보 정도 — 정량평가 항목으로 추가 가능 ('26.7.31. 수정)</td></tr>
-      <tr><td>공고기간</td><td>1억 미만 10일 (신규사업 15일) · 1억~10억 미만 20일 · 10억 이상 40일 · 긴급·재공고 10일 — 게시일·개찰일 제외</td></tr>
-      <tr><td>평가위원회</td><td>위원장 포함 7~10인 (공무원은 ⅓ 이내) · 예비명부 3배수(21~30인, 일상감사팀장 협조결재) · 서울시 본청·사업소 공무원 위촉 불가(자치구는 가능) · 참가업체 추첨(다빈도순, 동수는 연장자순)</td></tr>
-      <tr><td>협상 절차</td><td>기술협상 → 가격협상 (제안 내용 가감 시 예정가격 범위 내 조정, 가감 없으면 제안가 조정 불가) · 1순위 불성립 시 2순위와 협상</td></tr>
-      <tr><td>일상감사</td><td>협상 계약 5억원 이상 (축제·행사 사업은 1억원 이상)</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>📉 지연배상금률 · 하자보수 요율</summary>
-    <div class="in"><table>
-      <tr><th>지연배상금 (1000분율)</th><th>요율</th></tr>
-      <tr><td>공사 / 계약 후 설계·승인 물품</td><td>0.5</td></tr>
-      <tr><td>물품 제조 · 구매</td><td>0.8</td></tr>
-      <tr><td>용역 · 수리 · 가공 · 대여 · 기타</td><td>1.3</td></tr>
-      <tr><td>운송 · 보관 · 양곡가공</td><td>2.5</td></tr>
-      <tr><td colspan="2" style="color:var(--sub)">지연배상금이 계약금액의 10% 이상이면 계약 해제·해지 검토 사유</td></tr>
-    </table>
-    <table>
-      <tr><th>하자보수보증금</th><th>요율</th></tr>
-      <tr><td>공사 (공종별)</td><td>2 ~ 5%</td></tr>
-      <tr><td>용역 (하자검사 대상)</td><td>2%</td></tr>
-      <tr><td>물품 제조 3% · 수리·구매</td><td>2%</td></tr>
-      <tr><td colspan="2" style="color:var(--sub)">3천만원 이하 공사(조경 제외)는 하자보수보증금 면제 가능</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>💰 보증금 기본 요율</summary>
-    <div class="in"><table>
-      <tr><th>구분</th><th>요율 · 비고</th></tr>
-      <tr><td>입찰보증금</td><td>입찰금액의 5% 이상 — 서울시 전자입찰은 지급각서로 갈음 (법 §12·령 §37)</td></tr>
-      <tr><td>계약보증금</td><td>계약금액의 10% 이상 — 5천만원 이하는 지급확약서로 면제 가능 (법 §15·령 §51~§53)</td></tr>
-      <tr><td>공사이행보증서</td><td>계약금액의 40% 이상 — 계약보증금 납부 대신 이행보증 선택 시 (특례기 20%는 종료)</td></tr>
-      <tr><td>손해배상보증서</td><td>전기공사 · 소방시설공사·설계·감리·관리용역 · 건설기술용역 등 개별법상 제출 ('26 대상 확대)</td></tr>
-      <tr><td>한시특례</td><td>입찰·계약보증금 50% 인하 (계약보증금 5% 이상) — <b>'26.6.30. 종료</b>, 현행 고시 확인 필요</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>🆕 '26년 주요 개정 한눈에</summary>
-    <div class="in"><table>
-      <tr><th>항목</th><th>내용</th></tr>
-      <tr><td>한시특례 종료</td><td>'26.6.30. 종료 → 7.1.부터 입찰보증금 5% · 계약보증금 10% · 공사이행보증 40% · 수의는 <b>재공고 유찰 시</b> 허용 (단독응찰 1회 유찰 특례는 6.30. 체결분까지)</td></tr>
-      <tr><td>선금 (예규 개정)</td><td>최초 지급률 30% 의무 · 지급한도 70% (재무건전성 100% 확대 폐지) · 선금전용계좌 사용 확약</td></tr>
-      <tr><td>지역제한입찰</td><td>종합공사 150억 미만 (100억 → 150억 상향) · 전문 및 전기·그 밖의 공사 10억 미만</td></tr>
-      <tr><td>수의 제도 신설</td><td>전자공개 수의 의무발주(폐기물처리·재해예방기술지도 용역) · 변경계약 한도(소액 2,200만 · 여성기업 등 5,500만) · 체결제한 여부 확인서</td></tr>
-      <tr><td>낙찰하한율</td><td>중소기업자간 경쟁제품 물품 87.995% → <b>89.995%</b> ('26.7.31.) · 물품 적격심사 적용기준 수정 — 심사 전 원문 확인</td></tr>
-      <tr><td>손해배상보증서</td><td>대상 확대 — 전기공사, 소방시설공사·설계·감리·관리용역, 건설기술용역 등</td></tr>
-      <tr><td>건설기계 임대료</td><td>지급 확인 제도 신설 — 대여대금 체불 방지 (매뉴얼 p.278)</td></tr>
-      <tr><td>협상 평가</td><td>중대산업재해·중대시민재해 예방 안전보건 평가항목 수정 ('26.7.31.)</td></tr>
-    </table></div>
-  </details>
-
-  <details>
-    <summary>📎 계약 서식 모음 (한글 서식 59종)</summary>
-    <div class="in">
-      <p style="font-size:.88rem;color:var(--sub);margin:4px 0 10px">함께 받은 <b>「계약서식모음('26.6.4.)」 zip 파일</b>에 아래 한글(hwp) 서식 원본이 들어 있어요. 이 도구의 체크리스트 항목과 짝지어 쓰면 됩니다.</p>
+  <!-- PANEL 3: 공고기간 · 법정 처리기한 -->
+  <div class="ref-panel" id="ref-panel-time">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">⏱️ 공고기간 · 법정 처리기한</h3>
       <table>
-        <tr><th>단계</th><th>주요 서식</th></tr>
-        <tr><td>수의계약</td><td>수의계약 요청 사유서 · 수의계약 체결제한 여부 확인서 · 수의계약 각서 · 산출기초조사서</td></tr>
-        <tr><td>입찰·공고</td><td>긴급공고 사유서 · 입찰참가신청서 · 입찰포기서 · 국제입찰 제외사유서 · 적격심사포기서(양식·자격미달·별도사유)</td></tr>
-        <tr><td>협상·공동수급</td><td>기술 및 가격 협약서 · 공동수급협정서(공동·분담·혼합) · Summary Notice(영문요약서)</td></tr>
-        <tr><td>계약 체결</td><td>청렴계약이행서약서(발주부서·계약상대자) · 근로자 권리보호 이행 서약서 · 안전보건관리 준수 서약서 · 계약보증금 지급각서 · 부당계약특수조건 체크리스트</td></tr>
-        <tr><td>선금</td><td>선금 신청 양식(신청서·각서·사용계획서·<b>전용계좌 사용 확약서</b>) · 선금보증금 지급각서 · 선금사용 확인서</td></tr>
-        <tr><td>이행·검사·대가</td><td>검사원지정요구서 · (부분)준공신고서 · 기성부분검사조서 · 물품검수조서 · 납품검사원 · 대가청구서 · 이행실적증명서(물품·용역·시설)</td></tr>
-        <tr><td>제재</td><td>부정당업자 제한처분 사전통지서 · 의견제출서 · 제한처분서</td></tr>
+        <tr><th>절차</th><th>기간</th></tr>
+        <tr><td>공사 입찰공고</td><td>10억 미만 7일 · 10~50억 미만 15일 · 50억~국제입찰 대상 미만 30일 · 국제입찰 대상 이상 40일</td></tr>
+        <tr><td>용역·물품 입찰공고</td><td>7일 (신규사업 10일)</td></tr>
+        <tr><td>재공고 · 긴급입찰</td><td>5일 (령 §35④)</td></tr>
+        <tr><td>협상에 의한 계약 공고</td><td>1억 미만 10일 · 1억~10억 미만 20일 · 10억 이상 40일 · 긴급·재공고 10일 (제안서 제출 마감일 전날 기산)</td></tr>
+        <tr><td>전자공개 수의 안내공고</td><td>3일 이상 (신규 사업자 대상 5일)</td></tr>
+        <tr><td>계약 체결</td><td>낙찰 통지 후 10일 이내</td></tr>
+        <tr><td>검사</td><td>완료 통지 후 14일 이내</td></tr>
+        <tr><td>대가 지급</td><td>검사 후 청구일부터 5일 이내 (공휴일·토요일 제외)</td></tr>
+        <tr><td>선금</td><td>최초 30% 의무 지급 · 한도 70% · 전용계좌 확약 ('26 예규) — 청구 후 14일, 하수급 배분 통지 15일</td></tr>
+        <tr><td colspan="2" style="color:var(--sub)">※ 공고기간은 게시일과 개찰일을 제외한 기간 — 령 §35</td></tr>
       </table>
     </div>
-  </details>
+  </div>
 
-  <div class="card" style="background:var(--warn-soft);border-color:#f2ddb0">
-    <h2>⚠️ 꼭 읽어주세요</h2>
-    <p style="font-size:.88rem;color:#7a5200">이 도구는 <b>참고용</b>이에요. 나라장터 · S2B · 서울계약마당 등 실제 계약 시스템과 결재 절차를 대체하지 않고, 법적 효력도 없어요. 법령·고시·서울시 지침은 수시로 개정되니, 실제 계약 처리 전에는 반드시 현행 규정 원문과 재무부서 안내를 확인해 주세요.</p>
+  <!-- PANEL 4: 발주 전 확인 절차 -->
+  <div class="ref-panel" id="ref-panel-chk">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">🔎 발주 전 확인 절차 (서울시)</h3>
+      <table>
+        <tr><th>절차</th><th>대상</th></tr>
+        <tr><td>일상감사</td><td>종합공사 20억↑ · 그 외 공사 10억↑ · 용역 10억↑ (협상 5억↑, 안전관리계획 수립 축제·행사 협상 1억↑) · 물품 5억↑ (제3자단가·다수공급자계약 제외) · 지명 3억↑ · 설계공모 10억↑ · 1인 견적 수의 2천만원 초과 — <b>제외</b>: 재공고 유찰 · 설계공모 당선자 · 5천만 이하 장애인·여성기업 · 해제·해지 등 / 학술용역 비대상 · 의뢰시점 추정가격 기준</td></tr>
+        <tr><td>원가(계약)심사</td><td>추정금액 기준 — 토목·건축공사 5억↑ · 조경·전기·통신·설비 3억↑ · 용역 2억↑ · 물품 2천만원↑</td></tr>
+        <tr><td>사전규격 공개</td><td>입찰 대상 5천만원 이상 (나라장터)</td></tr>
+        <tr><td>재정합의</td><td>공사 10억↑ · 용역·물품 제조 5억↑ · 물품 구매 2억↑ → 재무과장 (미만은 계약1·2팀장) — 서울특별시 회계관리에 관한 규칙</td></tr>
+        <tr><td>계약심의위원회</td><td>20억원 이상 물품구매·용역 계약 — 계약의 적절성·적법성 심의 (서울특별시 계약심의위원회 조례)</td></tr>
+        <tr><td>기타 사전심의</td><td>기술용역타당성(기술심사담당관) · 정보화심의(정보시스템과) · 학술용역심의(조직담당관) · 홍보물·영상물·간행물 심의(홍보담당관) · 공법선정위원회(발주부서) · 특정제품 선정심사(계약심사과)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 5: 정보화사업 절차 -->
+  <div class="ref-panel" id="ref-panel-it">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">💻 정보화사업 절차 (서울시 정보화사업 추진절차 지침)</h3>
+      <table>
+        <tr><th>절차</th><th>대상 · 기준</th></tr>
+        <tr><td>예산타당성 심사</td><td>신규 정보시스템 구축, SW 개발·재개발 포함 사업 — 정보시스템과, 정기 7~9월 (소요 30일)</td></tr>
+        <tr><td>과업심의위원회</td><td>모든 SW사업 (상용SW 구매·감리·ISP 포함) — 1억 이하·상용SW 구매 등은 간소화 심의</td></tr>
+        <tr><td>행안부 사전협의</td><td>신규사업 전체 · 기능개선 포함 2억 이상 계속사업 — 발주 40일 전 IRM 신청, 검토 30일, 결과 반영 후 사전규격 공개</td></tr>
+        <tr><td>제안요청서 검토</td><td>예산타당성 심사 사업 중 요청 시 (선택) — 정보시스템과, 15일</td></tr>
+        <tr><td>보안성 검토</td><td>정보시스템 신·증설 등 — 정보보안과(중요 사업은 국정원) · 준공 1주 전 보안점검표 제출</td></tr>
+        <tr><td>사전규격 공개</td><td>5천만 이상 입찰 물품·용역 — 5일간(긴급 3일) · SW사업 영향평가 결과 공개</td></tr>
+        <tr><td>제안요청 설명회</td><td>추정가격 20억 이상 의무 — 입찰공고는 설명일 전일부터 7일 전</td></tr>
+        <tr><td>협상 평가 (SW)</td><td>기술능력 배점 90% 적용 (기술 90 : 가격 10) · 협상적격은 기술점수가 배점한도의 85% 이상</td></tr>
+        <tr><td>정보시스템 감리</td><td>5억 이상 구축 의무 (대국민·다수부서 공동은 1억 이상) — 20억 미만·6개월 미만은 2단계 가능</td></tr>
+        <tr><td>하도급</td><td>SW사업 50% 초과 하도급 금지 · 재하도급 원칙 금지 · 승인제</td></tr>
+        <tr><td>완료 후 법정 제출</td><td>SW사업정보 1억 이상 spir.kr (계약·검수 후 각 1개월) · 정보자원 IRM 등록·현행화</td></tr>
+        <tr><td>대시민 서비스</td><td>보안취약점 점검(오픈 15일 전) → 콘텐츠담당관 오픈 심의 · 웹사이트는 성별영향평가 병행</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 6: 감리 · 건설기술용역 -->
+  <div class="ref-panel" id="ref-panel-gam">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">🧐 감리 · 건설기술용역</h3>
+      <table>
+        <tr><th>구분</th><th>내용</th></tr>
+        <tr><td>유형 · 근거</td><td>건설사업관리(공사감리 포함) — 건설기술진흥법 §39 · 전력시설물 감리 — 전력기술관리법 · 정보통신공사 감리 — 정보통신공사업법 · 소방공사 감리 — 소방시설공사업법 · 건축 설계·감리 — 건축사법</td></tr>
+        <tr><td>기술용역 타당성 심사</td><td>기술심사담당관 — 토목·도시계획 1억↑ · 건축 5천만↑ · 기계·전기·조경 등 3천만↑ (이하 자체심사)</td></tr>
+        <tr><td>건설기술심의</td><td>용역발주심의 — 토목·건축 2억↑, 전기·기계·조경 1억↑ · PQ 세부평가기준 심의 — 설계·건설사업관리 2.3억↑</td></tr>
+        <tr><td>낙찰자 결정</td><td>사업수행능력평가(PQ) 적격자 대상 적격심사 — 하한율 PQ 79.995 / 85.495 / 86.745%, 비PQ는 2억 미만 87.745%</td></tr>
+        <tr><td>지역제한</td><td>추정가격 3.3억 미만 건설기술·설계·공사감리·엔지니어링 용역은 지역제한 경쟁 가능</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 7: 협상에 의한 계약 -->
+  <div class="ref-panel" id="ref-panel-nego">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">🗣️ 협상에 의한 계약 (령 §43 · §44)</h3>
+      <table>
+        <tr><th>구분</th><th>내용</th></tr>
+        <tr><td>대상</td><td>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 및 지식기반사업 — 엔지니어링, 정보통신·정보화, 산업디자인, 문화산업, 디지털콘텐츠, 학술연구 등 (공사는 대상 아님)</td></tr>
+        <tr><td>평가 배점</td><td>총 100점 = 정량평가 20 + 정성평가 60 + 가격평가 20</td></tr>
+        <tr><td>협상적격자</td><td>종합평점 70점 이상 (SW사업은 기술점수가 기술배점의 85% 이상)</td></tr>
+        <tr><td>정성평가</td><td>위원별 최고·최저 총점을 제외한 남은 위원 총점의 산술평균</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 8: 지연배상금률 · 하자보수 요율 -->
+  <div class="ref-panel" id="ref-panel-delay">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">📉 지연배상금률 · 하자보수 요율</h3>
+      <table>
+        <tr><th>지연배상금 (1000분율)</th><th>요율</th></tr>
+        <tr><td>공사 / 계약 후 설계·승인 물품</td><td>0.5</td></tr>
+        <tr><td>물품 제조 · 구매</td><td>0.8</td></tr>
+        <tr><td>용역 · 수리 · 가공 · 대여 · 기타</td><td>1.3</td></tr>
+        <tr><td>운송 · 보관 · 양곡가공</td><td>2.5</td></tr>
+      </table>
+      <table style="margin-top:12px">
+        <tr><th>하자보수보증금</th><th>요율</th></tr>
+        <tr><td>공사 (공종별)</td><td>2 ~ 5%</td></tr>
+        <tr><td>용역 (하자검사 대상)</td><td>2%</td></tr>
+        <tr><td>물품 제조 3% · 수리·구매</td><td>2%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 9: 보증금 기본 요율 -->
+  <div class="ref-panel" id="ref-panel-guar">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">💰 보증금 기본 요율</h3>
+      <table>
+        <tr><th>구분</th><th>요율 · 비고</th></tr>
+        <tr><td>입찰보증금</td><td>입찰금액의 5% 이상 — 서울시 전자입찰은 지급각서로 갈음</td></tr>
+        <tr><td>계약보증금</td><td>계약금액의 10% 이상 — 5천만원 이하는 지급확약서로 면제 가능</td></tr>
+        <tr><td>공사이행보증서</td><td>계약금액의 40% 이상 — 계약보증금 납부 대신 이행보증 선택 시</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PANEL 10: '26년 주요 개정 -->
+  <div class="ref-panel" id="ref-panel-new26">
+    <div class="card">
+      <h3 style="margin-top:0;color:#0f766e;">🆕 '26년 주요 개정 한눈에</h3>
+      <table>
+        <tr><th>항목</th><th>내용</th></tr>
+        <tr><td>한시특례 종료</td><td>'26.6.30. 종료 → 7.1.부터 입찰 5% · 계약 10% · 수의는 <b>재공고 유찰 시</b> 허용</td></tr>
+        <tr><td>선금 (예규 개정)</td><td>최초 지급률 30% 의무 · 지급한도 70% · 선금전용계좌 사용 확약</td></tr>
+        <tr><td>지역제한입찰</td><td>종합공사 150억 미만 상향 · 전문 및 전기·그 밖의 공사 10억 미만</td></tr>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ─────────── 7. AI 계약 Q&A (GPT API 연동) ─────────── -->
+<section class="panel" id="p-gpt">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div>
+        <h2 style="margin:0;color:#1e40af;display:flex;align-items:center;gap:8px;">🤖 AI 지방계약 전문 Q&A 도우미</h2>
+        <p class="desc" style="margin:4px 0 0;">OpenAI GPT API를 연동하여 지방계약법, 행안부 예규, 서울시 회계규칙 관련 궁금증을 실시간으로 자문해 드립니다.</p>
+      </div>
+      <button type="button" class="btn ghost" id="btn-gpt-clear" style="padding:6px 12px;font-size:0.84rem;">대화 초기화</button>
+    </div>
+
+    <!-- API Key Setting Box -->
+    <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+        <span style="font-weight:800;font-size:0.92rem;color:#1d4ed8;">🔑 OpenAI API Key 설정</span>
+        <small style="color:#64748b;">* Key는 브라우저 LocalStorage에만 안전하게 저장됩니다.</small>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="password" id="gpt-api-key" placeholder="sk-proj-..." style="flex:1;min-width:240px;height:40px;padding:8px 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-family:monospace;">
+        <select id="gpt-model" style="height:40px;padding:0 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-weight:700;color:#334155;">
+          <option value="gpt-4o-mini" selected>gpt-4o-mini (빠름 · 추천)</option>
+          <option value="gpt-4o">gpt-4o (고성능)</option>
+          <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+        </select>
+        <button type="button" class="btn pri-btn" id="btn-save-gpt-key" style="height:40px;padding:0 16px;font-size:0.88rem;">키 저장</button>
+      </div>
+    </div>
+
+    <!-- Preset Prompt Chips -->
+    <div style="margin-bottom:14px;">
+      <span style="font-size:0.85rem;font-weight:800;color:#475569;margin-right:8px;">💡 자주 묻는 질문 퀵 클릭:</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+        <button type="button" class="preset-chip-btn" data-q="1인 견적 수의계약 대상 및 5천만원 한도 특례 적용 조건과 수의계약 체결제한 서식에 대해 알려줘.">1인 수의 한도 & 특례 조건</button>
+        <button type="button" class="preset-chip-btn" data-q="SW사업 정보화 추진 시 사전협의, 보안성검토, 과업심의위원회 필수 대상 기준을 정리해줘.">SW사업 사전 절차 기준</button>
+        <button type="button" class="preset-chip-btn" data-q="지연배상금 요율(공사, 용역, 물품) 및 면제 기준, 10% 이상 시 계약 해제 사유에 대해 설명해줘.">지연배상금 요율 및 해제 사유</button>
+        <button type="button" class="preset-chip-btn" data-q="협상에 의한 계약 평가위원회 구성 방법과 정성평가 최고·최저 총점 제외 산출 방식을 알려줘.">협상계약 위원구성 및 산출방식</button>
+      </div>
+    </div>
+
+    <!-- Chat Display Area -->
+    <div class="gpt-chat-box" id="gpt-chat-box">
+      <div class="chat-bubble system-info">
+        🤖 안녕하세요! 지방계약법 및 서울시 회계실무 Q&A 도우미입니다. 위에 API Key를 등록하시거나 질문을 입력해 보세요.
+      </div>
+    </div>
+
+    <!-- Input Box -->
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <textarea id="gpt-input-text" rows="2" placeholder="계약법, 수의계약, 입찰 절차 등에 대해 질문해 보세요 (예: 수요기관 1인 수의계약 가능 여부)" style="flex:1;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:0.92rem;resize:none;"></textarea>
+      <button type="button" class="btn pri-btn" id="btn-send-gpt" style="height:54px;padding:0 20px;font-size:0.95rem;background:#2563eb;color:#fff;">질문 보내기 ➔</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 8. 계약서식 모음 및 사용자 양식 등록 ─────────── -->
+<section class="panel" id="p-forms">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <h2 style="margin:0;color:#0f766e;display:flex;align-items:center;gap:8px;">📁 서울계약 실무 서식 모음 & 사용자 등록</h2>
+        <p class="desc" style="margin:4px 0 0;">서울시 발주 실무 표준 서식을 다운로드하거나, 자주 쓰는 기관 보유 파일(.hwp, .xlsx, .pdf)을 직접 등록하여 보관하세요.</p>
+      </div>
+    </div>
+
+    <!-- Section A: Standard Built-in Templates -->
+    <h3 style="color:#1e40af;margin-top:0;margin-bottom:12px;">📑 1. 서울특별시 발주실무 대표 표준 서식 (양식)</h3>
+    <div class="form-template-grid">
+      <div class="form-template-card">
+        <div>
+          <span style="font-size:0.78rem;font-weight:800;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:6px;">수의계약</span>
+          <h4 style="margin:8px 0 4px;font-size:0.96rem;">1인 견적 수의계약 승낙승낙서 & 사유서</h4>
+          <p style="font-size:0.82rem;color:#64748b;margin:0 0 10px;">소액 수의계약 체결 시 발주부서 작성용 한글 서식</p>
+        </div>
+        <button type="button" class="btn ghost" onclick="window.downloadSampleForm('1인_견적_수의계약_승낙승낙서.hwp')" style="padding:6px 12px;font-size:0.84rem;">📄 서식 파일 다운로드</button>
+      </div>
+
+      <div class="form-template-card">
+        <div>
+          <span style="font-size:0.78rem;font-weight:800;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:6px;">선금</span>
+          <h4 style="margin:8px 0 4px;font-size:0.96rem;">선금전용계좌 사용 확약서 & 신청서</h4>
+          <p style="font-size:0.82rem;color:#64748b;margin:0 0 10px;">'26년 예규 개정 반영 선금 청구 필수 서식 세트</p>
+        </div>
+        <button type="button" class="btn ghost" onclick="window.downloadSampleForm('선금전용계좌_사용_확약서.hwp')" style="padding:6px 12px;font-size:0.84rem;">📄 서식 파일 다운로드</button>
+      </div>
+
+      <div class="form-template-card">
+        <div>
+          <span style="font-size:0.78rem;font-weight:800;background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:6px;">청렴·이해충돌</span>
+          <h4 style="margin:8px 0 4px;font-size:0.96rem;">청렴계약 이행서약서 & 체결제한 확인서</h4>
+          <p style="font-size:0.82rem;color:#64748b;margin:0 0 10px;">이해충돌방지법 §12 수의계약 체결제한 확인서 포함</p>
+        </div>
+        <button type="button" class="btn ghost" onclick="window.downloadSampleForm('청렴계약이행서약서_체결제한확인서.hwp')" style="padding:6px 12px;font-size:0.84rem;">📄 서식 파일 다운로드</button>
+      </div>
+
+      <div class="form-template-card">
+        <div>
+          <span style="font-size:0.78rem;font-weight:800;background:#f3e8ff;color:#7e22ce;padding:2px 8px;border-radius:6px;">협상 평가</span>
+          <h4 style="margin:8px 0 4px;font-size:0.96rem;">제안서 정성평가 위원별 세부 집계표</h4>
+          <p style="font-size:0.82rem;color:#64748b;margin:0 0 10px;">최고·최저 제외 자동 계산 엑셀 서식 템플릿</p>
+        </div>
+        <button type="button" class="btn ghost" onclick="window.downloadSampleForm('정성평가_위원별_집계표_템플릿.xlsx')" style="padding:6px 12px;font-size:0.84rem;">📊 엑셀 서식 다운로드</button>
+      </div>
+    </div>
+
+    <!-- Section B: User Custom File Upload & Management -->
+    <h3 style="color:#0f766e;margin-top:20px;margin-bottom:12px;">📤 2. 사용자 지정 계약 서식 파일 등록 (내 PC 양식 추가)</h3>
+    
+    <div class="user-upload-box">
+      <div style="font-size:1.6rem;margin-bottom:6px;">📁</div>
+      <b style="font-size:1rem;color:#166534;">자주 쓰는 우리 부서 계약 서식 파일(.hwp, .xlsx, .pdf 등)을 등록하세요</b>
+      <p style="font-size:0.85rem;color:#475569;margin:4px 0 14px;">등록하신 서식은 내 브라우저에 안전하게 보관되어 필요할 때 바로 다운로드할 수 있습니다.</p>
+      
+      <div style="max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="user-form-title" placeholder="서식 제목 (예: 우리 구 청소용역 과업지시서 양식)" style="padding:10px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.9rem;">
+        <input type="text" id="user-form-desc" placeholder="서식 설명 또는 메모 (선택)" style="padding:8px 14px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:0.88rem;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="file" id="user-form-file-input" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #cbd5e1;background:#fff;font-size:0.88rem;">
+          <button type="button" class="btn pri-btn" id="btn-add-user-form" style="padding:10px 18px;font-size:0.88rem;background:#0d9488;color:#fff;">＋ 서식 등록</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Uploaded Files Table -->
+    <div id="user-forms-table-area">
+      <h4 style="color:#334155;margin-bottom:8px;">📂 내 등록 서식 목록</h4>
+      <div id="user-forms-list"></div>
+    </div>
+
   </div>
 </section>
 
