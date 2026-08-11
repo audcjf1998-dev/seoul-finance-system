@@ -802,7 +802,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. REQUIRED MISSING BANNER
     h += missReq.length
-      ? '<div class="miss"><b>🔔 아직 확인 안 된 필수·법정 항목 '+missReq.length+'건</b><div class="list">'+missReq.map(it=>tagHtml(it.label.split(" — ")[0], it.lv==="법정"?"b":"r")).join("")+'</div></div>'
+      ? '<details class="miss">'
+        +'<summary class="miss-header">'
+        +'<span class="miss-title">🔔 아직 확인이 필요한 필수·법정 항목 <b>'+missReq.length+'건</b></span>'
+        +'<span class="miss-toggle-btn">👁️ 미완료 항목 목록 보기 / 접기</span>'
+        +'</summary>'
+        +'<div class="list">'+missReq.map(it=>tagHtml(it.label.split(" — ")[0], it.lv==="법정"?"b":"r")).join("")+'</div>'
+        +'</details>'
       : '<div class="miss ok"><b>🎉 모든 단계 필수·법정 항목 확인 완료!</b><div class="s" style="font-size:.85rem;color:var(--sub);margin-top:4px">권장 항목도 한 번 더 훑어보면 안전해요.</div></div>';
 
     // 3. RENDER STAGE ITEMS (Sequential View vs All View)
