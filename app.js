@@ -336,7 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if(d.it){
       pre.push({t:"과업심의위원회 (SW 과업 확정)", tag:"통상", days:[5,10], soft:true, s:"모든 SW사업 대상 · SW개발 포함 시 적정 사업기간 산정 (1억 이하·상용SW 구매는 간소화 심의)"});
       if(d.itNew || d.p>=2*E) pre.push({t:"행안부 사전협의", tag:"법정", days:[30,30], s:"발주 40일 전 IRM(irm.go.kr) 신청 · 검토 30일 — 결과를 제안요청서에 반영한 뒤 사전규격 공개"});
-      pre.push({t:"정보통신 보안성 검토", tag:"통상", days:[5,10], soft:true, s:"정보보안과 (중요 사업은 국정원) · 검토 결과 제안요청서 반영"});
+      if(!d.itAudit || d.itNew || d.itPub){
+        pre.push({t:"정보통신 보안성 검토", tag:"통상", days:[5,10], soft:true, s:"정보보안과 (중요 사업은 국정원) · 검토 결과 제안요청서 반영"});
+      }
     }
     if(d.spec) pre.push({t:"사전규격 공개", tag:"통상", days:[5,5], soft:true, s:"공개 5일(긴급 3일)"+(d.it?" · SW사업 영향평가 결과 함께 공개":"")});
     if(d.rec==="nego"){
