@@ -30,6 +30,43 @@ function attachMoney(inp){
   });
 }
 
+/* ─────────────────── 마우스 호버 법령 툴팁 사전 ─────────────────── */
+const LEGAL_CLAUSES = {
+  "령 §25·§30": "<b>지방계약법 시행령 제25조 및 제30조</b><br>추정가격 2천만원 이하(특례기업 5천만원 이하) 수의계약 근거 규정입니다.",
+  "령 §25①5호·§30": "<b>지방계약법 시행령 제25조 제1항 제5호 및 제30조</b><br>전자공개 견적 수의계약 (공사 4억/2억/1.6억 이하, 용역·물품 1억원 이하) 대상 및 3일 이상(신규 5일) 안내공고 규정입니다.",
+  "집행기준 제5장": "<b>행정안전부 예규 「입찰 및 계약 집행기준」 제5장</b><br>수의계약 운영요령 (견적서 징구, 수의계약 체결제한 여부 확인, 동일업체 연 4회/9회 제한 등) 세부 지침입니다.",
+  "령 §35": "<b>지방계약법 시행령 제35조</b><br>입찰공고 시기 규정입니다. (공사 금액별 7일~40일, 용역·물품 7일/신규10일, 긴급·재공고 5일 — 게시일·개찰일 제외)",
+  "적격심사 — 낙찰자 결정기준 제2~4장": "<b>행정안전부 예규 「낙찰자 결정기준」 제2~4장</b><br>입찰가격 및 수행능력(이행실적, 재무상태 등)을 평가하여 낙찰하한율 이상 최적업체를 낙찰자로 결정하는 심사기준입니다.",
+  "령 §43·§44": "<b>지방계약법 시행령 제43조 및 제44조</b><br>전문성·기술성·창의성이 필요한 용역·물품 계약 시 제안서 평가를 거쳐 낙찰자를 선정하는 협상에 의한 계약 규정입니다.",
+  "낙찰자 결정기준 제7장": "<b>행정안전부 예규 「낙찰자 결정기준」 제7장</b><br>협상에 의한 계약 체결기준 (배점 80:20 구성, 정성평가 위원 구성 및 최고·최저점 제외 평균 산식) 규정입니다.",
+  "기술 90 : 가격 10 (SW사업 준수사항)": "<b>소프트웨어 진흥법 제50조</b><br>SW 구축·개발 정보화사업은 기술능력 배점을 90% 이상 필수로 적용해야 합니다.",
+  "협상적격 — 기술점수 85%↑": "<b>소프트웨어사업 계약지침</b><br>기술능력 평가 점수가 기술배점 한도(90점)의 85%인 76.5점 이상인 자를 협상적격자로 결정합니다.",
+  "협상적격 종합 70점↑": "<b>행정안전부 예규 협상 체결기준</b><br>제안서 종합평가 점수(기술+가격)가 70점 이상인 자를 협상적격자로 선정합니다.",
+  "견적서 1인 제출": "<b>1인 수의계약 절차</b><br>추정가격 2천만원 이하(특례 5천만원 이하)는 지정 1개 업체로부터 직인 날인된 견적서를 직접 제출받아 계약을 체결합니다.",
+  "동일업체 연 4회/9회 제한": "<b>서울특별시 수의계약 운영지침</b><br>1인 견적 수의계약 시 동일 업체와의 체결 횟수는 동일 실·국별 연 4회, 서울시 전체 연 9회를 초과할 수 없습니다.",
+  "변경계약 한도 2,200만원": "<b>서울특별시 수의계약 변경지침</b><br>소액 1인 수의계약 변경 시 증액 후 총 계약금액이 2,200만원(부가세 포함)을 초과할 수 없습니다.",
+  "변경계약 한도 5,500만원": "<b>서울특별시 수의계약 변경지침</b><br>특례기업 1인 수의계약 변경 시 증액 후 총 계약금액이 5,500만원(부가세 포함)을 초과할 수 없습니다.",
+  "일상감사 대상": "<b>서울특별시 일상감사 규정</b><br>발주 전 감사의견 징구 (공사 20억/10억, 용역 10억/협상 5억, 물품 5억, 수의 2천만원 초과)",
+  "일상감사 제외 (5천만 이하 장애인·여성기업)": "<b>서울특별시 일상감사 예외지침</b><br>추정가격 5천만원 이하의 장애인기업·여성기업 수의계약은 일상감사 대상에서 제외됩니다.",
+  "법정": "<b>법정 의무 절차</b><br>지방계약법령 및 관련 예규상 반드시 준수해야 하는 법적 의무 절차 및 기한입니다.",
+  "통상": "<b>통상 내부절차</b><br>지방자치단체 내부 결재, 감사, 심의 등 실무 추진 시 소요되는 표준 행정 기간입니다."
+};
+
+function tagHtml(text, colorClass) {
+  // Check exact key or match prefix before '·'
+  let key = text;
+  if (!LEGAL_CLAUSES[key] && text.includes(" · ")) {
+    key = text.split(" · ")[0];
+  }
+  
+  const tip = LEGAL_CLAUSES[key] || LEGAL_CLAUSES[text];
+  if (tip) {
+    return `<span class="tag ${colorClass} has-tip">${text}<div class="tip-box">${tip}</div></span>`;
+  }
+  return `<span class="tag ${colorClass}">${text}</span>`;
+}
+window.tagHtml = tagHtml;
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll(".money").forEach(attachMoney);
 
@@ -46,6 +83,48 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll(".opt input").forEach(c=>{
     c.addEventListener("change",()=>c.closest(".opt").classList.toggle("on",c.checked));
   });
+
+  /* ───── "해당 사항 없음" 토글 제어 ───── */
+  const chkNone = $("chk-none");
+  const optNone = $("opt-none");
+  
+  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub"];
+
+  if (chkNone && optNone) {
+    chkNone.addEventListener("change", () => {
+      if (chkNone.checked) {
+        optNone.classList.add("on");
+        // 해제 처리
+        specialIds.forEach(id => {
+          const el = $(id);
+          if (el) {
+            const inp = el.querySelector("input");
+            if (inp) inp.checked = false;
+            el.classList.remove("on");
+          }
+        });
+        syncOpts();
+      } else {
+        optNone.classList.remove("on");
+      }
+    });
+
+    // 다른 특수조건 체크 시 "해당 사항 없음" 자동 해제
+    specialIds.forEach(id => {
+      const el = $(id);
+      if (el) {
+        const inp = el.querySelector("input");
+        if (inp) {
+          inp.addEventListener("change", () => {
+            if (inp.checked) {
+              chkNone.checked = false;
+              optNone.classList.remove("on");
+            }
+          });
+        }
+      }
+    });
+  }
 
   /* 종류 칩 */
   let KIND = "goods";
@@ -112,8 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if(itChk) itChk.addEventListener("change", syncIt);
 
   syncOpts();
-
-
 
   /* ───── 판단 로직 ───── */
   function decide(){
@@ -220,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function tlItem(x){
     const dd = x.days[0]===x.days[1] ? x.days[0]+"일" : x.days[0]+"~"+x.days[1]+"일";
     return '<div class="tl-i'+(x.soft?' soft':'')+'"><div class="h"><b>'+x.t+'</b>'
-      +'<span class="tag '+(x.tag==="법정"?"b":"g")+'">'+x.tag+' · '+dd+'</span></div>'
+      + tagHtml(x.tag + " · " + dd, x.tag === "법정" ? "b" : "g") +'</div>'
       +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
   }
 
@@ -237,30 +314,42 @@ document.addEventListener('DOMContentLoaded', () => {
         h += '<div class="mcard rec"><span class="badge">추천</span><b>🗣️ 협상에 의한 계약 (제안서 평가)</b>'
           +'<p>전문성·기술성·창의성·안전성 등이 필요한 용역·물품 — 단순노무용역·단순물품구매는 대상이 아니에요 (령 §43·§44)</p>'
           +'<div class="tags">'+(d.it
-            ?'<span class="tag v">기술 90 : 가격 10 (SW사업 준수사항)</span><span class="tag b">협상적격 — 기술점수 85%↑</span>'
-            :'<span class="tag v">배점 100 = 정량 20 + 정성 60 + 가격 20</span><span class="tag b">협상적격 종합 70점↑</span>')
-          +'<span class="tag o">공고 '+d.noticeDays+'일</span><span class="tag g">령 §43·§44 · 낙찰자 결정기준 제7장</span></div></div>';
+            ? tagHtml("기술 90 : 가격 10 (SW사업 준수사항)", "v") + tagHtml("협상적격 — 기술점수 85%↑", "b")
+            : tagHtml("배점 100 = 정량 20 + 정성 60 + 가격 20", "v") + tagHtml("협상적격 종합 70점↑", "b"))
+          + tagHtml("공고 "+d.noticeDays+"일", "o")
+          + tagHtml("령 §43·§44", "g")
+          + tagHtml("낙찰자 결정기준 제7장", "g") +'</div></div>';
         if(d.oneOk||d.twoOk) h += '<p class="note">금액만 보면 수의계약도 가능한 범위지만, 협상 방식을 선택하셨으니 제안서 평가 절차로 안내해 드려요.</p>';
         h += '<p class="note">분야별 배점은 ±10점 범위에서 조정할 수 있어요. 대상 여부(지식기반사업 등)는 「📚 기준 한눈에」에서 확인하세요.</p>';
       } else {
         if(d.oneOk){
           h += '<div class="mcard rec"><span class="badge">추천</span><b>🤝 1인 견적 수의계약</b>'
             +'<p>'+(d.severe?'중증장애인생산품 직접 생산 — 금액 제한 없이 가능':(d.special?'특례 대상 기업 — 5천만원 이하 가능':'추정가격 2천만원 이하'))+'</p>'
-            +'<div class="tags"><span class="tag g">령 §25·§30</span><span class="tag k">견적서 1인 제출</span><span class="tag o">동일업체 연 4회/9회 제한</span>'
-            +'<span class="tag v">변경계약 한도 '+(d.special?'5,500만원':'2,200만원')+'</span>'
-            +(d.audit?'<span class="tag r">일상감사 대상</span>':(d.special&&d.p>2e7?'<span class="tag g">일상감사 제외 (5천만 이하 장애인·여성기업)</span>':''))+'</div></div>';
+            +'<div class="tags">'
+            + tagHtml("령 §25·§30", "g")
+            + tagHtml("견적서 1인 제출", "k")
+            + tagHtml("동일업체 연 4회/9회 제한", "o")
+            + tagHtml("변경계약 한도 "+(d.special?"5,500만원":"2,200만원"), "v")
+            +(d.audit ? tagHtml("일상감사 대상", "r") : (d.special&&d.p>2e7 ? tagHtml("일상감사 제외 (5천만 이하 장애인·여성기업)", "g") : ''))
+            +'</div></div>';
         }
         if(d.twoOk){
           h += '<div class="mcard'+(d.rec==="two"?' rec':'')+'">'+(d.rec==="two"?'<span class="badge">추천</span>':'')
             +'<b>💻 전자공개 수의계약 (2인 이상 견적)</b>'
             +'<p>'+d.k.name+' '+korUnit(d.k.two)+' 이하 — 나라장터 안내공고 3일(신규 5일), 견적률 '+d.quoteRate+' 이상 최저가</p>'
-            +'<div class="tags"><span class="tag g">령 §25①5호·§30</span><span class="tag g">집행기준 제5장</span></div></div>';
+            +'<div class="tags">'
+            + tagHtml("령 §25①5호·§30", "g")
+            + tagHtml("집행기준 제5장", "g")
+            +'</div></div>';
         }
         h += '<div class="mcard'+(d.rec==="bid"?' rec':'')+'">'+(d.rec==="bid"?'<span class="badge">추천</span>':'')
           +'<b>📢 일반(경쟁)입찰</b><p>'+(d.k.isC
             ?'공고 '+d.noticeDays+'일 이상 (10억 미만 7일 · 10~50억 15일 · 50억~국제입찰 미만 30일 · 국제입찰 40일 · 긴급·재공고 5일)'
             :'공고 7일 이상 (신규사업 10일 · 긴급·재공고 5일) — 게시일·개찰일 제외')
-          +'</p><div class="tags"><span class="tag g">령 §35</span><span class="tag g">적격심사 — 낙찰자 결정기준 제2~4장</span></div></div>';
+          +'</p><div class="tags">'
+          + tagHtml("령 §35", "g")
+          + tagHtml("적격심사 — 낙찰자 결정기준 제2~4장", "g")
+          +'</div></div>';
         if(d.rec==="bid" && !d.k.isC) h += '<p class="note">'+(d.it
           ?'정보화·SW사업은 보통 협상에 의한 계약으로 발주해요. ③에서 「협상에 의한 계약」을 함께 체크하면 절차와 배점을 협상 기준으로 안내해 드려요.'
           :'전문성·기술성이 필요한 사업이면 ③에서 「협상에 의한 계약」을 체크해 보세요. 절차와 체크리스트를 협상 기준으로 바꿔 드려요.')+'</p>';
@@ -359,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       add(N,"전자공개 견적 안내공고 (3일, 신규 5일)","나라장터 전자견적","법정",true);
       add(N,"견적률 확인 — "+d.quoteRate+" 이상","예정가격 대비 · 최저가격 순 결정","권장",true);
     } else {
-      add(N,"전자공개 의무발주 대상 확인","폐기물처리·재해예방기술지도 용역은 금액과 무관하게 전자공개 수의로 발주 (시범 연장)","필수",KIND==="service");
+      add(N,"전자공개 의무발주 대상 확인","폐기물처리·재해예방기술지도 용역은 1인 수의 금액이라도 전자공개 수의로 발주 (시범 연장)","필수",KIND==="service");
       add(N,"수의계약 체결제한 여부 확인서 징구","이해충돌방지법 §12 · 발주부서 퇴직공무원(2년) · 유착비리 지정업체 제한 — 서식 모음 참고","필수",true);
       add(N,"수의계약 사유 명시","사유서 작성 — 시행령 §25 근거 명확히","필수",true);
       add(N,"견적서 징구 · 가격 적정성 검토","시장가격·과거 계약단가 비교","권장",true);
@@ -413,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let h = '<div class="card"><h2>이 계약의 점검 목록</h2>'
       +'<p class="desc">'+LAST.k.name+' · '+korUnit(LAST.p)+' · 총 '+CKS.length+'개 항목 — 체크하면서 빠진 것이 없는지 확인하세요.</p>';
     h += missReq.length
-      ? '<div class="miss"><b>🔔 아직 확인 안 된 필수·법정 항목 '+missReq.length+'건</b><div class="list">'+missReq.map(it=>'<span class="tag '+(it.lv==="법정"?"b":"r")+'">'+it.label.split(" — ")[0]+'</span>').join("")+'</div></div>'
+      ? '<div class="miss"><b>🔔 아직 확인 안 된 필수·법정 항목 '+missReq.length+'건</b><div class="list">'+missReq.map(it=>tagHtml(it.label.split(" — ")[0], it.lv==="법정"?"b":"r")).join("")+'</div></div>'
       : '<div class="miss ok"><b>🎉 필수·법정 항목을 모두 확인했어요!</b><div class="s" style="font-size:.85rem;color:var(--sub);margin-top:4px">권장 항목도 한 번 더 훑어보면 좋아요.</div></div>';
     for(const ph in byPh){
       const list = byPh[ph], done = list.filter(it=>CKSET.has(it.id)).length;
@@ -421,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
       list.forEach(it=>{
         const on = CKSET.has(it.id);
         h += '<label class="ck'+(on?' on':'')+'"><input type="checkbox" data-id="'+it.id+'"'+(on?' checked':'')+'>'
-          +'<span><span class="l">'+it.label+'</span> <span class="tag '+(it.lv==="법정"?"b":it.lv==="필수"?"r":"g")+'">'+it.lv+'</span>'
+          +'<span><span class="l">'+it.label+'</span> '+tagHtml(it.lv, it.lv==="법정"?"b":it.lv==="필수"?"r":"g")
           +(it.sub?'<div class="s">'+it.sub+'</div>':'')+'</span></label>';
       });
       h += '</div>';
@@ -611,11 +700,11 @@ document.addEventListener('DOMContentLoaded', () => {
       rows.forEach(r=>{
         h += '<tr'+(r.rank===1&&r.pass?' class="win"':'')+'><td>'+r.rank+'</td><td>'+r.name+'</td>'
           +'<td class="num">'+won(r.bid)+'<br><span style="color:var(--sub)">'+(r.bid/base*100).toFixed(2)+'%</span>'
-          +(r.tagP?' <span class="tag o">'+r.tagP+'</span>':'')+'</td>'
+          +(r.tagP?' '+tagHtml(r.tagP, "o"):'')+'</td>'
           +'<td class="num">'+r.quant.toFixed(2)+'</td><td class="num">'+r.qual.toFixed(2)+'</td>'
           +'<td class="num">'+r.pricePt.toFixed(2)+'</td><td class="num">'+r.tech.toFixed(2)+'</td>'
           +'<td class="num"><b>'+r.total.toFixed(2)+'</b></td>'
-          +'<td>'+(r.pass?'<span class="tag k">적격</span>':'<span class="tag r">미달</span>')+'</td></tr>';
+          +'<td>'+(r.pass?tagHtml("적격","k"):tagHtml("미달","r"))+'</td></tr>';
       });
       h += '</table></div>';
       h += '<p class="note">적격 기준 — '+(sw
