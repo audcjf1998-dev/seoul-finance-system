@@ -98,15 +98,19 @@ body {
 
 .slogan-badge-wrap {
   background: #ffffff;
-  padding: 8px 18px;
-  border-radius: 18px;
+  padding: 6px 14px;
+  border-radius: 16px;
   border: 1.5px solid #e2eaf8;
-  box-shadow: 0 4px 14px rgba(0, 100, 240, 0.06);
+  box-shadow: 0 4px 14px rgba(0, 100, 240, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .slogan-img {
-  height: 48px;
-  max-width: 240px;
+  height: 54px;
+  width: auto;
+  max-width: 200px;
   object-fit: contain;
   display: block;
 }
