@@ -44,8 +44,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentChapterEl.textContent = tabTitles[targetTab].chapter;
                 currentPageTitleEl.textContent = tabTitles[targetTab].title;
             }
+
+            // Close sidebar on mobile after choosing a tab
+            if (window.innerWidth <= 992 && sidebar && sidebarOverlay) {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            }
         });
     });
+
+    // Mobile Sidebar Drawer Toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (mobileMenuToggle && sidebar && sidebarOverlay) {
+        function toggleMobileMenu() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        sidebarOverlay.addEventListener('click', toggleMobileMenu);
+    }
 
     // 2. Dark / Light Theme Toggle
     const themeToggleBtn = document.getElementById('themeToggle');

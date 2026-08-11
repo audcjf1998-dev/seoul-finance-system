@@ -115,6 +115,9 @@
             <!-- Top Bar Header -->
             <header class="top-bar">
                 <div class="breadcrumb">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="메뉴 열기/닫기">
+                        <i data-lucide="menu"></i>
+                    </button>
                     <span id="currentChapter">메인 대시보드</span>
                     <i data-lucide="chevron-right"></i>
                     <span id="currentPageTitle" class="active">서울시 계약 현황 및 지표</span>
@@ -134,6 +137,9 @@
                     </button>
                 </div>
             </header>
+
+            <!-- Sidebar Overlay for Mobile -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
             <!-- Dynamic Content Tabs -->
             <div class="content-body">
@@ -167,45 +173,85 @@
                     </div>
 
                     <!-- KPI Cards Grid -->
-                    <div class="grid-4">
-                        <div class="kpi-card">
-                            <div class="kpi-icon blue"><i data-lucide="building-2"></i></div>
-                            <div class="kpi-data">
-                                <span class="title">공사 계약</span>
-                                <span class="count">1,840 건</span>
-                                <span class="amount">1조 9,200 억원</span>
+                    <div class="grid-4 kpi-grid">
+                        <div class="kpi-card kpi-blue">
+                            <div class="kpi-header">
+                                <div class="kpi-icon blue"><i data-lucide="building-2"></i></div>
+                                <div class="kpi-trend positive">
+                                    <i data-lucide="trending-up"></i>
+                                    <span>+12.4%</span>
+                                </div>
                             </div>
-                            <div class="kpi-badge">종합 4억/전문 2억 이하 수의 가능</div>
+                            <div class="kpi-body">
+                                <span class="kpi-title">공사 계약</span>
+                                <div class="kpi-main-val">
+                                    <span class="kpi-amount">1조 9,200<small>억원</small></span>
+                                    <span class="kpi-count">1,840 건</span>
+                                </div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span class="kpi-tag"><i data-lucide="shield-check"></i> 종합 4억 · 전문 2억 이하 수의 가능</span>
+                            </div>
                         </div>
 
-                        <div class="kpi-card">
-                            <div class="kpi-icon green"><i data-lucide="cpu"></i></div>
-                            <div class="kpi-data">
-                                <span class="title">용역 계약 (기술/학술/일반)</span>
-                                <span class="count">4,210 건</span>
-                                <span class="amount">1조 1,400 억원</span>
+                        <div class="kpi-card kpi-green">
+                            <div class="kpi-header">
+                                <div class="kpi-icon green"><i data-lucide="cpu"></i></div>
+                                <div class="kpi-trend positive">
+                                    <i data-lucide="trending-up"></i>
+                                    <span>+8.7%</span>
+                                </div>
                             </div>
-                            <div class="kpi-badge">협상에 의한 계약 85% 기술평가</div>
+                            <div class="kpi-body">
+                                <span class="kpi-title">용역 계약 (기술/학술/일반)</span>
+                                <div class="kpi-main-val">
+                                    <span class="kpi-amount">1조 1,400<small>억원</small></span>
+                                    <span class="kpi-count">4,210 건</span>
+                                </div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span class="kpi-tag"><i data-lucide="award"></i> 협상에 의한 계약 85% 기술평가</span>
+                            </div>
                         </div>
 
-                        <div class="kpi-card">
-                            <div class="kpi-icon gold"><i data-lucide="shopping-bag"></i></div>
-                            <div class="kpi-data">
-                                <span class="title">물품 제조·구매</span>
-                                <span class="count">6,400 건</span>
-                                <span class="amount">4,220 억원</span>
+                        <div class="kpi-card kpi-gold">
+                            <div class="kpi-header">
+                                <div class="kpi-icon gold"><i data-lucide="shopping-bag"></i></div>
+                                <div class="kpi-trend neutral">
+                                    <i data-lucide="minus"></i>
+                                    <span>+3.2%</span>
+                                </div>
                             </div>
-                            <div class="kpi-badge">녹색제품 / 장애인기업 우선조달</div>
+                            <div class="kpi-body">
+                                <span class="kpi-title">물품 제조·구매</span>
+                                <div class="kpi-main-val">
+                                    <span class="kpi-amount">4,220<small>억원</small></span>
+                                    <span class="kpi-count">6,400 건</span>
+                                </div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span class="kpi-tag"><i data-lucide="leaf"></i> 녹색제품 / 장애인기업 우선조달</span>
+                            </div>
                         </div>
 
-                        <div class="kpi-card">
-                            <div class="kpi-icon purple"><i data-lucide="sparkles"></i></div>
-                            <div class="kpi-data">
-                                <span class="title">희망기업(약자기업) 계약</span>
-                                <span class="count">3,120 건</span>
-                                <span class="amount">3,850 억원</span>
+                        <div class="kpi-card kpi-purple">
+                            <div class="kpi-header">
+                                <div class="kpi-icon purple"><i data-lucide="sparkles"></i></div>
+                                <div class="kpi-trend positive">
+                                    <i data-lucide="trending-up"></i>
+                                    <span>+15.1%</span>
+                                </div>
                             </div>
-                            <div class="kpi-badge">여성·장애인 5천만원 1인수의</div>
+                            <div class="kpi-body">
+                                <span class="kpi-title">희망기업(약자기업) 계약</span>
+                                <div class="kpi-main-val">
+                                    <span class="kpi-amount">3,850<small>억원</small></span>
+                                    <span class="kpi-count">3,120 건</span>
+                                </div>
+                            </div>
+                            <div class="kpi-footer">
+                                <span class="kpi-tag"><i data-lucide="heart-handshake"></i> 여성·장애인 5천만원 1인수의</span>
+                            </div>
                         </div>
                     </div>
 
