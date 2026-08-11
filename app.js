@@ -1125,9 +1125,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.saveProgressFile = function() {
-    if(!LAST || !LAST.p) {
-      alert("먼저 조건 입력 후 [진단 결과 보기 →]를 눌러 실행해 주세요 🙂");
-      return;
+    let d = LAST;
+    if(!d || !d.p) {
+      d = decide();
+      if(!d || !d.p) {
+        alert("먼저 추정가격을 입력하신 후 저장해 주세요 🙂");
+        return;
+      }
+      LAST = d;
     }
     const state = getCurrentStateObj();
     const jsonStr = JSON.stringify(state, null, 2);
@@ -1149,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.loadProgressFile = function(file) {
+    const fileInput = $("load-file-input");
     if(!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -1159,7 +1165,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const count = state.checkedIds ? state.checkedIds.length : 0;
         alert(`🎉 계약 점검 파일을 성공적으로 불러왔습니다!\n\n• 저장 일시: ${state.savedAt || '기록 없음'}\n• 현재 단계: ${stageName}\n• 체크 완료 항목: 총 ${count}건`);
       } catch(err) {
-        alert("⚠️ 올바른 저장 파일(.json) 형식이 아니에요.");
+        console.error("Load File Error:", err);
+        alert("⚠️ 저장 파일(.json) 처리 중 오류가 발생했습니다: " + err.message);
+      } finally {
+        if(fileInput) fileInput.value = "";
       }
     };
     reader.readAsText(file);
@@ -1174,15 +1183,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!state) return;
     if(state.kind && KINFO[state.kind]) {
       KIND = state.kind;
-      document.querySelectorAll(".kopt").forEach(b => {
-        b.classList.toggle("on", b.dataset.k === KIND);
-      });
+      const kindEl = $("kind");
+      if(kindEl) {
+        kindEl.querySelectorAll(".chip").forEach(b => {
+          b.classList.toggle("on", b.dataset.k === KIND);
+        });
+      }
     }
     if(state.price !== undefined) {
       const priceInput = $("price");
       if(priceInput) {
-        priceInput.value = state.price ? state.price.toLocaleString("ko-KR") : "";
-        syncPriceText();
+        const pVal = state.price ? parseInt(state.price, 10) : 0;
+        priceInput.value = pVal ? pVal.toLocaleString("ko-KR") : "";
+        const hint = $("price-kor");
+        if(hint) hint.textContent = pVal ? "= " + korUnit(pVal) : "";
       }
     }
     if(state.options) {
@@ -1207,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setChk("opt-itpub", opts.itPub);
       setChk("opt-itaudit", opts.itAudit);
     }
-    if(window.syncOpts) window.syncOpts();
+    if(typeof syncOpts === "function") syncOpts();
 
     const d = decide();
     LAST = d;
