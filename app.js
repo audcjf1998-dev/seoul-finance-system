@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncFestival();
     syncIt();
   }
+  window.syncFestival = syncFestival;
 
   function syncFestival(){
     const negoEl = $("opt-nego");
@@ -110,6 +111,185 @@ document.addEventListener('DOMContentLoaded', () => {
   if(itChk) itChk.addEventListener("change", syncIt);
 
   syncOpts();
+
+  /* ───── 파일 업로드 & 자동 스캔 엔진 ───── */
+  const UPLOADED_FILES = [];
+
+  function initFileUpload() {
+    const dropZones = document.querySelectorAll(".drop-zone");
+    const fileInputs = document.querySelectorAll(".file-input");
+
+    dropZones.forEach(dz => {
+      dz.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dz.classList.add("dragover");
+      });
+
+      dz.addEventListener("dragleave", () => {
+        dz.classList.remove("dragover");
+      });
+
+      dz.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dz.classList.remove("dragover");
+        if(e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFiles(e.dataTransfer.files);
+        }
+      });
+    });
+
+    fileInputs.forEach(inp => {
+      inp.addEventListener("change", (e) => {
+        if(e.target.files && e.target.files.length > 0) {
+          handleFiles(e.target.files);
+        }
+      });
+    });
+  }
+
+  function handleFiles(files) {
+    [...files].forEach(file => {
+      const fileObj = {
+        id: "file_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+        name: file.name,
+        size: formatFileSize(file.size),
+        type: file.type || getExt(file.name),
+        uploadedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      };
+      UPLOADED_FILES.push(fileObj);
+
+      // Analyze text content if text/csv/json file
+      if (file.name.match(/\.(txt|csv|json|md)$/i) || (file.type && file.type.includes("text"))) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          scanContractText(e.target.result, file.name);
+        };
+        reader.readAsText(file);
+      } else {
+        showScanNotification(`📄 <b>'${file.name}'</b> 서류가 업로드 보관함에 등록되었습니다.`);
+      }
+    });
+
+    renderUploadedFiles();
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  function getExt(filename) {
+    return filename.split('.').pop().toLowerCase();
+  }
+
+  function scanContractText(text, filename) {
+    let scannedPrice = null;
+    let scannedKind = null;
+    let scannedNego = false;
+    const notes = [];
+
+    // Detect price
+    const priceMatch = text.match(/(?:추정가격|예정가격|사업비|금액|원가)[:\s]*([0-9,]{4,15})\s*원/i) ||
+                       text.match(/([0-9,]{5,15})\s*원/);
+    if (priceMatch) {
+      const p = parseInt(priceMatch[1].replace(/,/g, ""), 10);
+      if (p >= 100000) {
+        scannedPrice = p;
+        notes.push(`추정가격 <b>${p.toLocaleString('ko-KR')}원</b>`);
+      }
+    }
+
+    // Detect kind
+    if (text.includes("공사") || text.includes("시공") || text.includes("토목") || text.includes("건축")) {
+      scannedKind = "gc";
+      notes.push("계약종류 <b>[공사]</b>");
+    } else if (text.includes("용역") || text.includes("수행") || text.includes("연구") || text.includes("컨설팅")) {
+      scannedKind = "service";
+      notes.push("계약종류 <b>[용역]</b>");
+    } else if (text.includes("물품") || text.includes("구매") || text.includes("제조") || text.includes("납품")) {
+      scannedKind = "goods";
+      notes.push("계약종류 <b>[물품]</b>");
+    }
+
+    // Detect Nego
+    if (text.includes("협상") || text.includes("제안서") || text.includes("평가위원회")) {
+      scannedNego = true;
+      notes.push("<b>[협상에 의한 계약]</b>");
+    }
+
+    // Auto Apply to inputs
+    if (scannedPrice && $("price")) {
+      $("price").value = scannedPrice.toLocaleString('ko-KR');
+      if ($("price-kor")) $("price-kor").textContent = "= " + korUnit(scannedPrice);
+    }
+    if (scannedKind && $("kind")) {
+      const chipBtn = $("kind").querySelector(`.chip[data-k="${scannedKind}"]`);
+      if (chipBtn) chipBtn.click();
+    }
+    if (scannedNego && $("opt-nego")) {
+      const negoChk = $("opt-nego").querySelector("input");
+      if (negoChk && !negoChk.checked) {
+        negoChk.checked = true;
+        $("opt-nego").classList.add("on");
+        if(typeof syncFestival === 'function') syncFestival();
+      }
+    }
+
+    const msg = notes.length > 0
+      ? `✨ <b>'${filename}' 분석 완료:</b> ${notes.join(" · ")} 이(가) 진단 양식에 자동으로 반영되었습니다!`
+      : `📄 '${filename}' 서류가 성공적으로 업로드되었습니다.`;
+    showScanNotification(msg);
+  }
+
+  function showScanNotification(msg) {
+    const scanBox = $("fileScanResult");
+    if (scanBox) {
+      scanBox.style.display = "block";
+      scanBox.innerHTML = msg;
+    }
+  }
+
+  function renderUploadedFiles() {
+    const containers = document.querySelectorAll(".uploadedFilesContainer");
+    containers.forEach(container => {
+      const fileListArea = container.closest(".fileListArea");
+      if (fileListArea) fileListArea.style.display = UPLOADED_FILES.length > 0 ? "block" : "none";
+
+      let h = "";
+      UPLOADED_FILES.forEach(f => {
+        const icon = f.name.match(/\.(pdf)$/i) ? "📕" :
+                     f.name.match(/\.(doc|docx|hwp)$/i) ? "📘" :
+                     f.name.match(/\.(xls|xlsx|csv)$/i) ? "📗" :
+                     f.name.match(/\.(png|jpg|jpeg)$/i) ? "🖼️" : "📄";
+        h += `
+          <div class="file-item-card">
+            <div class="file-item-info">
+              <span class="file-item-icon">${icon}</span>
+              <div class="file-item-text">
+                <div class="file-item-name" title="${f.name}">${f.name}</div>
+                <div class="file-item-meta">${f.size} · ${f.uploadedAt}</div>
+              </div>
+            </div>
+            <button type="button" class="file-item-remove" onclick="removeUploadedFile('${f.id}')" title="삭제">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = h;
+    });
+  }
+
+  window.removeUploadedFile = function(id) {
+    const idx = UPLOADED_FILES.findIndex(f => f.id === id);
+    if (idx !== -1) {
+      UPLOADED_FILES.splice(idx, 1);
+      renderUploadedFiles();
+    }
+  };
+
+  initFileUpload();
 
   /* ───── 판단 로직 ───── */
   function decide(){
