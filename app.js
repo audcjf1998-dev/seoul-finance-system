@@ -244,6 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const on = itEl && itEl.querySelector("input").checked && !KINFO[KIND].isC;
     const subs = $("it-subs");
     if(subs) subs.style.display = on ? "" : "none";
+    if(!on){
+      ["opt-itnew","opt-itpub","opt-itaudit"].forEach(id=>{
+        const sub = $(id);
+        if(sub){
+          const c = sub.querySelector("input");
+          if(c) c.checked = false;
+          sub.classList.remove("on");
+        }
+      });
+    }
   }
 
   const negoChk = $("opt-nego") ? $("opt-nego").querySelector("input") : null;
