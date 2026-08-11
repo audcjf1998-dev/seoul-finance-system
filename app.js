@@ -1020,23 +1020,295 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ───── 협상 제안서 평가 계산 (위원별 개별 점수 입력 기능) ───── */
+  /* ───── 협상 제안서 평가 계산기 (3단계 프로세스 및 정성 세부항목 관리) ───── */
+
+  const DEFAULT_CRITERIA = [
+    { name: "기술·지식능력", weight: 15 },
+    { name: "사업수행계획", weight: 20 },
+    { name: "지원기술·사후관리", weight: 10 },
+    { name: "상호협력 관계", weight: 10 },
+    { name: "그 밖에 필요한 사항", weight: 5 }
+  ];
+
+  let CRITERIA_LIST = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+  let EVAL_SCORES_STORE = {}; // Store structure: { companyId: { memberIdx: { criterionIdx: score } } }
 
   function getMemberCount() {
     const el = $("ev-member-count");
     return el ? parseInt(el.value, 10) || 7 : 7;
   }
 
-  function renderRowQualInputs(div, count) {
+  function getCriteriaTotalWeight() {
+    return CRITERIA_LIST.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
+  }
+
+  function updateCriteriaSumBadge() {
+    const badge = $("ev-criteria-sum-badge");
+    if (!badge) return;
+    const total = getCriteriaTotalWeight();
+    badge.textContent = `배점 합계: ${total} / 60점`;
+    if (total === 60) {
+      badge.style.background = "#dbeafe";
+      badge.style.color = "#1d4ed8";
+    } else {
+      badge.style.background = "#ffe4e6";
+      badge.style.color = "#e11d48";
+    }
+  }
+
+  function renderCriteriaRows() {
+    const container = $("ev-criteria-rows");
+    if (!container) return;
+    let h = '';
+    CRITERIA_LIST.forEach((crit, idx) => {
+      h += `
+        <div class="ev-criteria-row" data-idx="${idx}">
+          <span style="font-weight:700;color:var(--sub);font-size:0.85rem;width:24px;">${idx + 1}.</span>
+          <input type="text" class="crit-name" value="${crit.name}" placeholder="평가항목명">
+          <input type="number" class="crit-weight" value="${crit.weight}" min="1" max="60" placeholder="배점">
+          <span style="font-size:0.85rem;color:var(--sub);">점</span>
+          <button type="button" class="rm-crit" style="background:none;border:none;color:var(--bad);cursor:pointer;font-weight:800;padding:2px 6px;" title="항목 삭제">✕</button>
+        </div>
+      `;
+    });
+    container.innerHTML = h;
+
+    container.querySelectorAll(".ev-criteria-row").forEach(row => {
+      const idx = parseInt(row.dataset.idx, 10);
+      const nameInput = row.querySelector(".crit-name");
+      const weightInput = row.querySelector(".crit-weight");
+      const rmBtn = row.querySelector(".rm-crit");
+
+      nameInput.addEventListener("input", () => {
+        CRITERIA_LIST[idx].name = nameInput.value;
+      });
+      weightInput.addEventListener("input", () => {
+        CRITERIA_LIST[idx].weight = parseFloat(weightInput.value) || 0;
+        updateCriteriaSumBadge();
+      });
+      rmBtn.addEventListener("click", () => {
+        if (CRITERIA_LIST.length <= 1) {
+          alert("⚠️ 최소 1개 이상의 평가항목이 필요합니다.");
+          return;
+        }
+        CRITERIA_LIST.splice(idx, 1);
+        renderCriteriaRows();
+        updateCriteriaSumBadge();
+      });
+    });
+
+    updateCriteriaSumBadge();
+  }
+
+  const btnAddCriterion = $("ev-add-criterion");
+  if (btnAddCriterion) {
+    btnAddCriterion.addEventListener("click", () => {
+      CRITERIA_LIST.push({ name: "새 평가항목", weight: 5 });
+      renderCriteriaRows();
+    });
+  }
+
+  const btnResetCriteria = $("ev-reset-criteria");
+  if (btnResetCriteria) {
+    btnResetCriteria.addEventListener("click", () => {
+      CRITERIA_LIST = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+      renderCriteriaRows();
+    });
+  }
+
+  renderCriteriaRows();
+
+  // Helper to open Member Criteria Score Entry Modal
+  window.openMemberEntryModal = function(companyId, companyName, memberIdx) {
+    const memberCount = getMemberCount();
+    EVAL_SCORES_STORE[companyId] = EVAL_SCORES_STORE[companyId] || {};
+    EVAL_SCORES_STORE[companyId][memberIdx] = EVAL_SCORES_STORE[companyId][memberIdx] || {};
+
+    const currentScores = EVAL_SCORES_STORE[companyId][memberIdx];
+
+    const overlay = document.createElement("div");
+    overlay.className = "ev-modal-overlay";
+
+    let h = `
+      <div class="ev-modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
+          <div>
+            <h3 style="margin:0;color:#1e40af;font-size:1.15rem;">✍️ 위원 ${memberIdx + 1} 세부 평가 점수 입력</h3>
+            <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+          </div>
+          <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
+        </div>
+        <p class="note" style="margin-top:0;margin-bottom:14px;">각 항목의 점수는 배점을 초과할 수 없으며, 합계는 자동으로 산출됩니다.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+    `;
+
+    CRITERIA_LIST.forEach((crit, cIdx) => {
+      const val = currentScores[cIdx] !== undefined ? currentScores[cIdx] : '';
+      h += `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:12px;border:1px solid #e2e8f0;">
+          <div>
+            <b style="font-size:0.94rem;color:#1e293b;">${crit.name}</b>
+            <span style="font-size:0.82rem;color:#64748b;margin-left:6px;">(배점: ${crit.weight}점)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" class="modal-score-item" data-cidx="${cIdx}" data-max="${crit.weight}"
+              style="width:80px;height:40px;text-align:center;font-weight:800;font-size:1rem;border-radius:8px;border:1.5px solid #93c5fd;"
+              step="0.1" min="0" max="${crit.weight}" value="${val}" placeholder="0~${crit.weight}">
+            <span style="font-weight:700;color:#475569;">/ ${crit.weight}점</span>
+          </div>
+        </div>
+      `;
+    });
+
+    h += `
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#eff6ff;padding:12px 18px;border-radius:12px;border:1.5px solid #bfdbfe;margin-bottom:20px;">
+          <b style="color:#1d4ed8;font-size:1.05rem;">✨ 이 위원의 정성평가 총점</b>
+          <span style="font-size:1.2rem;font-weight:900;color:#1d4ed8;" id="modal-calculated-total">0.00 / 60점</span>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button type="button" class="btn ghost close-modal">취소</button>
+          <button type="button" class="btn" id="modal-save-btn" style="background:#2563eb;">💾 점수 저장 완료</button>
+        </div>
+      </div>
+    `;
+
+    overlay.innerHTML = h;
+    document.body.appendChild(overlay);
+
+    const inputs = overlay.querySelectorAll(".modal-score-item");
+    const totalEl = overlay.querySelector("#modal-calculated-total");
+
+    function updateModalTotal() {
+      let sum = 0;
+      inputs.forEach(inp => {
+        const v = parseFloat(inp.value) || 0;
+        sum += v;
+      });
+      totalEl.textContent = `${sum.toFixed(2)} / 60점`;
+    }
+    updateModalTotal();
+
+    inputs.forEach(inp => {
+      inp.addEventListener("input", () => {
+        const max = parseFloat(inp.dataset.max) || 0;
+        let v = parseFloat(inp.value) || 0;
+        if (v > max) {
+          alert(`⚠️ 입력 점수 (${v}점)가 항목 배점 한도(${max}점)를 초과할 수 없습니다.`);
+          inp.value = max;
+        }
+        updateModalTotal();
+      });
+    });
+
+    overlay.querySelectorAll(".close-modal").forEach(b => {
+      b.addEventListener("click", () => overlay.remove());
+    });
+
+    overlay.querySelector("#modal-save-btn").addEventListener("click", () => {
+      let valid = true;
+      inputs.forEach(inp => {
+        const cIdx = parseInt(inp.dataset.cidx, 10);
+        const max = parseFloat(inp.dataset.max) || 0;
+        const v = parseFloat(inp.value);
+        if (isNaN(v) || v < 0 || v > max) {
+          valid = false;
+        } else {
+          currentScores[cIdx] = v;
+        }
+      });
+
+      if (!valid) {
+        alert("⚠️ 올바른 점수를 입력해 주세요.");
+        return;
+      }
+
+      overlay.remove();
+      const div = document.querySelector(`.ev-row[data-cid="${companyId}"]`);
+      if (div) updateRowMemberButtons(div, companyId);
+    });
+  };
+
+  // Helper to open Member Detail Breakdown Modal
+  window.openMemberDetailModal = function(companyId, companyName, memberIdx) {
+    const scores = (EVAL_SCORES_STORE[companyId] && EVAL_SCORES_STORE[companyId][memberIdx]) || {};
+
+    const overlay = document.createElement("div");
+    overlay.className = "ev-modal-overlay";
+
+    let h = `
+      <div class="ev-modal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
+          <div>
+            <h3 style="margin:0;color:#0f766e;font-size:1.15rem;">🔍 위원 ${memberIdx + 1} 세부 평가 내역</h3>
+            <span style="font-size:0.88rem;color:#475569;font-weight:700;">대상 업체: <b>${companyName}</b></span>
+          </div>
+          <button type="button" class="close-modal" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+    `;
+
+    let totalSum = 0;
+    CRITERIA_LIST.forEach((crit, cIdx) => {
+      const val = scores[cIdx] !== undefined ? scores[cIdx] : 0;
+      totalSum += val;
+      h += `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0;">
+          <span style="font-weight:700;color:#334155;">• ${crit.name}</span>
+          <b style="font-size:0.96rem;color:#0f766e;">${val.toFixed(1)} / ${crit.weight}점</b>
+        </div>
+      `;
+    });
+
+    h += `
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;padding:14px 18px;border-radius:12px;border:1.5px solid #bbf7d0;margin-bottom:20px;">
+          <b style="color:#047857;font-size:1.05rem;">⭐ 이 위원의 정성평가 총점</b>
+          <span style="font-size:1.25rem;font-weight:900;color:#047857;">${totalSum.toFixed(2)} / 60점</span>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button type="button" class="btn close-modal" style="background:#0f766e;">닫기</button>
+        </div>
+      </div>
+    `;
+
+    overlay.innerHTML = h;
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll(".close-modal").forEach(b => {
+      b.addEventListener("click", () => overlay.remove());
+    });
+  };
+
+  function updateRowMemberButtons(div, companyId) {
     const wrap = div.querySelector(".ev-quals-wrap");
     if (!wrap) return;
-
-    const existing = Array.from(wrap.querySelectorAll(".ev-q-item")).map(inp => inp.value);
+    const count = getMemberCount();
+    const companyScores = EVAL_SCORES_STORE[companyId] || {};
 
     let h = '';
     for (let i = 0; i < count; i++) {
-      const val = existing[i] !== undefined ? existing[i] : '';
-      h += `<input type="number" class="ev-q-item" data-idx="${i}" placeholder="위원${i+1}" step="0.1" min="0" max="100" value="${val}">`;
+      const mScores = companyScores[i];
+      let sumText = "입력";
+      let isFilled = false;
+
+      if (mScores && Object.keys(mScores).length > 0) {
+        let sum = 0;
+        CRITERIA_LIST.forEach((_, cIdx) => {
+          if (mScores[cIdx] !== undefined) sum += mScores[cIdx];
+        });
+        sumText = `${sum.toFixed(1)}점`;
+        isFilled = true;
+      }
+
+      const compName = div.querySelector(".ev-name").value.trim() || `업체`;
+      h += `
+        <button type="button" class="btn-member-entry" data-midx="${i}"
+          onclick="window.openMemberEntryModal('${companyId}', '${compName}', ${i})"
+          style="padding:6px 10px;border-radius:8px;font-size:0.84rem;font-weight:700;border:1.5px solid ${isFilled ? '#2563eb' : '#cbd5e1'};background:${isFilled ? '#eff6ff' : '#ffffff'};color:${isFilled ? '#1d4ed8' : '#64748b'};cursor:pointer;white-space:nowrap;">
+          위원${i+1}: <b>${sumText}</b>
+        </button>
+      `;
     }
     wrap.innerHTML = h;
   }
@@ -1044,10 +1316,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function evRow() {
     const rowsEl = $("ev-rows");
     if (!rowsEl) return;
-    const count = getMemberCount();
+    const companyId = "c_" + Math.random().toString(36).substr(2, 9);
 
     const div = document.createElement("div");
     div.className = "ev-row";
+    div.dataset.cid = companyId;
     div.innerHTML = `
       <div class="ev-row-top">
         <input type="text" class="ev-name" placeholder="업체명 (예: 업체A)">
@@ -1056,32 +1329,19 @@ document.addEventListener('DOMContentLoaded', () => {
         <button type="button" class="rm" title="행 삭제">✕</button>
       </div>
       <div class="ev-row-bottom">
-        <span style="font-size:0.84rem;font-weight:700;color:var(--sub);white-space:nowrap;">✍️ 위원별 점수:</span>
-        <div class="ev-quals-wrap"></div>
-        <input type="text" class="ev-paste-input" placeholder="📋 쉼표 한꺼번에 붙여넣기 (예: 52,55,48...)">
+        <span style="font-size:0.84rem;font-weight:700;color:var(--sub);white-space:nowrap;">✍️ 위원별 세부평가 점수:</span>
+        <div class="ev-quals-wrap" style="display:flex;gap:6px;flex-wrap:wrap;flex:1;"></div>
       </div>
     `;
 
     attachMoney(div.querySelector(".ev-bid"));
-    div.querySelector(".rm").addEventListener("click", () => div.remove());
-
-    renderRowQualInputs(div, count);
-
-    const pasteInput = div.querySelector(".ev-paste-input");
-    if (pasteInput) {
-      pasteInput.addEventListener("input", () => {
-        const raw = pasteInput.value;
-        const nums = raw.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) && n > 0);
-        const qInputs = div.querySelectorAll(".ev-q-item");
-        qInputs.forEach((inp, idx) => {
-          if (nums[idx] !== undefined) {
-            inp.value = nums[idx];
-          }
-        });
-      });
-    }
+    div.querySelector(".rm").addEventListener("click", () => {
+      delete EVAL_SCORES_STORE[companyId];
+      div.remove();
+    });
 
     rowsEl.appendChild(div);
+    updateRowMemberButtons(div, companyId);
   }
 
   const btnEvAdd = $("ev-add");
@@ -1093,9 +1353,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const memberCountEl = $("ev-member-count");
   if (memberCountEl) {
     memberCountEl.addEventListener("change", () => {
-      const count = getMemberCount();
       document.querySelectorAll("#ev-rows .ev-row").forEach(div => {
-        renderRowQualInputs(div, count);
+        const cid = div.dataset.cid;
+        if (cid) updateRowMemberButtons(div, cid);
       });
     });
   }
@@ -1108,22 +1368,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function calculateQualDetails(qualArr) {
-    const valid = qualArr.filter(n => !isNaN(n) && n > 0);
+  function calculateQualDetailsWithMembers(memberTotals) {
+    const valid = memberTotals.filter(m => m.val !== null && !isNaN(m.val));
     if (!valid.length) {
-      return { v: 0, trim: false, max: null, min: null, valid, count: 0 };
+      return { v: 0, trim: false, maxMember: null, minMember: null, valid, count: 0 };
     }
     if (valid.length >= 3) {
-      const sorted = [...valid].sort((x, y) => x - y);
-      const min = sorted[0];
-      const max = sorted[sorted.length - 1];
+      const sorted = [...valid].sort((a, b) => a.val - b.val);
+      const minMember = sorted[0];
+      const maxMember = sorted[sorted.length - 1];
       const middle = sorted.slice(1, -1);
-      const sum = middle.reduce((p, c) => p + c, 0);
+      const sum = middle.reduce((p, c) => p + c.val, 0);
       const avg = sum / middle.length;
-      return { v: avg, trim: true, max, min, middle, valid, count: valid.length };
+      return { v: avg, trim: true, maxMember, minMember, middle, valid, count: valid.length };
     } else {
-      const sum = valid.reduce((p, c) => p + c, 0);
-      return { v: sum / valid.length, trim: false, max: null, min: null, middle: valid, valid, count: valid.length };
+      const sum = valid.reduce((p, c) => p + c.val, 0);
+      return { v: sum / valid.length, trim: false, maxMember: null, minMember: null, middle: valid, valid, count: valid.length };
     }
   }
 
@@ -1134,26 +1394,41 @@ document.addEventListener('DOMContentLoaded', () => {
       const techW = parseFloat($("ev-tech").value) || 0, priceW = parseFloat($("ev-price-w").value) || 0;
       const sw = $("ev-sw") ? $("ev-sw").querySelector("input").checked : false;
       const memberCount = getMemberCount();
+      const totalCriteriaWeight = getCriteriaTotalWeight();
       const out = $("ev-out");
-      if (!base) { out.innerHTML = '<p class="placeholder">예정가격을 입력해 주세요.</p>'; return; }
+
+      if (!base) { alert("⚠️ 예정가격을 입력해 주세요."); return; }
+      if (totalCriteriaWeight !== 60) {
+        alert(`⚠️ 정성적 평가 항목 배점의 합계는 60점이어야 합니다. (현재 합계: ${totalCriteriaWeight}점)`);
+        return;
+      }
 
       const rows = [...document.querySelectorAll("#ev-rows .ev-row")].map((r, i) => {
+        const companyId = r.dataset.cid;
         const name = r.querySelector(".ev-name").value.trim() || ("업체 " + String.fromCharCode(65 + i));
         const bid = parseInt((r.querySelector(".ev-bid").value || "").replace(/[^0-9]/g, ""), 10) || 0;
         const quant = parseFloat(r.querySelector(".ev-quant").value) || 0;
 
-        const qInputs = r.querySelectorAll(".ev-q-item");
-        let quals = Array.from(qInputs).map(inp => parseFloat(inp.value)).filter(n => !isNaN(n) && n > 0);
+        const cScores = EVAL_SCORES_STORE[companyId] || {};
+        const memberTotals = [];
 
-        if (!quals.length) {
-          const pasteVal = r.querySelector(".ev-paste-input") ? r.querySelector(".ev-paste-input").value : "";
-          quals = pasteVal.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) && n > 0);
+        for (let m = 0; m < memberCount; m++) {
+          const mSc = cScores[m];
+          if (mSc && Object.keys(mSc).length > 0) {
+            let sum = 0;
+            CRITERIA_LIST.forEach((_, cIdx) => {
+              if (mSc[cIdx] !== undefined) sum += mSc[cIdx];
+            });
+            memberTotals.push({ memberIdx: m, val: sum });
+          } else {
+            memberTotals.push({ memberIdx: m, val: null });
+          }
         }
 
-        return { name, bid, quant, quals };
+        return { companyId, name, bid, quant, memberTotals };
       }).filter(r => r.bid > 0);
 
-      if (!rows.length) { out.innerHTML = '<p class="placeholder">업체 입찰가격을 1건 이상 입력해 주세요.</p>'; return; }
+      if (!rows.length) { alert("⚠️ 입찰가격을 입력한 업체를 1건 이상 등록해 주세요."); return; }
 
       const floorR = sw ? 0.8 : 0.7, p80 = base * 0.8, p70 = base * 0.7, floorV = base * floorR;
       const rawMin = Math.min(...rows.map(r => r.bid));
@@ -1163,10 +1438,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (rawMin < floorV) notes.add("최저입찰가격이 예정가격의 " + (floorR * 100) + "% 미만이라 " + (floorR * 100) + "% 상당가격(" + won(Math.round(floorV)) + ")으로 보정해 계산했어요.");
 
       rows.forEach(r => {
-        const qDetail = calculateQualDetails(r.quals);
+        const qDetail = calculateQualDetailsWithMembers(r.memberTotals);
         r.qualDetail = qDetail;
         r.qual = qDetail.v;
-        if (r.quals.length && !qDetail.trim) notes.add("위원 점수가 3개 미만인 업체는 최고·최저 제외 없이 전체 평균으로 계산했어요.");
+        if (r.memberTotals.filter(m => m.val !== null).length && !qDetail.trim) notes.add("위원 점수가 3개 미만인 업체는 최고·최저 제외 없이 전체 평균으로 계산했어요.");
         if (r.bid < floorV) { r.pricePt = priceW * 0.3; r.tagP = "하한 미만 → 배점의 30%"; }
         else if (r.bid >= p80) { r.pricePt = priceW * minBid / r.bid; r.tagP = ""; }
         else {
@@ -1199,38 +1474,44 @@ document.addEventListener('DOMContentLoaded', () => {
         ? 'SW사업: 기술점수(정량+정성)가 기술배점 ' + techW + '점의 85%인 ' + (techW * 0.85).toFixed(2) + '점 이상'
         : '일반: 종합평점 70점 이상') + ' · 적격자 중 1순위부터 기술협상 → 가격협상 순으로 진행해요.</p></div>';
 
-      // TABLE 2: DETAILED COMMITTEE MEMBER SCORE BREAKDOWN MATRIX
+      // TABLE 2: DETAILED COMMITTEE MEMBER SCORE BREAKDOWN MATRIX WITH LINKS
       h += '<div style="margin-top:20px;margin-bottom:16px;">';
-      h += '<h3 style="color:#0f766e;margin-bottom:8px;">📝 2. 위원별 정성점수 세부 집계표 (최고·최저 제외 내역)</h3>';
+      h += '<h3 style="color:#0f766e;margin-bottom:8px;">📝 2. 위원별 정성적 평가 세부 집계표 (최고·최저 총점 제외 내역)</h3>';
       h += '<div class="res" style="overflow-x:auto"><table>';
       h += '<tr><th>업체명</th>';
       for (let m = 1; m <= memberCount; m++) {
         h += `<th>위원 ${m}</th>`;
       }
-      h += '<th>🔴 최고점 (제외)</th><th>🔵 최저점 (제외)</th><th>⭐ 최종 정성평균</th></tr>';
+      h += '<th>🔴 최고 총점 (제외 위원)</th><th>🔵 최저 총점 (제외 위원)</th><th>⭐ 최종 정성평균</th></tr>';
 
       rows.forEach(r => {
         const qd = r.qualDetail;
         h += '<tr><td><b>' + r.name + '</b></td>';
         for (let m = 0; m < memberCount; m++) {
-          const score = r.quals[m];
-          if (score === undefined) {
-            h += '<td style="color:#94a3b8;">–</td>';
-          } else if (qd.trim && score === qd.max) {
-            h += `<td><span class="badge-max">${score}</span></td>`;
-          } else if (qd.trim && score === qd.min) {
-            h += `<td><span class="badge-min">${score}</span></td>`;
+          const mObj = r.memberTotals[m];
+          const scoreVal = mObj ? mObj.val : null;
+
+          if (scoreVal === null) {
+            h += '<td style="color:#94a3b8;">미입력</td>';
+          } else if (qd.trim && qd.maxMember && qd.maxMember.memberIdx === m) {
+            h += `<td><button class="btn-member-link max-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">🔴 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
+          } else if (qd.trim && qd.minMember && qd.minMember.memberIdx === m) {
+            h += `<td><button class="btn-member-link min-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">🔵 위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
           } else {
-            h += `<td><b>${score}</b></td>`;
+            h += `<td><button class="btn-member-link" onclick="window.openMemberDetailModal('${r.companyId}', '${r.name}', ${m})" title="클릭 시 위원 세부 평가항목 보기">위원${m+1}: ${scoreVal.toFixed(1)}점</button></td>`;
           }
         }
-        h += `<td class="num">${qd.max !== null ? '<span class="badge-max">' + qd.max + '</span>' : '–'}</td>`;
-        h += `<td class="num">${qd.min !== null ? '<span class="badge-min">' + qd.min + '</span>' : '–'}</td>`;
-        h += `<td class="num"><b style="color:#0f766e;font-size:1rem;">${r.qual.toFixed(2)}점</b></td>`;
+
+        const maxStr = qd.maxMember ? `<span class="badge-max">위원${qd.maxMember.memberIdx + 1} (${qd.maxMember.val.toFixed(1)}점)</span>` : '–';
+        const minStr = qd.minMember ? `<span class="badge-min">위원${qd.minMember.memberIdx + 1} (${qd.minMember.val.toFixed(1)}점)</span>` : '–';
+
+        h += `<td class="num">${maxStr}</td>`;
+        h += `<td class="num">${minStr}</td>`;
+        h += `<td class="num"><b style="color:#0f766e;font-size:1.02rem;">${r.qual.toFixed(2)}점</b></td>`;
         h += '</tr>';
       });
       h += '</table></div>';
-      h += '<p class="note">※ 행안부 예규: 평가위원이 3인 이상인 경우 최고점 1개와 최저점 1개를 제외하고 남은 위원의 점수를 산술평균합니다.</p></div>';
+      h += '<p class="note">※ 행안부 예규: 평가위원이 3인 이상인 경우 위원별 총점 기준 최고점 1명과 최저점 1명을 제외하고 남은 위원의 총점을 산술평균합니다. 위원 버튼을 클릭하면 세부 평가항목 점수를 확인하실 수 있습니다.</p></div>';
 
       if (notes.size) h += '<div class="warnbox">' + [...notes].map(n => '· ' + n).join('<br>') + '</div>';
 

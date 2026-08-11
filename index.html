@@ -278,46 +278,82 @@
     </div>
   </details>
 
-  <details>
-    <summary>🗣️ 협상 제안서 평가 계산 (가격평점 · 정성평균 · 적격판정)</summary>
+  <details open>
+    <summary>🗣️ 협상 제안서 평가 계산기 (정성 세부항목 · 위원별 개별평가 · 최고최저 제외 자동집계)</summary>
     <div class="in">
-      <p class="note" style="margin:2px 0 12px">낙찰자 결정기준(행안부 예규)의 입찰가격 평점산식과 정성평가 최고·최저 위원 점수 제외 평균을 그대로 계산해요. 실제 평가에서는 <b>공고문에 명시된 산식이 우선</b>이에요.</p>
-      <div class="grid2">
-        <div class="field"><label>예정가격 (원)</label>
-          <input type="text" class="money" id="ev-base" inputmode="numeric" placeholder="예: 100,000,000">
-          <div class="kor-hint" id="ev-base-kor"></div></div>
-        <div class="field"><label>배점 구성 (기술 : 가격)</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="ev-tech" inputmode="numeric" value="80" style="flex:1">
-            <span style="color:var(--sub)">:</span>
-            <input type="text" id="ev-price-w" inputmode="numeric" value="20" style="flex:1">
+      <p class="note" style="margin:2px 0 14px">행안부 예규 및 서울특별시 낙찰자 결정기준에 따라 <b>정성적 평가 세부항목별 점수 산출</b>과 <b>최고·최저 총점 위원 제외 최종 정성평균</b>을 자동으로 처리해요.</p>
+
+      <!-- STAGE 1: 정성평가 기준 설정 -->
+      <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <h4 style="margin:0;color:#1e40af;font-size:1.02rem;display:flex;align-items:center;gap:6px;">
+            ⚙️ 1단계. 평가 기준 및 정성적 평가 세부항목 설정 (총 배점: 60점)
+          </h4>
+          <button type="button" class="btn ghost" id="ev-reset-criteria" style="padding:4px 10px;font-size:0.82rem;">⚙️ 기본 항목 초기화</button>
+        </div>
+
+        <div class="grid2" style="margin-bottom:12px;">
+          <div class="field"><label>예정가격 (원)</label>
+            <input type="text" class="money" id="ev-base" inputmode="numeric" placeholder="예: 100,000,000">
+            <div class="kor-hint" id="ev-base-kor"></div></div>
+          <div class="field"><label>배점 구성 (기술 : 가격)</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="ev-tech" inputmode="numeric" value="80" style="flex:1">
+              <span style="color:var(--sub)">:</span>
+              <input type="text" id="ev-price-w" inputmode="numeric" value="20" style="flex:1">
+            </div>
+            <p class="note">SW사업 체크 시 90 : 10으로 자동 변경돼요</p></div>
+        </div>
+
+        <label class="opt" id="ev-sw" style="margin-bottom:14px;"><input type="checkbox">
+          <span><span class="t">SW사업 (정보화)</span><br>
+          <span class="s">가격 하한 80% 적용 · 협상적격은 기술점수(정량+정성)가 기술배점의 85% 이상</span></span></label>
+
+        <!-- Dynamic Items Table for 60 points -->
+        <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-weight:800;font-size:0.9rem;color:#334155;">📋 정성적 평가 세부항목 및 항목별 배점</span>
+            <span id="ev-criteria-sum-badge" style="font-size:0.85rem;font-weight:800;padding:4px 10px;border-radius:99px;background:#dbeafe;color:#1d4ed8;">
+              배점 합계: 60 / 60점
+            </span>
           </div>
-          <p class="note">SW사업 체크 시 90 : 10으로 자동 변경돼요</p></div>
-      </div>
-      <label class="opt" id="ev-sw"><input type="checkbox">
-        <span><span class="t">SW사업 (정보화)</span><br>
-        <span class="s">가격 하한 80% 적용 · 협상적격은 기술점수(정량+정성)가 기술배점의 85% 이상</span></span></label>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;margin-bottom:12px;flex-wrap:wrap;gap:8px;border-top:1px solid #e2e8f0;padding-top:14px;">
-        <h3 style="margin:0;">업체별 및 위원별 점수 입력</h3>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <label style="font-size:0.88rem;font-weight:700;color:var(--sub)">👥 평가위원 수:</label>
-          <select id="ev-member-count" style="padding:6px 12px;border-radius:10px;border:1.5px solid #2563eb;font-weight:800;color:#1d4ed8;background:#eff6ff;">
-            <option value="3">3명</option>
-            <option value="5">5명</option>
-            <option value="7" selected>7명 (기본)</option>
-            <option value="8">8명</option>
-            <option value="9">9명</option>
-            <option value="10">10명</option>
-            <option value="11">11명</option>
-            <option value="12">12명</option>
-          </select>
+          <div id="ev-criteria-rows" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+            <button type="button" class="btn ghost" id="ev-add-criterion" style="font-size:0.82rem;padding:4px 10px;">＋ 평가항목 추가</button>
+            <small style="color:#64748b;">※ 정성적 평가 항목 배점의 합계는 반드시 60점이어야 합니다.</small>
+          </div>
         </div>
       </div>
-      <div id="ev-rows"></div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn ghost" id="ev-add">＋ 업체 추가</button>
-        <button class="btn" id="ev-run">평가 계산하기</button>
+
+      <!-- STAGE 2: 업체별 & 위원별 점수 입력 -->
+      <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <h4 style="margin:0;color:#0f766e;font-size:1.02rem;display:flex;align-items:center;gap:6px;">
+            ✍️ 2단계. 업체 및 평가위원별 점수 입력
+          </h4>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:0.88rem;font-weight:700;color:var(--sub)">👥 평가위원 수:</label>
+            <select id="ev-member-count" style="padding:6px 12px;border-radius:10px;border:1.5px solid #0d9488;font-weight:800;color:#0f766e;background:#ccfbf1;">
+              <option value="3">3명</option>
+              <option value="5">5명</option>
+              <option value="7" selected>7명 (기본)</option>
+              <option value="8">8명</option>
+              <option value="9">9명</option>
+              <option value="10">10명</option>
+              <option value="11">11명</option>
+              <option value="12">12명</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="ev-rows"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button type="button" class="btn ghost" id="ev-add">＋ 업체 추가</button>
+          <button type="button" class="btn" id="ev-run" style="background:#0d9488;">📊 3단계. 제안서 평가 계산 및 집계표 산출</button>
+        </div>
       </div>
+
+      <!-- STAGE 3: 집계 결과 & modal container -->
       <div id="ev-out"></div>
     </div>
   </details>
