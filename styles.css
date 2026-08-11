@@ -566,11 +566,24 @@ select:focus {
   margin-bottom: 3px;
 }
 
-/* 해당 사항 없음 딤 처리 */
-.opt.disabled-by-none {
-  opacity: 0.45;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+/* ─────────────────── 스텝 페이지 전환 애니메이션 ─────────────────── */
+.step-view {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.step-view.fade-in {
+  animation: fadeInStep 0.25s ease forwards;
+}
+
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 사전절차 박스 */

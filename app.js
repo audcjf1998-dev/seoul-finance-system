@@ -145,52 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll(".opt input").forEach(c=>{
     c.addEventListener("change",()=>{
       c.closest(".opt").classList.toggle("on",c.checked);
-      autoUpdateResult();
     });
   });
-
-  /* ───── "해당 사항 없음" 토글 제어 ───── */
-  const chkNone = $("chk-none");
-  const optNone = $("opt-none");
-  
-  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub"];
-
-  if (chkNone && optNone) {
-    chkNone.addEventListener("change", () => {
-      if (chkNone.checked) {
-        optNone.classList.add("on");
-        specialIds.forEach(id => {
-          const el = $(id);
-          if (el) {
-            const inp = el.querySelector("input");
-            if (inp) inp.checked = false;
-            el.classList.remove("on");
-          }
-        });
-        syncOpts();
-      } else {
-        optNone.classList.remove("on");
-      }
-      autoUpdateResult();
-    });
-
-    // 다른 특수조건 체크 시 "해당 사항 없음" 자동 해제
-    specialIds.forEach(id => {
-      const el = $(id);
-      if (el) {
-        const inp = el.querySelector("input");
-        if (inp) {
-          inp.addEventListener("change", () => {
-            if (inp.checked) {
-              chkNone.checked = false;
-              optNone.classList.remove("on");
-            }
-            autoUpdateResult();
-          });
-        }
-      }
-    });
-  }
 
   /* 종류 칩 */
   let KIND = "goods";
@@ -201,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
         syncOpts();
-        autoUpdateResult();
       });
     });
   }
@@ -368,7 +323,34 @@ document.addEventListener('DOMContentLoaded', () => {
       +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
   }
 
-  /* ───── 결과 렌더 (실시간 자동 실행) ───── */
+  /* ───── Step 1 ↔ Step 2 페이지 전환 기능 ───── */
+  function showStep(stepName) {
+    const inputView = $("step-input");
+    const resultView = $("step-result");
+    
+    if (stepName === "result") {
+      if (inputView) inputView.style.display = "none";
+      if (resultView) {
+        resultView.style.display = "block";
+        resultView.classList.remove("fade-in");
+        void resultView.offsetWidth; // trigger reflow
+        resultView.classList.add("fade-in");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      if (resultView) resultView.style.display = "none";
+      if (inputView) {
+        inputView.style.display = "block";
+        inputView.classList.remove("fade-in");
+        void inputView.offsetWidth; // trigger reflow
+        inputView.classList.add("fade-in");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+  window.showStep = showStep;
+
+  /* ───── 진단 결과 렌더 ───── */
   let LAST = null;
 
   function renderResult() {
@@ -377,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!resEl) return;
 
     if(!d.p){ 
-      resEl.innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력하시면 실시간으로 결과를 진단해 드려요 🙂</p></div>'; 
+      resEl.innerHTML = '<div class="card"><p class="placeholder">추정가격을 입력해 주세요 🙂</p></div>'; 
       return; 
     }
     let h = '<div class="card"><h2>이렇게 진행할 수 있어요</h2><p class="desc">'+d.k.name+' · 추정가격 '+korUnit(d.p)+'</p>';
@@ -468,24 +450,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.renderResult = renderResult;
 
-  function autoUpdateResult() {
-    if(num($("price")) > 0) {
-      renderResult();
-    }
-  }
-
-  // 실시간 입력 자동 진단 리스너
-  const priceEl = $("price");
-  if(priceEl) {
-    priceEl.addEventListener("input", autoUpdateResult);
-  }
-
+  // "진단 결과 보기 →" 버튼 이벤트
   const btnGo = $("go");
   if(btnGo) {
     btnGo.addEventListener("click", ()=>{
+      const p = num($("price"));
+      if(!p) {
+        alert("추정가격을 입력해 주세요 🙂");
+        const pEl = $("price");
+        if(pEl) pEl.focus();
+        return;
+      }
       renderResult();
-      const resEl = $("result");
-      if(resEl) resEl.scrollIntoView({ behavior: 'smooth' });
+      showStep("result");
+    });
+  }
+
+  // "← 조건 다시 선택하기" 버튼 이벤트
+  const btnBack = $("btn-back");
+  if(btnBack) {
+    btnBack.addEventListener("click", ()=>{
+      showStep("input");
     });
   }
 
@@ -610,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
       h += '</div>';
     }
     h += '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn ghost" onclick="window._clearCk()">전체 해제</button>'
-      +'<button class="btn ghost" onclick="showTab(\'guide\')">조건 바꾸기</button></div>';
+      +'<button class="btn ghost" onclick="showTab(\'guide\');showStep(\'input\');">조건 바꾸기</button></div>';
     h += '<p class="note">체크 상태는 화면을 새로고침하면 초기화돼요.</p></div>';
     
     const ckArea = $("ck-area");
