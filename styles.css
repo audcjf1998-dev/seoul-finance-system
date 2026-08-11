@@ -63,153 +63,176 @@ body {
   padding: 28px 20px 100px;
 }
 
-/* ─────────────────── SEOUL MY SOUL & HEACHI HERO HEADER ─────────────────── */
+/* ─────────────────── SEOUL MY SOUL TRENDY LIGHT HERO ─────────────────── */
 .hero.seoul-soul-hero {
-  background: linear-gradient(135deg, #111827 0%, #1e293b 40%, #0f172a 100%);
-  color: #ffffff;
-  border-radius: 24px;
-  padding: 28px 30px;
-  margin-bottom: 22px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #f3fdf8 100%);
+  color: var(--ink);
+  border-radius: 28px;
+  padding: 32px 36px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
   position: relative;
   overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border: 1.5px solid #e2eafc;
 }
 
 .hero.seoul-soul-hero::after {
   content: "";
   position: absolute;
   top: -40%;
-  right: -15%;
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(0, 194, 131, 0.15) 0%, rgba(255, 46, 147, 0.1) 40%, rgba(0, 0, 0, 0) 70%);
+  right: -10%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(0, 194, 131, 0.12) 0%, rgba(255, 46, 147, 0.08) 50%, rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
 }
 
-.hero-top-brand {
+.hero-brand-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 10px 18px;
+  gap: 16px;
+}
+
+.slogan-badge-wrap {
+  background: #ffffff;
+  padding: 8px 18px;
   border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border: 1.5px solid #e2eaf8;
+  box-shadow: 0 4px 14px rgba(0, 100, 240, 0.06);
 }
 
 .slogan-img {
-  height: 46px;
-  max-width: 220px;
+  height: 48px;
+  max-width: 240px;
   object-fit: contain;
+  display: block;
 }
 
 .heachi-hero-img {
-  height: 62px;
+  height: 72px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(255, 46, 147, 0.25));
+  filter: drop-shadow(0 6px 14px rgba(255, 46, 147, 0.2));
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .heachi-hero-img:hover {
-  transform: scale(1.1) rotate(3deg);
+  transform: scale(1.12) rotate(3deg);
 }
 
-.soul-badge {
+.hero-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.hero h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.hero h1 span {
+  color: #2563eb;
+  background: linear-gradient(135deg, #2563eb, #0284c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.soul-pill-tag {
   font-family: 'Outfit', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   background: linear-gradient(90deg, #00c283 0%, #ff2e93 33%, #ffb300 66%, #0085ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  padding: 3px 10px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 4px 12px;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
   border-radius: 99px;
-  vertical-align: middle;
-  margin-left: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.hero h1 {
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.hero h1 span {
-  color: #60a5fa;
-}
-
-.hero p {
-  color: #e2e8f0;
-  margin-top: 10px;
+.hero-desc {
+  color: #475569;
   font-size: 1.02rem;
   font-weight: 400;
   line-height: 1.65;
+  margin-top: 6px;
 }
 
-.hero p b {
-  color: #ff7ec4;
+.hero-desc b {
+  color: #ff2e93;
   font-weight: 700;
 }
 
-.hero .mini {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 16px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 99px;
-  padding: 7px 18px;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #f1f5f9;
+.mini-tag-bar {
+  margin-top: 18px;
 }
 
-/* ─────────────────── 해치 캐릭터 말풍선 배너 ─────────────────── */
+.mini-tag-bar span {
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #dbeafe;
+  color: #1e40af;
+  border-radius: 99px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
+}
+
+/* ─────────────────── MASCOT SPEECH BANNER ─────────────────── */
 .mascot-speech-banner {
   display: flex;
   align-items: center;
   gap: 18px;
-  background: linear-gradient(135deg, #fff0f7 0%, #eaf4ff 100%);
-  border: 1.5px solid #f9b8d8;
+  background: linear-gradient(135deg, #fff5f9 0%, #f0f7ff 100%);
+  border: 1.5px solid #fecdd3;
   border-radius: 20px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(255, 46, 147, 0.08);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  box-shadow: 0 6px 20px rgba(255, 46, 147, 0.06);
+}
+
+.mascot-img-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 6px 12px;
+  border: 1px solid #ffe4e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .mascot-avatar {
-  height: 64px;
+  height: 60px;
   width: auto;
   object-fit: contain;
-  flex-shrink: 0;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
-.speech-bubble b {
-  color: #e11d48;
-  font-size: 1.05rem;
-  display: block;
+.speech-content .speech-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 4px;
 }
 
-.speech-bubble p {
-  color: #1e293b;
+.speech-content b {
+  color: #e11d48;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.speech-content p {
+  color: #334155;
   font-size: 0.95rem;
   margin: 0;
   line-height: 1.5;
-  font-weight: 500;
 }
 
 .heachi-result-tag {
