@@ -185,102 +185,19 @@
 <!-- ─────────── 3. 계산 도우미 ─────────── -->
 <section class="panel" id="p-calc">
 
-  <details open>
-    <summary>💰 보증금 계산 (입찰 · 계약 · 하자보수)</summary>
-    <div class="in">
-      <div class="grid2">
-        <div class="field"><label>계약금액 (원)</label>
-          <input type="text" class="money" id="g-amt" inputmode="numeric" placeholder="예: 150,000,000">
-          <div class="kor-hint" id="g-amt-kor"></div></div>
-        <div class="field"><label>하자보수 요율 구분</label>
-          <select id="g-haja">
-            <option value="0">해당 없음 (하자보수 미적용)</option>
-            <option value="5">공사 5% — 철도·댐·터널·철강교·발전설비·교량 등</option>
-            <option value="4">공사 4% — 공항·항만·삭도·택지개발·방파제 등</option>
-            <option value="3">공사 3% — 관개수로·도로·매립·상하수도관로·일반건축 등</option>
-            <option value="2">공사 2% — 그 밖의 공사 (조경 등)</option>
-            <option value="s2">용역 2% (하자검사 대상 용역)</option>
-            <option value="m3">물품 제조 3%</option>
-            <option value="m2">물품 수리·가공·구매 2%</option>
-          </select></div>
-      </div>
-      <label class="opt" id="g-cut"><input type="checkbox">
-        <span><span class="t">보증금 50% 인하 한시특례 적용 (입찰 5%→2.5% · 계약 10%→5%)</span><br>
-        <span class="s">행안부 고시 「지방계약 한시적 특례」 — '26.6.30.자로 종료되었어요. 연장·재시행 여부는 현행 고시를 확인하세요</span></span></label>
-      <button class="btn" id="g-run">계산하기</button>
-      <div id="g-out"></div>
-    </div>
-  </details>
+  <!-- CALCULATOR SUB-TABS -->
+  <div class="calc-subtabs-wrap">
+    <button type="button" class="calc-subtab-btn active" data-calc="ev">협상 제안서 평가 계산기</button>
+    <button type="button" class="calc-subtab-btn" data-calc="g">보증금 계산 (입찰 · 계약 · 하자)</button>
+    <button type="button" class="calc-subtab-btn" data-calc="d">지연배상금 계산</button>
+    <button type="button" class="calc-subtab-btn" data-calc="s">선금 · 정산 계산</button>
+    <button type="button" class="calc-subtab-btn" data-calc="t">인지세 · 도시철도공채</button>
+  </div>
 
-  <details>
-    <summary>⏰ 지연배상금 계산</summary>
-    <div class="in">
-      <div class="grid2">
-        <div class="field"><label>계약금액 (원)</label>
-          <input type="text" class="money" id="d-amt" inputmode="numeric" placeholder="예: 300,000,000">
-          <div class="kor-hint" id="d-amt-kor"></div></div>
-        <div class="field"><label>계약 구분 (요율/1000)</label>
-          <select id="d-rate">
-            <option value="0.5">공사 — 0.5</option>
-            <option value="1.3">용역 · 기타 — 1.3</option>
-            <option value="0.8">물품 제조·구매 — 0.8</option>
-            <option value="0.5">계약 후 설계·승인 물품 — 0.5</option>
-            <option value="1.3">수리·가공·대여·용역 — 1.3</option>
-            <option value="2.5">운송·보관·양곡가공 — 2.5</option>
-          </select></div>
-      </div>
-      <div class="grid2">
-        <div class="field"><label>지연 일수 (일)</label>
-          <input type="text" id="d-days" inputmode="numeric" placeholder="직접 입력"></div>
-        <div class="field"><label>또는 기간으로 계산</label>
-          <div style="display:flex;gap:8px">
-            <input type="date" id="d-from" style="flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit">
-            <input type="date" id="d-to" style="flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit">
-          </div>
-          <p class="note">약정 준공일 다음 날 ~ 실제 완료일 (양 끝 포함)</p></div>
-      </div>
-      <button class="btn" id="d-run">계산하기</button>
-      <div id="d-out"></div>
-    </div>
-  </details>
-
-  <details>
-    <summary>💵 선금 · 정산 계산</summary>
-    <div class="in">
-      <div class="grid2">
-        <div class="field"><label>계약금액 (원)</label>
-          <input type="text" class="money" id="s-amt" inputmode="numeric" placeholder="예: 200,000,000">
-          <div class="kor-hint" id="s-amt-kor"></div></div>
-        <div class="field"><label>선금 신청액 (원)</label>
-          <input type="text" class="money" id="s-req" inputmode="numeric" placeholder="예: 60,000,000">
-          <div class="kor-hint" id="s-req-kor"></div></div>
-      </div>
-      <div class="field"><label>기성(기납부)액 — 정산 계산용 (선택)</label>
-        <input type="text" class="money" id="s-done" inputmode="numeric" placeholder="예: 100,000,000">
-        <div class="kor-hint" id="s-done-kor"></div></div>
-      <button class="btn" id="s-run">계산하기</button>
-      <div id="s-out"></div>
-      <p class="note">최초 청구 시 계약금액의 <b>30%는 의무 지급</b>이고(더 적게 신청하면 신청액대로), 30% 초과분은 계약 목적·성질을 고려해 <b>한도 70%</b> 안에서 지급할 수 있어요('26 예규 개정 — 재무건전성 우수 시 100% 확대는 폐지). 신청 시 <b>선금전용계좌 사용 확약서</b> 제출 — 서식 모음의 「선금 신청 양식」 참고. 물품 <b>구매</b>는 선금 제외, 지급 14일 · 하수급 배분 통지 15일.</p>
-    </div>
-  </details>
-
-  <details>
-    <summary>🧾 인지세 · 도시철도공채</summary>
-    <div class="in">
-      <div class="field"><label>계약금액 (원)</label>
-        <input type="text" class="money" id="t-amt" inputmode="numeric" placeholder="예: 120,000,000">
-        <div class="kor-hint" id="t-amt-kor"></div></div>
-      <label class="opt" id="t-const"><input type="checkbox">
-        <span><span class="t">건설공사 도급계약</span><br>
-        <span class="s">계약금액 2천만원 이상이면 도시철도채권 매입 대상 (계약금액의 2%)</span></span></label>
-      <button class="btn" id="t-run">계산하기</button>
-      <div id="t-out"></div>
-    </div>
-  </details>
-
-  <details open>
-    <summary>협상 제안서 평가 계산기 (정성 세부항목 · 위원별 개별평가 · 최고최저 제외 자동집계)</summary>
-    <div class="in">
+  <!-- PANEL 1: 협상 제안서 평가 계산기 (On by default) -->
+  <div class="calc-panel on" id="calc-panel-ev">
+    <div class="card">
+      <h3 style="margin-top:0;color:#1e40af;">협상 제안서 평가 계산기 (정성 세부항목 · 위원별 개별평가 · 최고최저 제외 자동집계)</h3>
       <p class="note" style="margin:2px 0 14px">행안부 예규 및 서울특별시 낙찰자 결정기준에 따라 <b>정성적 평가 세부항목별 점수 산출</b>과 <b>최고·최저 총점 위원 제외 최종 정성평균</b>을 자동으로 처리해요.</p>
 
       <!-- STAGE 1: 정성평가 기준 설정 -->
@@ -363,7 +280,105 @@
       <!-- STAGE 3: 집계 결과 & modal container -->
       <div id="ev-out"></div>
     </div>
-  </details>
+  </div>
+
+  <!-- PANEL 2: 보증금 계산 -->
+  <div class="calc-panel" id="calc-panel-g">
+    <div class="card">
+      <h3 style="margin-top:0;color:#1e40af;">보증금 계산 (입찰 · 계약 · 하자보수)</h3>
+      <div class="grid2">
+        <div class="field"><label>계약금액 (원)</label>
+          <input type="text" class="money" id="g-amt" inputmode="numeric" placeholder="예: 150,000,000">
+          <div class="kor-hint" id="g-amt-kor"></div></div>
+        <div class="field"><label>하자보수 요율 구분</label>
+          <select id="g-haja">
+            <option value="0">해당 없음 (하자보수 미적용)</option>
+            <option value="5">공사 5% — 철도·댐·터널·철강교·발전설비·교량 등</option>
+            <option value="4">공사 4% — 공항·항만·삭도·택지개발·방파제 등</option>
+            <option value="3">공사 3% — 관개수로·도로·매립·상하수도관로·일반건축 등</option>
+            <option value="2">공사 2% — 그 밖의 공사 (조경 등)</option>
+            <option value="s2">용역 2% (하자검사 대상 용역)</option>
+            <option value="m3">물품 제조 3%</option>
+            <option value="m2">물품 수리·가공·구매 2%</option>
+          </select></div>
+      </div>
+      <label class="opt" id="g-cut"><input type="checkbox">
+        <span><span class="t">보증금 50% 인하 한시특례 적용 (입찰 5%→2.5% · 계약 10%→5%)</span><br>
+        <span class="s">행안부 고시 「지방계약 한시적 특례」 — '26.6.30.자로 종료되었어요. 연장·재시행 여부는 현행 고시를 확인하세요</span></span></label>
+      <button class="btn" id="g-run">계산하기</button>
+      <div id="g-out"></div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: 지연배상금 계산 -->
+  <div class="calc-panel" id="calc-panel-d">
+    <div class="card">
+      <h3 style="margin-top:0;color:#1e40af;">지연배상금 계산</h3>
+      <div class="grid2">
+        <div class="field"><label>계약금액 (원)</label>
+          <input type="text" class="money" id="d-amt" inputmode="numeric" placeholder="예: 300,000,000">
+          <div class="kor-hint" id="d-amt-kor"></div></div>
+        <div class="field"><label>계약 구분 (요율/1000)</label>
+          <select id="d-rate">
+            <option value="0.5">공사 — 0.5</option>
+            <option value="1.3">용역 · 기타 — 1.3</option>
+            <option value="0.8">물품 제조·구매 — 0.8</option>
+            <option value="0.5">계약 후 설계·승인 물품 — 0.5</option>
+            <option value="1.3">수리·가공·대여·용역 — 1.3</option>
+            <option value="2.5">운송·보관·양곡가공 — 2.5</option>
+          </select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>지연 일수 (일)</label>
+          <input type="text" id="d-days" inputmode="numeric" placeholder="직접 입력"></div>
+        <div class="field"><label>또는 기간으로 계산</label>
+          <div style="display:flex;gap:8px">
+            <input type="date" id="d-from" style="flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit">
+            <input type="date" id="d-to" style="flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px;font-family:inherit">
+          </div>
+          <p class="note">약정 준공일 다음 날 ~ 실제 완료일 (양 끝 포함)</p></div>
+      </div>
+      <button class="btn" id="d-run">계산하기</button>
+      <div id="d-out"></div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: 선금 · 정산 계산 -->
+  <div class="calc-panel" id="calc-panel-s">
+    <div class="card">
+      <h3 style="margin-top:0;color:#1e40af;">선금 · 정산 계산</h3>
+      <div class="grid2">
+        <div class="field"><label>계약금액 (원)</label>
+          <input type="text" class="money" id="s-amt" inputmode="numeric" placeholder="예: 200,000,000">
+          <div class="kor-hint" id="s-amt-kor"></div></div>
+        <div class="field"><label>선금 신청액 (원)</label>
+          <input type="text" class="money" id="s-req" inputmode="numeric" placeholder="예: 60,000,000">
+          <div class="kor-hint" id="s-req-kor"></div></div>
+      </div>
+      <div class="field"><label>기성(기납부)액 — 정산 계산용 (선택)</label>
+        <input type="text" class="money" id="s-done" inputmode="numeric" placeholder="예: 100,000,000">
+        <div class="kor-hint" id="s-done-kor"></div></div>
+      <button class="btn" id="s-run">계산하기</button>
+      <div id="s-out"></div>
+      <p class="note">최초 청구 시 계약금액의 <b>30%는 의무 지급</b>이고(더 적게 신청하면 신청액대로), 30% 초과분은 계약 목적·성질을 고려해 <b>한도 70%</b> 안에서 지급할 수 있어요('26 예규 개정 — 재무건전성 우수 시 100% 확대는 폐지). 신청 시 <b>선금전용계좌 사용 확약서</b> 제출 — 서식 모음의 「선금 신청 양식」 참고. 물품 <b>구매</b>는 선금 제외, 지급 14일 · 하수급 배분 통지 15일.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 5: 인지세 · 도시철도공채 -->
+  <div class="calc-panel" id="calc-panel-t">
+    <div class="card">
+      <h3 style="margin-top:0;color:#1e40af;">인지세 · 도시철도공채</h3>
+      <div class="field"><label>계약금액 (원)</label>
+        <input type="text" class="money" id="t-amt" inputmode="numeric" placeholder="예: 120,000,000">
+        <div class="kor-hint" id="t-amt-kor"></div></div>
+      <label class="opt" id="t-const"><input type="checkbox">
+        <span><span class="t">건설공사 도급계약</span><br>
+        <span class="s">계약금액 2천만원 이상이면 도시철도채권 매입 대상 (계약금액의 2%)</span></span></label>
+      <button class="btn" id="t-run">계산하기</button>
+      <div id="t-out"></div>
+    </div>
+  </div>
+
 </section>
 
 <!-- ─────────── 4. 낙찰하한율 ─────────── -->

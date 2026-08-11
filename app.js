@@ -1482,13 +1482,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
       rows.sort((a, b) => b.total - a.total).forEach((r, i) => r.rank = i + 1);
 
-      // TABLE 1: SUMMARY RANKING TABLE
-      let h = '<div style="margin-top:20px;margin-bottom:24px;">';
+      // PRIORITY BANNER & TABLE 1: SUMMARY RANKING TABLE
+      const passingRows = rows.filter(r => r.pass);
+      let priBox = '<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:16px;margin-top:20px;margin-bottom:18px;">';
+      priBox += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+      priBox += '<h4 style="margin:0;color:#1d4ed8;font-size:1.08rem;display:flex;align-items:center;gap:6px;">🏆 최종 협상 우선순위 결과</h4>';
+      priBox += '<button type="button" class="btn-print-report" onclick="window.printEvaluationReport()">🖨️ 평가 결과 PDF 저장 / 인쇄 출력</button>';
+      priBox += '</div>';
+
+      if (passingRows.length) {
+        priBox += '<div style="display:flex;flex-direction:column;gap:8px;">';
+        passingRows.forEach((r, idx) => {
+          const label = idx === 0 ? "🥇 1순위 [우선협상대상자]" : (idx === 1 ? "🥈 2순위 [차순위 협상대상자]" : `${idx + 1}순위 [차순위]`);
+          const bg = idx === 0 ? "#dcfce7" : "#ffffff";
+          const border = idx === 0 ? "#86efac" : "#cbd5e1";
+          const color = idx === 0 ? "#15803d" : "#334155";
+          priBox += `<div style="background:${bg};border:1px solid ${border};padding:10px 14px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <span style="font-weight:800;color:${color};font-size:0.96rem;">${label}: <b>${r.name}</b></span>
+            <span style="font-weight:900;color:${color};font-size:1.02rem;">종합점수 <b>${r.total.toFixed(2)}점</b> <small style="font-weight:400;color:#64748b;">(기술 ${r.tech.toFixed(2)}점 + 가격 ${r.pricePt.toFixed(2)}점)</small></span>
+          </div>`;
+        });
+        priBox += '</div>';
+        priBox += '<p class="note" style="margin-top:10px;margin-bottom:0;color:#1e40af;">※ 1순위 우선협상대상자와 제안서 내용 및 입찰가격 협상을 진행하며, 협상 타결 시 최종 계약대상자로 선정됩니다.</p>';
+      } else {
+        priBox += '<p style="margin:0;color:#e11d48;font-weight:700;">⚠️ 기술점수(정량+정성) 기준 미달로 협상적격자가 없습니다.</p>';
+      }
+      priBox += '</div>';
+
+      let h = priBox;
+      h += '<div style="margin-top:20px;margin-bottom:24px;">';
       h += '<h3 style="color:#1e40af;margin-bottom:8px;">1. 제안서 종합 평가 및 낙찰 적격 판정 결과</h3>';
       h += '<div class="res" style="overflow-x:auto"><table>';
-      h += '<tr><th>순위</th><th>업체명</th><th>입찰가 (예가 대비)</th><th>정량점수</th><th>정성평균(최고·최저 제외)</th><th>가격평점</th><th>기술점수</th><th>종합점수</th><th>적격 여부</th></tr>';
+      h += '<tr><th>순위</th><th>우선순위 (협상대상)</th><th>업체명</th><th>입찰가 (예가 대비)</th><th>정량점수</th><th>정성평균(최고·최저 제외)</th><th>가격평점</th><th>기술점수</th><th>종합점수</th><th>적격 여부</th></tr>';
       rows.forEach(r => {
-        h += '<tr' + (r.rank === 1 && r.pass ? ' class="win"' : '') + '><td>' + r.rank + '</td><td><b>' + r.name + '</b></td>'
+        let pBadge = '';
+        if (!r.pass) {
+          pBadge = '<span class="badge-priority p-fail">순위 외 (적격 미달)</span>';
+        } else if (r.rank === 1) {
+          pBadge = '<span class="badge-priority p1">🥇 1순위 (우선협상)</span>';
+        } else if (r.rank === 2) {
+          pBadge = '<span class="badge-priority p2">🥈 2순위 (차순위)</span>';
+        } else if (r.rank === 3) {
+          pBadge = '<span class="badge-priority p3">🥉 3순위 (차순위)</span>';
+        } else {
+          pBadge = `<span class="badge-priority p-other">${r.rank}순위 (후순위)</span>`;
+        }
+
+        h += '<tr' + (r.rank === 1 && r.pass ? ' class="win"' : '') + '><td>' + r.rank + '</td>'
+          + '<td>' + pBadge + '</td>'
+          + '<td><b>' + r.name + '</b></td>'
           + '<td class="num">' + won(r.bid) + '<br><span style="color:var(--sub)">' + (r.bid / base * 100).toFixed(2) + '%</span>'
           + (r.tagP ? ' ' + tagHtml(r.tagP, "o") : '') + '</td>'
           + '<td class="num">' + r.quant.toFixed(2) + '</td><td class="num"><b style="color:#2563eb">' + r.qual.toFixed(2) + '</b></td>'
@@ -1546,6 +1588,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.attachLegalTooltips) window.attachLegalTooltips();
     });
   }
+
+  window.printEvaluationReport = function() {
+    window.print();
+  };
 
   /* ───── 낙찰하한율 ───── */
   const RATE_TABLE = {
@@ -1668,10 +1714,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ───── Save / Load Progress System (파일 저장 & 불러오기 & LocalStorage 자동저장) ───── */
 
+  // Calculator Sub-tab click listeners
+  document.querySelectorAll(".calc-subtab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".calc-subtab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".calc-panel").forEach(p => p.classList.remove("on"));
+
+      btn.classList.add("active");
+      const calcKey = btn.dataset.calc;
+      const target = $("calc-panel-" + calcKey);
+      if (target) target.classList.add("on");
+    });
+  });
+
   function getCurrentStateObj() {
     const p = num($("price"));
     return {
-      version: "1.0",
+      version: "2.0",
       savedAt: new Date().toLocaleString("ko-KR"),
       kind: KIND,
       price: p,
@@ -1690,7 +1749,10 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       currStage: CURR_STAGE,
       viewAllStages: VIEW_ALL_STAGES,
-      checkedIds: Array.from(CKSET)
+      checkedIds: Array.from(CKSET),
+      evalCriteria: CRITERIA_LIST,
+      evalQualMax: getQualTargetScore(),
+      evalScores: EVAL_SCORES_STORE
     };
   }
 
@@ -1702,21 +1764,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.saveProgressFile = function() {
-    let d = LAST;
-    if(!d || !d.p) {
-      d = decide();
-      if(!d || !d.p) {
-        alert("먼저 추정가격을 입력하신 후 저장해 주세요 🙂");
-        return;
-      }
-      LAST = d;
-    }
     const state = getCurrentStateObj();
     const jsonStr = JSON.stringify(state, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
-    const kindName = KINFO[KIND] ? KINFO[KIND].name : "계약";
+    const kindName = (state.kind && KINFO[state.kind]) ? KINFO[state.kind].name : "계약";
     const priceText = state.price ? korUnit(state.price).replace(/\s+/g, "") : "미입력";
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const fileName = `서울계약_점검현황_${kindName}_${priceText}_${dateStr}.json`;
@@ -1740,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', () => {
         restoreStateObj(state);
         const stageName = STAGES[state.currStage] ? STAGES[state.currStage].name : "진행 단계";
         const count = state.checkedIds ? state.checkedIds.length : 0;
-        alert(`🎉 계약 점검 파일을 성공적으로 불러왔습니다!\n\n• 저장 일시: ${state.savedAt || '기록 없음'}\n• 현재 단계: ${stageName}\n• 체크 완료 항목: 총 ${count}건`);
+        alert(`🎉 계약 점검 및 계산 데이터를 성공적으로 불러왔습니다!\n\n• 저장 일시: ${state.savedAt || '기록 없음'}\n• 현재 단계: ${stageName}\n• 체크 완료 항목: 총 ${count}건`);
       } catch(err) {
         console.error("Load File Error:", err);
         alert("⚠️ 저장 파일(.json) 처리 중 오류가 발생했습니다: " + err.message);
@@ -1801,6 +1854,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if(typeof syncOpts === "function") syncOpts();
 
+    if (state.evalCriteria && Array.isArray(state.evalCriteria)) {
+      CRITERIA_LIST = state.evalCriteria;
+    }
+    if (state.evalQualMax) {
+      const qm = $("ev-qual-max");
+      if (qm) qm.value = state.evalQualMax;
+    }
+    if (state.evalScores && typeof state.evalScores === "object") {
+      EVAL_SCORES_STORE = state.evalScores;
+    }
+    if (typeof renderCriteriaRows === "function") renderCriteriaRows();
+    document.querySelectorAll("#ev-rows .ev-row").forEach(div => {
+      const cid = div.dataset.cid;
+      if (cid && typeof updateRowMemberButtons === "function") updateRowMemberButtons(div, cid);
+    });
+
     const d = decide();
     LAST = d;
     renderResult();
@@ -1808,10 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     CKS = ckItems(d);
     CKSET = new Set(state.checkedIds || []);
     CURR_STAGE = state.currStage !== undefined ? state.currStage : 0;
-    VIEW_ALL_STAGES = !!state.viewAllStages;
-
     renderCk();
-    showTab("check");
     autoSaveLocal();
   }
 

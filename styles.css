@@ -1896,3 +1896,161 @@ tr.win td {
     transition: none !important;
   }
 }
+
+/* ─────────────────── CALCULATOR SUB-TABS & PRIORITY BADGES ─────────────────── */
+.calc-subtabs-wrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.calc-subtab-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calc-subtab-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.calc-subtab-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+}
+
+.calc-panel {
+  display: none;
+}
+
+.calc-panel.on {
+  display: block;
+}
+
+/* Priority Badges in Evaluation Table */
+.badge-priority {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.badge-priority.p1 {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.badge-priority.p2 {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.badge-priority.p3 {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.badge-priority.p-other {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-priority.p-fail {
+  background: #ffe4e6;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+/* Print Report Button */
+.btn-print-report {
+  background: #ffffff;
+  border: 1.5px solid #2563eb;
+  color: #1d4ed8;
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-print-report:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* ─────────────────── PRINT STYLES FOR PDF / PRINT OUTPUT ─────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10.5pt !important;
+  }
+
+  header, .tabs-wrap, .save-load-btn-group, #ev-add, #ev-run, .rm, .calc-subtabs-wrap,
+  button, input, select, .stage-stepper-wrap, .btn-toggle, #ev-criteria-rows,
+  #ev-reset-criteria, #ev-add-criterion {
+    display: none !important;
+  }
+
+  .panel, .card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  .res table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 9.5pt !important;
+  }
+
+  .res th, .res td {
+    border: 1px solid #333333 !important;
+    padding: 6px 8px !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+
+  .res th {
+    background: #f1f5f9 !important;
+    font-weight: bold !important;
+  }
+
+  .btn-member-link {
+    display: inline-block !important;
+    border: none !important;
+    background: none !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    font-weight: bold !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 15mm 10mm 15mm 10mm;
+  }
+}
