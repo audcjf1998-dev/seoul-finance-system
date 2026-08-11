@@ -13,11 +13,15 @@
 <body>
 <div class="wrap">
 
-<div class="hero">
-  <h1>🤝 서울계약 <span>도우미</span></h1>
-  <p>계약 시스템을 대신하는 게 아니라, 담당자님 옆에서 <b>빠뜨린 건 없는지</b> 같이 챙겨드리는 참고 도구예요.<br>
-  금액과 종류만 알려주시면 계약 방법·법적 절차·소요 기간을 정리해 드릴게요.</p>
-  <div class="mini">📖 2026 지방계약 실무 매뉴얼('26.7.31.) · 행안부 예규 · 정보화사업 추진절차 지침 기준</div>
+<div class="hero seoul-soul-hero">
+  <div class="hero-top-brand">
+    <img src="seoul_slogan.png" alt="SEOUL MY SOUL — 마음이 모이면 서울이 됩니다" class="slogan-img">
+    <img src="heachi_friends.png" alt="해치와 소울프렌즈" class="heachi-hero-img">
+  </div>
+  <h1>🤝 서울계약 <span>도우미</span> <span class="soul-badge">SEOUL MY SOUL</span></h1>
+  <p>계약 시스템을 대신하는 게 아니라, <b>해치와 소울프렌즈</b>가 담당자님 옆에서 빠뜨린 건 없는지 함께 챙겨드리는 참고 도구예요.<br>
+  계약 종류와 금액만 알려주시면 서울시 맞춤 계약 방법·법적 절차·소요 기간을 정리해 드릴게요.</p>
+  <div class="mini">📖 2026 지방계약 실무 매뉴얼('26.7.31.) · 행안부 예규 · 서울특별시 지침 완벽 반영</div>
 </div>
 
 <div class="tabs">
@@ -34,9 +38,17 @@
 
   <!-- [STEP 1] 조건 입력 화면 -->
   <div id="step-input" class="step-view">
-    <div class="card">
+    <div class="card mascot-card">
+      <div class="mascot-speech-banner">
+        <img src="heachi_friends.png" alt="해치" class="mascot-avatar">
+        <div class="speech-bubble">
+          <b>안녕하세요! 해치와 소울프렌즈예요 🩷</b>
+          <p>어떤 계약을 준비하시나요? 아래 두 가지만 정해주시면 서울시 맞춤 발주 절차를 꼼꼼하게 알려드릴게요!</p>
+        </div>
+      </div>
+
       <h2>어떤 계약을 준비하시나요?</h2>
-      <p class="desc">계약 종류와 금액을 입력하고 [결과 보기]를 누르면 진단 페이지로 이동해요.</p>
+      <p class="desc">계약 종류와 금액을 입력하고 [진단 결과 보기 →]를 누르면 진단 페이지로 이동해요.</p>
 
       <div class="field">
         <label>① 계약 종류</label>
@@ -98,10 +110,14 @@
 
   <!-- [STEP 2] 진단 결과 화면 -->
   <div id="step-result" class="step-view" style="display:none;">
-    <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <button class="btn ghost" id="btn-back" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;">
         ← 조건 다시 선택하기
       </button>
+      <div class="heachi-result-tag">
+        <img src="heachi_friends.png" alt="해치" style="height:28px; width:auto; border-radius:4px;">
+        <span>해치가 분석한 서울시 맞춤 발주 가이드 ✨</span>
+      </div>
     </div>
     <div id="result"></div>
   </div>
