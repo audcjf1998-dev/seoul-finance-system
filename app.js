@@ -404,7 +404,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+    const ombudsman = (()=>{
+      if (k.isC && p >= 30*E) return "공사 30억원 이상 — 제안서/입찰 평가위 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
+      if (KIND === "service" && p >= 5*E) return "용역 5억원 이상 — 제안서 평가위원회 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
+      if (KIND === "goods" && p >= 1*E) return "물품 구매 1억원 이상 — 제안서/입찰 평가위원회 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
+      return null;
+    })();
+
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree,ombudsman};
   }
 
   /* ───── 타임라인 ───── */
@@ -615,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. 사전 확인 절차 카드
     h += '<div class="card" style="margin-top:20px;">'
       +'<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 필수 절차만 안내해 드려요</span></h3>';
-    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree]];
+    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree],["시민감사옴부즈만 입회·감시 (청렴계약)",d.ombudsman]];
     if(d.gam){
       pres.push(["기술용역 타당성 심사 (건설기술)", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
         : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
@@ -819,6 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"수의계약 배제 사유 확인","부정당업자 제재 중인 업체 등 (법 §31·령 §92) · 나라장터 제재정보 조회","필수",d.rec==="one"||d.rec==="two");
     add(P,"특례 대상 증빙 확보","장애인·여성기업 확인서 등 유효기간 확인","필수",d.special&&d.rec==="one");
     add(P,"중증장애인생산품 직접생산 확인","생산시설 지정 및 직접생산 여부","필수",d.severe);
+    add(P,"시민감사옴부즈만 입회·감시 사전 확인 (청렴계약)",d.ombudsman||"","필수",!!d.ombudsman);
     if(d.mat3ja){
       add(P,"조달청 제3자 단가계약 물품 납품요구 검토","나라장터 종합쇼핑몰 계약물품 검색 및 단일 납품요구 수수료 예산 확보","필수",true);
       add(P,"MAS 2단계경쟁 미대상 확인","중기 1억 미만 · 가구 4천만 미만 · 일반 5천만 미만 1회 납품요구 금액 확인","필수",true);
@@ -836,6 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
       add(P,"MAS 2단계 경쟁 대상 여부 및 기준 점검","중기 경쟁제품 1억↑(건설자재·가구 4천만↑) / 일반물품 5천만↑ 1회 납품요구 시 5개사 제안서 요청","필수",true);
       add(P,"관급자재 포함 추정금액 산정 및 심사 대상 확인","자체 발주 시 자재대 포함 총 추정금액으로 일상감사·원가심사 의뢰 (조달 3자단가·MAS는 심사 면제)","필수",true);
     }
+    add(N,"시민감사옴부즈만 입회·감시 요청서 제출","공사 30억·용역 5억·물품 1억 이상 — 제안서/입찰 평가위 개최 7일 전 입회요청서 제출 (서울특별시 청렴계약옴부즈만 운영 규칙)","필수",!!d.ombudsman);
     if(d.rec==="nego"){
       add(N,"입찰공고 게시 — 협상 ("+d.noticeDays+"일)","게시일·개찰일 제외 · 긴급·재공고 10일 · 1억 미만 신규사업은 15일","법정",true);
       add(N,"가격 투찰(나라장터) = 밀봉 가격제안서 금액 일치 확인","제안서·가격제안서는 발주부서에 직접 제출","필수",true);
@@ -844,7 +853,6 @@ document.addEventListener('DOMContentLoaded', () => {
       add(N,"평가 결과 서울계약마당 등록 · 협상 순위 통보",d.it?"협상적격 — 기술능력 점수가 배점한도의 85% 이상 (SW 기준)":"협상적격 — 종합평점 70점 이상","필수",true);
       add(N,"기술능력 배점 90% 적용","SW사업 준수사항 — 기술 90 : 가격 10 · SW기술성 평가기준으로 평가항목 구성","필수",d.it);
       add(N,"제안요청 설명회 개최","추정가격 20억 이상 의무 — 입찰공고는 설명일 전일부터 7일 전","법정",d.it&&d.p>=20*E);
-      add(N,"시민감사옴부즈만 입회 요청","용역 5억·물품 1억 이상 — 평가위 개최 7일 전 입회요청서 제출","필수",(KIND==="service"&&d.p>=5*E)||(KIND==="goods"&&d.p>=1*E));
       add(N,"제안서 보상 여부 명기","총사업비 20억 이상 SW사업 — 우수 제안서 보상 검토·명기","필수",d.it&&d.p>=20*E);
       add(N,"기술협상 → 가격협상","제안 내용 가감 시 예정가격 범위 내 조정 · 가감 없으면 제안가 조정 불가","필수",true);
     } else if(d.rec==="bid"){
@@ -869,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(C,"손해배상보증서 제출 확인","전기공사 · 소방시설공사·설계·감리·관리용역 · 건설기술용역 등 개별법상 의무 — 건설사업관리는 공사착공일~완공일 (건진법 §34·령 §50)","권장",KIND==="oc"||KIND==="service");
     add(C,"인지세 납부 확인 — "+(stampDuty(d.p)?won(stampDuty(d.p)):"비과세(1천만원 이하)"),"전자수입인지 · 공동 부담","필수",true);
     add(C,"도시철도공채 매입 확인","건설공사 도급 2천만원 이상 — 계약금액의 2%","필수",d.k.isC&&d.p>=2e7);
-    add(C,"청렴계약서 · 행동강령 서약","법 §6의2 청렴계약 · 서울시 청렴계약제","필수",true);
+    add(C,"청렴계약 이행 서약서 징구 및 옴부즈만 조항 확인","지방계약법 §6의2 · 서울시 청렴계약제 운영 — 대표자 및 담당 공무원 서명 서약서 편철","필수",true);
     add(C,"국세·지방세 및 4대보험 완납증명서 확인","령 §25①각 호 수의계약은 생략 가능(제7호 가목 제외)","필수",true);
     add(C,"근로자권리보호 · 안전보건관리준수 서약서","협상 공고 시 3대 서약서 제출 의무","필수",d.rec==="nego");
     add(C,"협상 결과 반영 과업지시서 · 산출내역서 확인","협상 계약금액에 맞게 조정 후 계약부서 송부","필수",d.rec==="nego");
