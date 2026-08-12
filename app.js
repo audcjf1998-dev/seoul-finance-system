@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chkNone = $("chk-none");
   const optNone = $("opt-none");
   
-  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub", "opt-itaudit", "opt-mat"];
+  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub", "opt-itaudit", "opt-mat", "opt-mat-3ja", "opt-mat-mas", "opt-mat-self"];
 
   if (chkNone && optNone) {
     chkNone.addEventListener("change", () => {
@@ -228,9 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncFestival();
     syncIt();
+    syncMat();
   }
   window.syncOpts = syncOpts;
   window.syncFestival = syncFestival;
+  window.syncMat = syncMat;
 
   function syncFestival(){
     const negoEl = $("opt-nego");
@@ -258,6 +260,45 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
+  function syncMat(){
+    const matEl = $("opt-mat");
+    const on = matEl && matEl.querySelector("input").checked;
+    const subs = $("mat-subs");
+    if(subs) subs.style.display = on ? "" : "none";
+    if(!on){
+      ["opt-mat-3ja","opt-mat-mas","opt-mat-self"].forEach(id=>{
+        const sub = $(id);
+        if(sub){
+          const c = sub.querySelector("input");
+          if(c) c.checked = false;
+          sub.classList.remove("on");
+        }
+      });
+    }
+  }
+
+  const setupMatRadio = (targetId, otherIds) => {
+    const targetEl = $(targetId);
+    if (!targetEl) return;
+    const inp = targetEl.querySelector("input");
+    if (!inp) return;
+    inp.addEventListener("change", () => {
+      if (inp.checked) {
+        otherIds.forEach(id => {
+          const el = $(id);
+          if (el) {
+            const c = el.querySelector("input");
+            if (c) c.checked = false;
+            el.classList.remove("on");
+          }
+        });
+      }
+    });
+  };
+  setupMatRadio("opt-mat-3ja", ["opt-mat-mas", "opt-mat-self"]);
+  setupMatRadio("opt-mat-mas", ["opt-mat-3ja", "opt-mat-self"]);
+  setupMatRadio("opt-mat-self", ["opt-mat-3ja", "opt-mat-mas"]);
 
   const itMaintInp = $("opt-itmaint") ? $("opt-itmaint").querySelector("input") : null;
   if (itMaintInp) {
@@ -299,6 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const itChk = $("opt-it") ? $("opt-it").querySelector("input") : null;
   if(itChk) itChk.addEventListener("change", syncIt);
 
+  const matChk = $("opt-mat") ? $("opt-mat").querySelector("input") : null;
+  if(matChk) matChk.addEventListener("change", syncMat);
+
   syncOpts();
 
   /* ───── 판단 로직 ───── */
@@ -315,6 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
     const mat = $("opt-mat") ? $("opt-mat").querySelector("input").checked : false;
+    const mat3ja = mat && $("opt-mat-3ja") && $("opt-mat-3ja").querySelector("input").checked;
+    const matMas = mat && $("opt-mat-mas") && $("opt-mat-mas").querySelector("input").checked;
+    const matSelf = mat && $("opt-mat-self") && $("opt-mat-self").querySelector("input").checked;
 
     // SW 감리는 법령(전자정부법 §57, SW진흥법)상 협상에 의한 계약 필수 대상!
     const nego = rawNego || itAudit;
@@ -357,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
   }
 
   /* ───── 타임라인 ───── */
@@ -465,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const allOptIds = [
       "chk-none", "opt-special", "opt-severe", "opt-nego", "opt-festival",
-      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit", "opt-mat"
+      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit", "opt-mat", "opt-mat-3ja", "opt-mat-mas", "opt-mat-self"
     ];
     allOptIds.forEach(id => {
       const el = $(id);
@@ -601,19 +648,51 @@ document.addEventListener('DOMContentLoaded', () => {
       if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
     }
     if(d.mat){
-      h += '<div class="mcard rec" style="background:#f0fdf4;border:1.5px solid #86efac;margin-top:16px;">'
-        +'<b style="color:#166534;font-size:1.02rem;">📦 관급자재 (지급자재 · 관급물품) 반영 특화 실무 가이드 — 조달청 MAS · 제3자단가</b>'
-        +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
-        +'<li><b>조달청 MAS(다수공급자계약) · 제3자단가계약:</b> 관급자재 구매 시 나라장터 종합쇼핑몰(shopping.g2b.go.kr)에 등록된 제3자단가계약 물품 또는 MAS 물품으로 납품요구(구매)를 진행합니다.</li>'
-        +'<li><b>MAS 2단계 경쟁 대상 (필수 기준):</b> 1회 납품요구 금액이 아래 금액 이상일 경우 5개 이상 규격(계약상대자) 제안서 제출 요청 후 평가를 거쳐 업체를 선정해야 합니다.<br>'
-        +'&nbsp;&nbsp;• <b>중소기업자간 경쟁제품:</b> 1회 납품요구 금액 <b>1억원 이상</b> (단, 건설자재·가구류는 <b>4,000만원 이상</b>)<br>'
-        +'&nbsp;&nbsp;• <b>일반 물품 (중소기업 경쟁제품 외):</b> 1회 납품요구 금액 <b>5,000만원 이상</b></li>'
-        +'<li><b>일상감사 · 원가계약심사 면제:</b> 조달청 제3자단가계약 및 MAS 물품 구매는 원가검증이 완료되어 <b>원가심사 및 일상감사 대상에서 제외</b>됩니다 (단, 조달 수수료 납부 예산 확보 필요).</li>'
-        +'<li><b>금액 구분 (추정가격 vs 추정금액):</b> 수의·입찰 한도 판단(추정가격)은 <b>관급자재대를 제외</b>하고, 일상감사·원가심사·재정합의 대상 판단(추정금액)은 <b>관급자재비를 포함</b>하여 판단합니다.</li>'
-        +'<li><b>보증금 · 지연배상금 산정:</b> 계약보증금(10%)과 지연배상금(물품 0.8‰ 등)은 관급자재대를 제외한 <b>실제 계약금액(도급비)</b> 기준으로 산정합니다 (지방계약법 시행령 §51, §90).</li>'
-        +'<li><b>분리발주 의무 (중소기업 판로지원법 §12):</b> 공사 추정가격 40억원(전문 25억) 이상 사업 중 4천만원 이상의 중소기업자간 경쟁제품 자재는 관급자재 분리발주 의무를 준수해야 합니다.</li>'
-        +'<li><b>수불관리 및 반납:</b> 과업지시서에 관급자재 인도장소, 검수 절차, 관급자재 수불부 작성 및 완공/납품 후 남은 자재(잔재) 즉시 반납 조항을 명시하세요.</li>'
-        +'</ul></div>';
+      if(d.mat3ja){
+        h += '<div class="mcard rec" style="background:#f0fdf4;border:1.5px solid #86efac;margin-top:16px;">'
+          +'<b style="color:#166534;font-size:1.02rem;">📦 관급자재 — 조달청 제3자 단가계약 (단일 납품요구) 맞춤 가이드</b>'
+          +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
+          +'<li><b>구매 방식:</b> 나라장터 종합쇼핑몰(shopping.g2b.go.kr)에 등록된 제3자단가계약 물품을 검색 후 희망 규격·단가 품목 1개를 선택하여 <b>단일 납품요구(구매)</b>로 즉시 발주합니다.</li>'
+          +'<li><b>일상감사 · 원가심사 면제:</b> 조달청장이 사전 계약 체결한 제3자단가 물품은 원가검증이 완료되어 <b>원가심사 및 일상감사 대상에서 제외</b>됩니다 (단, 조달 수수료 납부 예산 반영).</li>'
+          +'<li><b>2단계경쟁 미대상:</b> 1회 납품요구 금액이 2단계경쟁 기준(중기 1억 미만 · 가구 4천만 미만 · 일반 5천만 미만) 미만이므로 5개사 제안서 요청 없이 단일 지정을 통해 즉시 구매 가능합니다.</li>'
+          +'<li><b>금액 구분 (추정가격 vs 추정금액):</b> 수의·입찰 한도 판단(추정가격)은 <b>관급자재대를 제외</b>하고, 일상감사·원가심사·재정합의 대상 판단(추정금액)은 <b>관급자재비를 포함</b>하여 판단합니다.</li>'
+          +'<li><b>보증금 · 지연배상금:</b> 계약보증금(10%)과 지연배상금은 관급자재대를 제외한 <b>실제 계약금액(도급비)</b> 기준으로 산정합니다 (시행령 §51, §90).</li>'
+          +'<li><b>수불관리 및 반납:</b> 과업지시서에 관급자재 인도장소, 검수 절차, 관급자재 수불부 작성 및 완공/납품 후 남은 자재(잔재) 즉시 반납 조항을 명시하세요.</li>'
+          +'</ul></div>';
+      } else if(d.matMas){
+        h += '<div class="mcard rec" style="background:#f0fdf4;border:1.5px solid #86efac;margin-top:16px;">'
+          +'<b style="color:#166534;font-size:1.02rem;">📦 관급자재 — 조달청 MAS 2단계 경쟁 (다수공급자계약) 맞춤 가이드</b>'
+          +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
+          +'<li><b>2단계경쟁 필수 대상:</b> 1회 납품요구 금액이 기준(중기 경쟁제품 1억원↑ / 건설자재·가구 4,000만원↑ / 일반 5,000만원↑) 이상이므로 <b>5개 이상 계약상대자(규격) 제안서 제출 요청 후 평가</b>를 거쳐 업체를 선정해야 합니다.</li>'
+          +'<li><b>진행 절차:</b> 종합쇼핑몰 2단계경쟁 접속 ➔ 5개사 제안요청서 전송 ➔ 5일 이상 제안서 접수 ➔ 제안서 평가(기본·종합·표준) ➔ 최저가/최고점수 납품요구 대상 결정 ➔ 납품요구 결재.</li>'
+          +'<li><b>일상감사 · 원가심사 면제:</b> 조달청 MAS 물품으로 <b>원가심사 및 일상감사는 면제</b>되나, 자체 제안서 평가위원회/평가 절차를 이행하고 조달 수수료 예산을 확보해야 합니다.</li>'
+          +'<li><b>금액 구분 (추정가격 vs 추정금액):</b> 수의·입찰 한도 판단(추정가격)은 <b>관급자재대를 제외</b>하고, 일상감사·원가심사·재정합의 대상 판단(추정금액)은 <b>관급자재비를 포함</b>하여 판단합니다.</li>'
+          +'<li><b>보증금 · 지연배상금:</b> 계약보증금(10%)과 지연배상금은 관급자재대를 제외한 <b>실제 계약금액(도급비)</b> 기준으로 산정합니다 (시행령 §51, §90).</li>'
+          +'</ul></div>';
+      } else if(d.matSelf){
+        h += '<div class="mcard rec" style="background:#fff7ed;border:1.5px solid #fed7aa;margin-top:16px;">'
+          +'<b style="color:#c2410c;font-size:1.02rem;">📦 관급자재 — 자체 발주 (자체 총액 입찰 · 수의계약) 맞춤 가이드</b>'
+          +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
+          +'<li><b>자체 구매 방식:</b> 조달청 종합쇼핑몰 미등록 물품 등 발주부서에서 <b>자체 총액 입찰 또는 수의계약</b>으로 분리발주 구매합니다.</li>'
+          +'<li><b>일상감사 & 원가계약심사 필수:</b> 자체 발주는 조달청 단가계약과 달리 관급자재비를 포함한 <b>총 추정금액 기준으로 일상감사 및 원가계약심사를 필수 의뢰</b>해야 합니다.</li>'
+          +'<li><b>분리발주 의무 (중소기업 판로지원법 §12):</b> 공사 추정가격 40억원(전문 25억) 이상 사업 중 4천만원 이상의 중소기업자간 경쟁제품 자재는 관급자재 분리발주 의무를 준수해야 합니다.</li>'
+          +'<li><b>수불관리 및 반납:</b> 과업지시서에 관급자재 인도장소, 검수 절차, 관급자재 수불부 작성 및 완공/납품 후 남은 자재(잔재) 즉시 반납 조항을 명시하세요.</li>'
+          +'</ul></div>';
+      } else {
+        h += '<div class="mcard rec" style="background:#f0fdf4;border:1.5px solid #86efac;margin-top:16px;">'
+          +'<b style="color:#166534;font-size:1.02rem;">📦 관급자재 (지급자재 · 관급물품) 반영 특화 실무 가이드 — 조달청 MAS · 제3자단가</b>'
+          +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
+          +'<li><b>조달청 MAS(다수공급자계약) · 제3자단가계약:</b> 관급자재 구매 시 나라장터 종합쇼핑몰(shopping.g2b.go.kr)에 등록된 제3자단가계약 물품 또는 MAS 물품으로 납품요구(구매)를 진행합니다.</li>'
+          +'<li><b>MAS 2단계 경쟁 대상 (필수 기준):</b> 1회 납품요구 금액이 아래 금액 이상일 경우 5개 이상 규격(계약상대자) 제안서 제출 요청 후 평가를 거쳐 업체를 선정해야 합니다.<br>'
+          +'&nbsp;&nbsp;• <b>중소기업자간 경쟁제품:</b> 1회 납품요구 금액 <b>1억원 이상</b> (단, 건설자재·가구류는 <b>4,000만원 이상</b>)<br>'
+          +'&nbsp;&nbsp;• <b>일반 물품 (중소기업 경쟁제품 외):</b> 1회 납품요구 금액 <b>5,000만원 이상</b></li>'
+          +'<li><b>일상감사 · 원가계약심사 면제:</b> 조달청 제3자단가계약 및 MAS 물품 구매는 원가검증이 완료되어 <b>원가심사 및 일상감사 대상에서 제외</b>됩니다 (단, 조달 수수료 납부 예산 확보 필요).</li>'
+          +'<li><b>금액 구분 (추정가격 vs 추정금액):</b> 수의·입찰 한도 판단(추정가격)은 <b>관급자재대를 제외</b>하고, 일상감사·원가심사·재정합의 대상 판단(추정금액)은 <b>관급자재비를 포함</b>하여 판단합니다.</li>'
+          +'<li><b>보증금 · 지연배상금 산정:</b> 계약보증금(10%)과 지연배상금(물품 0.8‰ 등)은 관급자재대를 제외한 <b>실제 계약금액(도급비)</b> 기준으로 산정합니다 (지방계약법 시행령 §51, §90).</li>'
+          +'<li><b>분리발주 의무 (중소기업 판로지원법 §12):</b> 공사 추정가격 40억원(전문 25억) 이상 사업 중 4천만원 이상의 중소기업자간 경쟁제품 자재는 관급자재 분리발주 의무를 준수해야 합니다.</li>'
+          +'<li><b>수불관리 및 반납:</b> 과업지시서에 관급자재 인도장소, 검수 절차, 관급자재 수불부 작성 및 완공/납품 후 남은 자재(잔재) 즉시 반납 조항을 명시하세요.</li>'
+          +'</ul></div>';
+      }
     }
     h += '</div>'; // End Left Main Card 2
 
@@ -740,10 +819,23 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"수의계약 배제 사유 확인","부정당업자 제재 중인 업체 등 (법 §31·령 §92) · 나라장터 제재정보 조회","필수",d.rec==="one"||d.rec==="two");
     add(P,"특례 대상 증빙 확보","장애인·여성기업 확인서 등 유효기간 확인","필수",d.special&&d.rec==="one");
     add(P,"중증장애인생산품 직접생산 확인","생산시설 지정 및 직접생산 여부","필수",d.severe);
-    add(P,"조달청 MAS (다수공급자계약) · 제3자단가계약 물품납품요구 검토","나라장터 종합쇼핑몰 계약물품 여부 확인 및 조달수수료 예산 반영","필수",d.mat);
-    add(P,"MAS 2단계 경쟁 대상 여부 및 기준 점검","중기 경쟁제품 1억↑(건설자재·가구 4천만↑) / 일반물품 5천만↑ 1회 납품요구 시 5개사 제안서 요청","필수",d.mat);
-    add(P,"관급자재 포함 추정금액 산정 및 심사 대상 확인","자체 발주 시 자재대 포함 총 추정금액으로 일상감사·원가심사 의뢰 (조달 3자단가·MAS는 심사 면제)","필수",d.mat);
-    add(P,"중소기업자간 경쟁제품 관급자재 분리발주 검토","4천만원 이상 자재 직접구매 대상 확인 (중소기업 판로지원법 §12)","필수",d.mat);
+    if(d.mat3ja){
+      add(P,"조달청 제3자 단가계약 물품 납품요구 검토","나라장터 종합쇼핑몰 계약물품 검색 및 단일 납품요구 수수료 예산 확보","필수",true);
+      add(P,"MAS 2단계경쟁 미대상 확인","중기 1억 미만 · 가구 4천만 미만 · 일반 5천만 미만 1회 납품요구 금액 확인","필수",true);
+      add(P,"일상감사 · 원가계약심사 면제 확인","조달청장이 가격검증 완료한 제3자단가계약 물품으로 심사 면제 대상 확인","필수",true);
+    } else if(d.matMas){
+      add(P,"조달청 MAS 2단계 경쟁 대상 기준 확인","중기 1억↑ · 가구 4천만↑ · 일반 5천만↑ 1회 납품요구 금액 확인","필수",true);
+      add(P,"MAS 2단계 경쟁 5개사 제안요청서 작성","나라장터 종합쇼핑몰 시스템을 통해 5개 이상 계약상대자 제안서 제출 요청","필수",true);
+      add(P,"일상감사 · 원가계약심사 면제 및 조달수수료 반영","MAS 계약물품 심사 면제 확인 · 조달수수료 예산 확보","필수",true);
+    } else if(d.matSelf){
+      add(P,"관급자재 자체 발주(총액입찰 · 수의계약) 세부계획 수립","종합쇼핑몰 미등록 물품 등 발주부서 자체 수의계약/경쟁입찰 집행계획 수립","필수",true);
+      add(P,"관급자재비 포함 총 추정금액 산정 및 일상감사·원가심사 의뢰","자체 발주는 관급자재비를 포함한 총 금액 기준 일상감사 및 원가계약심사 필수 의뢰","필수",true);
+      add(P,"중소기업자간 경쟁제품 관급자재 분리발주 검토","4천만원 이상 자재 직접구매 대상 확인 (중소기업 판로지원법 §12)","필수",true);
+    } else if(d.mat){
+      add(P,"조달청 MAS (다수공급자계약) · 제3자단가계약 물품납품요구 검토","나라장터 종합쇼핑몰 계약물품 여부 확인 및 조달수수료 예산 반영","필수",true);
+      add(P,"MAS 2단계 경쟁 대상 여부 및 기준 점검","중기 경쟁제품 1억↑(건설자재·가구 4천만↑) / 일반물품 5천만↑ 1회 납품요구 시 5개사 제안서 요청","필수",true);
+      add(P,"관급자재 포함 추정금액 산정 및 심사 대상 확인","자체 발주 시 자재대 포함 총 추정금액으로 일상감사·원가심사 의뢰 (조달 3자단가·MAS는 심사 면제)","필수",true);
+    }
     if(d.rec==="nego"){
       add(N,"입찰공고 게시 — 협상 ("+d.noticeDays+"일)","게시일·개찰일 제외 · 긴급·재공고 10일 · 1억 미만 신규사업은 15일","법정",true);
       add(N,"가격 투찰(나라장터) = 밀봉 가격제안서 금액 일치 확인","제안서·가격제안서는 발주부서에 직접 제출","필수",true);
@@ -770,7 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
       add(N,"견적서 징구 · 가격 적정성 검토","시장가격·과거 계약단가 비교","권장",true);
       add(N,"변경계약 한도 확인","계약금액 기준 소액 2,200만원 · 여성기업 등 5,500만원 초과 변경 불가 (불가피 시 부시장 보고)","필수",true);
     }
-    add(N,"MAS 2단계 경쟁 제안요청서 작성 및 5개사 제안 제출 요청","나라장터 종합쇼핑몰 2단계경쟁 평가기준(기본·종합·표준) 선택 후 제출 요청","필수",d.mat);
+    add(N,"MAS 2단계 경쟁 제안서 제출 접수 및 평가","종합쇼핑몰 2단계경쟁 제안서 접수(5일 이상) → 평가기준(기본·종합·표준) 심사 후 최종 업체 결정","필수",d.matMas||d.mat);
     add(C,"계약보증금 확인 — 약 "+won(Math.round(d.p*0.1)),d.p<=5e7?"계약금액 5천만원 이하 — 지급확약서로 면제 가능 (령 §53)":"계약금액의 10% 이상 (법 §15·령 §51) — 한시특례는 '26.6.30. 종료","필수",true);
     add(C,"계약보증금 산정 시 관급자재대 제외 확인","실제 계약금액(도급비) 기준 10% 이상 적용 (지방계약법 시행령 §51)","필수",d.mat);
     add(C,"과업지시서에 관급자재 인도장소 및 잔재 반납 규정 명시","인도장소 명시, 관급자재 수불부 작성 및 잔여 자재 반납 규정 작성","필수",d.mat);
@@ -2072,7 +2164,10 @@ document.addEventListener('DOMContentLoaded', () => {
         itMaint: $("opt-itmaint") ? $("opt-itmaint").querySelector("input").checked : false,
         itPub: $("opt-itpub") ? $("opt-itpub").querySelector("input").checked : false,
         itAudit: $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false,
-        mat: $("opt-mat") ? $("opt-mat").querySelector("input").checked : false
+        mat: $("opt-mat") ? $("opt-mat").querySelector("input").checked : false,
+        mat3ja: $("opt-mat-3ja") ? $("opt-mat-3ja").querySelector("input").checked : false,
+        matMas: $("opt-mat-mas") ? $("opt-mat-mas").querySelector("input").checked : false,
+        matSelf: $("opt-mat-self") ? $("opt-mat-self").querySelector("input").checked : false
       },
       currStage: CURR_STAGE,
       viewAllStages: VIEW_ALL_STAGES,
@@ -2179,6 +2274,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setChk("opt-itpub", opts.itPub);
       setChk("opt-itaudit", opts.itAudit);
       setChk("opt-mat", opts.mat);
+      setChk("opt-mat-3ja", opts.mat3ja);
+      setChk("opt-mat-mas", opts.matMas);
+      setChk("opt-mat-self", opts.matSelf);
     }
     if(typeof syncOpts === "function") syncOpts();
 
