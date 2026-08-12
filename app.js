@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chkNone = $("chk-none");
   const optNone = $("opt-none");
   
-  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub", "opt-itaudit"];
+  const specialIds = ["opt-special", "opt-severe", "opt-nego", "opt-festival", "opt-gam", "opt-it", "opt-itpub", "opt-itaudit", "opt-mat"];
 
   if (chkNone && optNone) {
     chkNone.addEventListener("change", () => {
@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
     const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
+    const mat = $("opt-mat") ? $("opt-mat").querySelector("input").checked : false;
 
     // SW 감리는 법령(전자정부법 §57, SW진흥법)상 협상에 의한 계약 필수 대상!
     const nego = rawNego || itAudit;
@@ -356,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree};
   }
 
   /* ───── 타임라인 ───── */
@@ -464,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const allOptIds = [
       "chk-none", "opt-special", "opt-severe", "opt-nego", "opt-festival",
-      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit"
+      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit", "opt-mat"
     ];
     allOptIds.forEach(id => {
       const el = $(id);
@@ -599,6 +600,16 @@ document.addEventListener('DOMContentLoaded', () => {
       h += '<div class="warnbox">🔍 수의계약 시 유의 — 금액 기준을 피하려는 <b>분리발주(쪼개기)는 금지</b>돼요(령 §77). 1인 견적은 동일업체와 실·국 연 4회 / 시 전체 연 9회까지, 변경계약도 수의 기준금액(계약금액 소액 2,200만원 · 여성기업 등 5,500만원) 안에서만 가능해요.</div>';
       if(d.rec==="one" && KIND==="service") h += '<div class="warnbox">♻️ 폐기물처리 · 재해예방기술지도 용역은 1인 수의 금액이라도 <b>전자공개 수의계약으로 의무발주</b> 대상이에요(시범사업 연장).</div>';
     }
+    if(d.mat){
+      h += '<div class="mcard rec" style="background:#f0fdf4;border:1.5px solid #86efac;margin-top:16px;">'
+        +'<b style="color:#166534;font-size:1.02rem;">📦 관급자재 (지급자재 · 관급물품) 반영 특화 실무 가이드</b>'
+        +'<ul style="font-size:0.88rem;color:#1e293b;margin:8px 0 0;padding-left:18px;line-height:1.8;">'
+        +'<li><b>금액 구분:</b> 수의·입찰 한도 판단(추정가격)은 <b>관급자재대를 제외</b>하며, 일상감사·원가계약심사·재정합의 대상 판단(추정금액)은 <b>관급자재비를 포함</b>합니다.</li>'
+        +'<li><b>보증금 · 지연배상금 산정:</b> 계약보증금(10%)과 지연배상금(물품 0.8‰, 용역 1.3‰ 등)은 관급자재대를 제외한 <b>실제 계약금액(도급비)</b> 기준으로 산정합니다 (지방계약법 시행령 §51, §90).</li>'
+        +'<li><b>분리발주 의무:</b> 공사 추정가격 40억원(전문 25억) 이상 사업 중 4천만원 이상의 중소기업자간 경쟁제품 자재는 관급자재로 직접 구매 분리발주 대상 여부를 확인해야 합니다 (중소기업 판로지원법 §12).</li>'
+        +'<li><b>자재 수불부 및 잔재 반납:</b> 과업지시서에 관급자재 인도장소, 검수 절차, 관급자재 수불부 작성 및 완공/납품 후 남은 자재(잔재) 즉시 반납 조항을 명시하세요.</li>'
+        +'</ul></div>';
+    }
     h += '</div>'; // End Left Main Card 2
 
     h += '</div>'; // End Left Column (result-col-main)
@@ -724,6 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"수의계약 배제 사유 확인","부정당업자 제재 중인 업체 등 (법 §31·령 §92) · 나라장터 제재정보 조회","필수",d.rec==="one"||d.rec==="two");
     add(P,"특례 대상 증빙 확보","장애인·여성기업 확인서 등 유효기간 확인","필수",d.special&&d.rec==="one");
     add(P,"중증장애인생산품 직접생산 확인","생산시설 지정 및 직접생산 여부","필수",d.severe);
+    add(P,"관급자재(지급자재) 포함 추정금액 산정 및 심사 대상 확인","관급자재비를 포함한 총 추정금액 기준으로 일상감사·원가심사 의뢰","필수",d.mat);
+    add(P,"중소기업자간 경쟁제품 관급자재 분리발주 검토","4천만원 이상 자재 직접구매 대상 확인 (중소기업 판로지원법 §12)","필수",d.mat);
     if(d.rec==="nego"){
       add(N,"입찰공고 게시 — 협상 ("+d.noticeDays+"일)","게시일·개찰일 제외 · 긴급·재공고 10일 · 1억 미만 신규사업은 15일","법정",true);
       add(N,"가격 투찰(나라장터) = 밀봉 가격제안서 금액 일치 확인","제안서·가격제안서는 발주부서에 직접 제출","필수",true);
@@ -751,6 +764,8 @@ document.addEventListener('DOMContentLoaded', () => {
       add(N,"변경계약 한도 확인","계약금액 기준 소액 2,200만원 · 여성기업 등 5,500만원 초과 변경 불가 (불가피 시 부시장 보고)","필수",true);
     }
     add(C,"계약보증금 확인 — 약 "+won(Math.round(d.p*0.1)),d.p<=5e7?"계약금액 5천만원 이하 — 지급확약서로 면제 가능 (령 §53)":"계약금액의 10% 이상 (법 §15·령 §51) — 한시특례는 '26.6.30. 종료","필수",true);
+    add(C,"계약보증금 산정 시 관급자재대 제외 확인","실제 계약금액(도급비) 기준 10% 이상 적용 (지방계약법 시행령 §51)","필수",d.mat);
+    add(C,"과업지시서에 관급자재 인도장소 및 잔재 반납 규정 명시","인도장소 명시, 관급자재 수불부 작성 및 잔여 자재 반납 규정 작성","필수",d.mat);
     add(C,"손해배상보증서 제출 확인","전기공사 · 소방시설공사·설계·감리·관리용역 · 건설기술용역 등 개별법상 의무 — 건설사업관리는 공사착공일~완공일 (건진법 §34·령 §50)","권장",KIND==="oc"||KIND==="service");
     add(C,"인지세 납부 확인 — "+(stampDuty(d.p)?won(stampDuty(d.p)):"비과세(1천만원 이하)"),"전자수입인지 · 공동 부담","필수",true);
     add(C,"도시철도공채 매입 확인","건설공사 도급 2천만원 이상 — 계약금액의 2%","필수",d.k.isC&&d.p>=2e7);
@@ -2048,7 +2063,8 @@ document.addEventListener('DOMContentLoaded', () => {
         itNew: $("opt-itnew") ? $("opt-itnew").querySelector("input").checked : false,
         itMaint: $("opt-itmaint") ? $("opt-itmaint").querySelector("input").checked : false,
         itPub: $("opt-itpub") ? $("opt-itpub").querySelector("input").checked : false,
-        itAudit: $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false
+        itAudit: $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false,
+        mat: $("opt-mat") ? $("opt-mat").querySelector("input").checked : false
       },
       currStage: CURR_STAGE,
       viewAllStages: VIEW_ALL_STAGES,
@@ -2154,6 +2170,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setChk("opt-itmaint", opts.itMaint);
       setChk("opt-itpub", opts.itPub);
       setChk("opt-itaudit", opts.itAudit);
+      setChk("opt-mat", opts.mat);
     }
     if(typeof syncOpts === "function") syncOpts();
 
