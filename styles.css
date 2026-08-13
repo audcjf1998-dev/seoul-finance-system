@@ -662,6 +662,33 @@ select:focus {
   line-height: 1.5;
 }
 
+.opt.disabled-opt {
+  opacity: 0.55;
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+}
+
+.opt.disabled-opt:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.opt.disabled-opt input {
+  cursor: not-allowed !important;
+}
+
+.badge-dis {
+  display: inline-block;
+  margin-left: 6px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
 /* ─────────────────── 버튼 (Buttons) ─────────────────── */
 .btn {
   background: linear-gradient(135deg, #2563eb, #1d4fc4);

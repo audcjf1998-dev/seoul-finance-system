@@ -27,8 +27,8 @@ function attachMoney(inp){
     inp.value = raw ? parseInt(raw,10).toLocaleString("ko-KR") : "";
     const hint = inp.id ? $(inp.id+"-kor") : null;
     if(hint) hint.textContent = raw ? "= "+korUnit(parseInt(raw,10)) : "";
-    if (inp.id === "price" && typeof window.autoRecommendMethod === "function") {
-      window.autoRecommendMethod();
+    if (inp.id === "price" && typeof window.updateOptionStates === "function") {
+      window.updateOptionStates();
     }
   });
 }
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
         syncOpts();
-        autoRecommendMethod();
+        updateOptionStates();
       });
     });
   }
@@ -216,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
     oc:{name:"그 밖의 공사", two:1.6e8, isC:true}
   };
 
-  /* ───── 계약 방식 (수의/입찰/협상/해당없음) 상호 배타적 단일 선택 제어 ───── */
+  /* ───── 계약 방식 (수의/입찰/협상) 상호 배타적 단일 선택 제어 ───── */
   const setupContractMethodRadio = () => {
-    const groupIds = ["opt-sui", "opt-bid", "opt-nego", "opt-none"];
+    const groupIds = ["opt-sui", "opt-bid", "opt-nego"];
     groupIds.forEach(id => {
       const el = $(id);
       if (!el) return;
@@ -250,64 +250,132 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   setupContractMethodRadio();
 
-  /* ───── 금액/종류 입력 시 자동 추천 및 자동 체크 ───── */
-  function autoRecommendMethod() {
+  /* ───── 옵션 가능 여부 및 금액별 자동 추천/동적 검증 (사용 불가 제어) ───── */
+  function updateOptionStates() {
     const p = num($("price"));
-    const badgeSui = $("badge-sui-rec");
-    const badgeBid = $("badge-bid-rec");
+    const k = KINFO[KIND];
 
-    const isNego = $("opt-nego") ? $("opt-nego").querySelector("input").checked : false;
-    const isNone = $("chk-none") ? $("chk-none").checked : false;
-
-    if (!p || p <= 0 || isNego || isNone) {
-      if (badgeSui) badgeSui.style.display = "none";
-      if (badgeBid) badgeBid.style.display = "none";
-      return;
-    }
-
-    // 수의계약 한도 판단
+    // 1. 수의계약 법정 소액 한도 계산
     let suiLimit = 5.5e7;
-    if (KIND === "gc") suiLimit = 2*E;
-    else if (KIND === "sc") suiLimit = 1*E;
-    else if (KIND === "oc") suiLimit = 8e7;
-    else suiLimit = 5.5e7;
+    let limitText = "5,500만원";
+    if (KIND === "gc") { suiLimit = 2*E; limitText = "2억원"; }
+    else if (KIND === "sc") { suiLimit = 1*E; limitText = "1억원"; }
+    else if (KIND === "oc") { suiLimit = 8e7; limitText = "8,000만원"; }
 
-    const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
-    const severe = $("opt-severe") ? $("opt-severe").querySelector("input").checked : false;
-
-    if (special && suiLimit < 5.5e7) suiLimit = 5.5e7;
+    const severe = $("opt-severe") ? ($("opt-severe").querySelector("input").checked && !k.isC) : false;
     if (severe) suiLimit = Infinity;
 
-    const optSui = $("opt-sui");
-    const optBid = $("opt-bid");
-    const chkSui = $("chk-sui");
-    const chkBid = $("chk-bid");
+    // (A) 수의계약 (opt-sui) 한도 초과 검증
+    const elSui = $("opt-sui");
+    const inpSui = $("chk-sui");
+    const badgeSuiRec = $("badge-sui-rec");
+    const badgeSuiDis = $("badge-sui-dis");
 
-    if (p <= suiLimit) {
-      if (chkSui) chkSui.checked = true;
-      if (chkBid) chkBid.checked = false;
-      if (optSui) optSui.classList.add("on");
-      if (optBid) optBid.classList.remove("on");
+    const suiDisabled = (p > 0 && p > suiLimit);
 
-      if (badgeSui) badgeSui.style.display = "inline-block";
-      if (badgeBid) badgeBid.style.display = "none";
+    if (suiDisabled) {
+      if (inpSui) { inpSui.checked = false; inpSui.disabled = true; }
+      if (elSui) { elSui.classList.remove("on"); elSui.classList.add("disabled-opt"); }
+      if (badgeSuiRec) badgeSuiRec.style.display = "none";
+      if (badgeSuiDis) {
+        badgeSuiDis.textContent = `[사용 불가: 수의 한도(${limitText}) 초과]`;
+        badgeSuiDis.style.display = "inline-block";
+      }
     } else {
-      if (chkBid) chkBid.checked = true;
-      if (chkSui) chkSui.checked = false;
-      if (optBid) optBid.classList.add("on");
-      if (optSui) optSui.classList.remove("on");
+      if (inpSui) inpSui.disabled = false;
+      if (elSui) elSui.classList.remove("disabled-opt");
+      if (badgeSuiDis) badgeSuiDis.style.display = "none";
+    }
 
-      if (badgeBid) badgeBid.style.display = "inline-block";
-      if (badgeSui) badgeSui.style.display = "none";
+    // (B) 특례 기업 (opt-special) 한도 초과 검증 (5,500만원 초과 불가)
+    const elSpecial = $("opt-special");
+    const inpSpecial = elSpecial ? elSpecial.querySelector("input") : null;
+    const badgeSpecialDis = $("badge-special-dis");
+
+    const specialDisabled = (p > 0 && p > 5.5e7);
+
+    if (specialDisabled) {
+      if (inpSpecial) { inpSpecial.checked = false; inpSpecial.disabled = true; }
+      if (elSpecial) { elSpecial.classList.remove("on"); elSpecial.classList.add("disabled-opt"); }
+      if (badgeSpecialDis) {
+        badgeSpecialDis.textContent = "[사용 불가: 특례 한도(5.5천만원) 초과]";
+        badgeSpecialDis.style.display = "inline-block";
+      }
+    } else {
+      if (inpSpecial) inpSpecial.disabled = false;
+      if (elSpecial) elSpecial.classList.remove("disabled-opt");
+      if (badgeSpecialDis) badgeSpecialDis.style.display = "none";
+    }
+
+    // (C) 협상에 의한 계약 (opt-nego) 공사 계약 적용 불가 검증
+    const elNego = $("opt-nego");
+    const inpNego = elNego ? elNego.querySelector("input") : null;
+    const badgeNegoDis = $("badge-nego-dis");
+
+    const negoDisabled = k.isC;
+
+    if (negoDisabled) {
+      if (inpNego) { inpNego.checked = false; inpNego.disabled = true; }
+      if (elNego) { elNego.classList.remove("on"); elNego.classList.add("disabled-opt"); }
+      if (badgeNegoDis) {
+        badgeNegoDis.textContent = "[사용 불가: 공사 계약 적용 불가]";
+        badgeNegoDis.style.display = "inline-block";
+      }
+    } else {
+      if (inpNego) inpNego.disabled = false;
+      if (elNego) elNego.classList.remove("disabled-opt");
+      if (badgeNegoDis) badgeNegoDis.style.display = "none";
+    }
+
+    // (D) 금액 기반 자동 추천 로직 (금액이 있을 때만 동작)
+    const badgeBidRec = $("badge-bid-rec");
+    const elBid = $("opt-bid");
+    const inpBid = $("chk-bid");
+
+    if (!p || p <= 0) {
+      // 금액 미입력(또는 0원)일 때는 어떠한 버튼도 자동 체크하지 않고 초기 해제 상태 유지
+      if (inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
+      if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
+      if (badgeSuiRec) badgeSuiRec.style.display = "none";
+      if (badgeBidRec) badgeBidRec.style.display = "none";
+    } else {
+      const isNegoChecked = inpNego ? inpNego.checked : false;
+
+      if (isNegoChecked) {
+        if (badgeSuiRec) badgeSuiRec.style.display = "none";
+        if (badgeBidRec) badgeBidRec.style.display = "none";
+      } else if (p <= suiLimit) {
+        if (inpSui && !inpSui.disabled) {
+          inpSui.checked = true;
+          if (elSui) elSui.classList.add("on");
+        }
+        if (inpBid) {
+          inpBid.checked = false;
+          if (elBid) elBid.classList.remove("on");
+        }
+        if (badgeSuiRec) badgeSuiRec.style.display = "inline-block";
+        if (badgeBidRec) badgeBidRec.style.display = "none";
+      } else {
+        if (inpSui) {
+          inpSui.checked = false;
+          if (elSui) elSui.classList.remove("on");
+        }
+        if (inpBid) {
+          inpBid.checked = true;
+          if (elBid) elBid.classList.add("on");
+        }
+        if (badgeBidRec) badgeBidRec.style.display = "inline-block";
+        if (badgeSuiRec) badgeSuiRec.style.display = "none";
+      }
     }
   }
-  window.autoRecommendMethod = autoRecommendMethod;
+  window.updateOptionStates = updateOptionStates;
 
-  ["opt-special", "opt-severe"].forEach(id => {
+  ["opt-special", "opt-severe", "opt-nego"].forEach(id => {
     const el = $(id);
     if (el) {
       const inp = el.querySelector("input");
-      if (inp) inp.addEventListener("change", autoRecommendMethod);
+      if (inp) inp.addEventListener("change", updateOptionStates);
     }
   });
 
@@ -617,17 +685,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const allOptIds = [
-      "chk-none", "opt-special", "opt-severe", "opt-nego", "opt-festival",
+      "opt-sui", "opt-bid", "opt-special", "opt-severe", "opt-nego", "opt-festival",
       "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit", "opt-mat", "opt-mat-3ja", "opt-mat-mas", "opt-mat-self"
     ];
     allOptIds.forEach(id => {
       const el = $(id);
       if(el) {
         const input = el.querySelector("input") || (el.tagName === "INPUT" ? el : null);
-        if(input) input.checked = false;
+        if(input) { input.checked = false; input.disabled = false; }
         el.classList.remove("on");
+        el.classList.remove("disabled-opt");
       }
     });
+    if (typeof window.updateOptionStates === "function") window.updateOptionStates();
 
     const festivalOpt = $("opt-festival");
     if(festivalOpt) festivalOpt.style.display = "none";
@@ -2262,7 +2332,6 @@ document.addEventListener('DOMContentLoaded', () => {
       kind: KIND,
       price: p,
       options: {
-        none: $("chk-none") ? $("chk-none").checked : false,
         special: $("opt-special") ? $("opt-special").querySelector("input").checked : false,
         severe: $("opt-severe") ? $("opt-severe").querySelector("input").checked : false,
         nego: $("opt-nego") ? $("opt-nego").querySelector("input").checked : false,
@@ -2371,7 +2440,6 @@ document.addEventListener('DOMContentLoaded', () => {
           el.classList.toggle("on", !!val);
         }
       };
-      setChk("chk-none", opts.none);
       setChk("opt-special", opts.special);
       setChk("opt-severe", opts.severe);
       setChk("opt-nego", opts.nego);
@@ -2388,6 +2456,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setChk("opt-mat-self", opts.matSelf);
     }
     if(typeof syncOpts === "function") syncOpts();
+    if(typeof updateOptionStates === "function") updateOptionStates();
 
     if (state.evalCriteria && Array.isArray(state.evalCriteria)) {
       CRITERIA_LIST = state.evalCriteria;
@@ -2426,4 +2495,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   } catch(e) {}
+
+  // 초기 상태 검증 (금액 0/빈값 시 수의계약 자동체크 방지 및 사용불가 처리)
+  if (typeof updateOptionStates === "function") updateOptionStates();
 });
