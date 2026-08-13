@@ -464,7 +464,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.updateOptionStates = updateOptionStates;
 
-  ["opt-special", "opt-severe", "opt-nego"].forEach(id => {
+  function syncGam() {
+    const gamInp = $("opt-gam") ? $("opt-gam").querySelector("input") : null;
+    const gamSubs = $("gam-subs");
+    if (gamSubs) {
+      const isGamChecked = gamInp && gamInp.checked && KIND === "service";
+      gamSubs.style.display = isGamChecked ? "block" : "none";
+      if (!isGamChecked) {
+        const lcInp = $("opt-gam-legal-cost") ? $("opt-gam-legal-cost").querySelector("input") : null;
+        if (lcInp) lcInp.checked = false;
+        if ($("opt-gam-legal-cost")) $("opt-gam-legal-cost").classList.remove("on");
+      }
+    }
+  }
+  window.syncGam = syncGam;
+
+  const gamChk = $("opt-gam") ? $("opt-gam").querySelector("input") : null;
+  if (gamChk) gamChk.addEventListener("change", syncGam);
+
+  ["opt-special", "opt-severe", "opt-nego", "opt-gam-legal-cost", "opt-disaster", "opt-legal-exempt"].forEach(id => {
     const el = $(id);
     if (el) {
       const inp = el.querySelector("input");
@@ -486,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
       g.style.display = (KIND==="service") ? "" : "none";
       if(KIND!=="service"){ const gc = g.querySelector("input"); if(gc) gc.checked = false; g.classList.remove("on"); }
     }
+    syncGam();
     const m = $("opt-mat");
     if(m) {
       const isGoods = (KIND === "goods");
@@ -624,6 +643,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const itPub = it && $("opt-itpub") && $("opt-itpub").querySelector("input").checked;
     const itAudit = it && $("opt-itaudit") && $("opt-itaudit").querySelector("input").checked;
     const gam = KIND==="service" && $("opt-gam") && $("opt-gam").querySelector("input").checked;
+    const gamLegalCost = gam && $("opt-gam-legal-cost") && $("opt-gam-legal-cost").querySelector("input").checked;
+    const disaster = $("opt-disaster") ? $("opt-disaster").querySelector("input").checked : false;
+    const legalExempt = $("opt-legal-exempt") ? $("opt-legal-exempt").querySelector("input").checked : false;
+
     const mat = $("opt-mat") ? $("opt-mat").querySelector("input").checked : false;
     const mat3ja = mat && $("opt-mat-3ja") && $("opt-mat-3ja").querySelector("input").checked;
     const matMas = mat && $("opt-mat-mas") && $("opt-mat-mas").querySelector("input").checked;
@@ -640,26 +663,45 @@ document.addEventListener('DOMContentLoaded', () => {
                            : (k.isC ? (p<10*E?7 : p<50*E?15 : 30) : 7);
     const quoteRate = k.isC ? "89.745%" : (p<=2e7 ? "90%" : "88%");
 
-    /* 사전절차 */
-    const audit = (()=>{
-      if(nego) return festival ? (p>=1e8 ? "축제·행사 협상 계약 1억원 이상" : null)
-                               : (p>=5*E ? "협상에 의한 계약 5억원 이상" : null);
-      if(KIND==="gc" && p>=20*E) return "종합공사 20억원 이상";
-      if((KIND==="sc"||KIND==="oc") && p>=10*E) return "공사(종합 외) 10억원 이상";
-      if(KIND==="service" && p>=10*E) return "용역 10억원 이상 (협상계약은 5억↑)";
-      if(KIND==="goods" && p>=5*E) return "물품 5억원 이상 (조달청 제3자단가·다수공급자계약 제외)";
-      if(rec==="one" && p>2e7) return (special && p<=5e7) ? null : "1인 견적 수의계약 2천만원 초과";
+    /* 사전절차 면제 / 제외 판정 */
+    const costExemptReason = (()=>{
+      if (legalExempt) return "법정 의무 경비·인건비·공공요금 ➔ 원가계약심사 면제 (서울시 계약심사 규칙 §3)";
+      if (disaster) return "재난복구·긴급구호 사업 ➔ 계약심사 면제 (사후통보 대체)";
+      if (mat3ja) return "조달청 제3자 단가계약 물품 ➔ 원가계약심사 면제 (서울시 계약심사 규칙 §3)";
+      if (severe) return "중증장애인생산품 직접 구매 ➔ 원가계약심사 면제 (특별법 §7)";
+      if (gamLegalCost) return "법정 대가기준(엔지니어링·건설기술 대가요율) 직접 적용 기술용역 ➔ 원가계약심사 제외 (서울시 계약심사 규칙 §3)";
+      if (p > 0 && p <= 2e7) return "추정가격 2,000만원 이하 소액 ➔ 원가계약심사 면제";
       return null;
     })();
 
     const cost = (()=>{
-      if(k.isC && p>=3*E) return "공사 — 공종에 따라 3억(조경·전기·통신·설비 등) 또는 5억(토목·건축) 이상";
-      if(KIND==="service" && p>=2*E) return "용역 2억원 이상";
-      if(KIND==="goods" && p>=2e7) return "물품 2천만원 이상";
+      if (costExemptReason) return null; // 면제 대상 시 원가심사 의뢰 대상 제외
+      if (k.isC && p >= 3*E) return "공사 — 공종에 따라 3억원(전문·전기·통신 등) 또는 5억원(종합) 이상";
+      if (KIND === "service" && p >= 2*E) return "용역 2억원 이상 (※ 법정 대가기준 직접 적용 기술용역은 심사 제외)";
+      if (KIND === "goods" && p >= 2e7) return "물품 구매 2,000만원 이상 (※ 조달청 3자단가 제외)";
       return null;
     })();
 
-    const spec = ((rec==="bid"||nego) && p>=5e7)
+    const auditExemptReason = (()=>{
+      if (legalExempt) return "법정 의무 경비·인건비·공공요금 ➔ 일상감사 면제 (서울시 일상감사 세칙 §4)";
+      if (disaster) return "긴급 재난복구 사업 ➔ 일상감사 사전절차 면제 (사후통보 대체)";
+      if (mat3ja) return "조달청 제3자 단가계약 물품 ➔ 일상감사 면제 (서울시 일상감사 세칙 §4)";
+      return null;
+    })();
+
+    const audit = (()=>{
+      if (auditExemptReason) return null;
+      if (nego) return festival ? (p >= 1e8 ? "축제·행사 협상 계약 1억원 이상" : null)
+                               : (p >= 5*E ? "협상에 의한 계약 5억원 이상" : null);
+      if (KIND === "gc" && p >= 20*E) return "종합공사 20억원 이상";
+      if ((KIND === "sc" || KIND === "oc") && p >= 10*E) return "공사(종합 외) 10억원 이상";
+      if (KIND === "service" && p >= 10*E) return "용역 10억원 이상 (협상계약은 5억↑)";
+      if (KIND === "goods" && p >= 5*E) return "물품 5억원 이상 (조달청 제3자단가 제외)";
+      if (rec === "one" && p > 2e7) return (special && p <= 5e7) ? null : "1인 견적 수의계약 2천만원 초과";
+      return null;
+    })();
+
+    const spec = ((rec==="bid"||nego) && p>=5e7 && !mat3ja && !disaster)
       ? "입찰 대상 5천만원 이상 — 나라장터 사전규격 공개"+(nego?" (신규사업은 금액 무관)":"") : null;
 
     const agree = (()=>{
@@ -670,14 +712,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
+    const ombudsmanExemptReason = (()=>{
+      if (rec === "one" || severe || mat3ja) return "1인 수의계약 및 3자단가계약 ➔ 시민감사옴부즈만 입회 면제";
+      return null;
+    })();
+
     const ombudsman = (()=>{
+      if (ombudsmanExemptReason) return null;
       if (k.isC && p >= 30*E) return "공사 30억원 이상 — 제안서/입찰 평가위 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
       if (KIND === "service" && p >= 5*E) return "용역 5억원 이상 — 제안서 평가위원회 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
       if (KIND === "goods" && p >= 1*E) return "물품 구매 1억원 이상 — 제안서/입찰 평가위원회 개최 7일 전 시민감사옴부즈만 입회·감시 요청";
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,cost,spec,agree,ombudsman};
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,gamLegalCost,disaster,legalExempt,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,auditExemptReason,cost,costExemptReason,spec,agree,ombudsman,ombudsmanExemptReason};
   }
 
   /* ───── 타임라인 ───── */
@@ -785,7 +833,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const allOptIds = [
       "opt-sui", "opt-bid", "opt-special", "opt-severe", "opt-nego", "opt-festival",
-      "opt-gam", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit", "opt-mat", "opt-mat-3ja", "opt-mat-mas", "opt-mat-self"
+      "opt-gam", "opt-gam-legal-cost", "opt-it", "opt-itnew", "opt-itmaint", "opt-itpub", "opt-itaudit",
+      "opt-mat", "opt-mat-3ja", "opt-mat-mas", "opt-mat-self", "opt-disaster", "opt-legal-exempt"
     ];
     allOptIds.forEach(id => {
       const el = $(id);
@@ -890,8 +939,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. 사전 확인 절차 카드
     h += '<div class="card" style="margin-top:20px;">'
-      +'<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 필수 절차만 안내해 드려요</span></h3>';
-    const pres = [["일상감사",d.audit],["원가(계약)심사",d.cost],["사전규격 공개",d.spec],["재정합의 (계약의뢰 시)",d.agree],["시민감사옴부즈만 입회·감시 (청렴계약)",d.ombudsman]];
+      +'<h3>📋 계약의뢰 시 사전 확인 절차 <span style="font-weight:400;font-size:.8rem;color:var(--mut)">— 필수 절차 및 면제 사유 안내</span></h3>';
+
+    // 법정 면제 / 제외 요약 박스
+    if (d.costExemptReason || d.auditExemptReason || d.ombudsmanExemptReason) {
+      h += '<div class="mcard rec" style="background:#f0fdf4; border:1.5px solid #86efac; margin-bottom:16px;">'
+        + '<b style="color:#166534; font-size:1.02rem;">🛡️ 법정 면제 / 사전절차 제외 안내</b>'
+        + '<ul style="font-size:0.88rem; color:#1e293b; margin:8px 0 0; padding-left:18px; line-height:1.8;">';
+      if (d.costExemptReason) h += '<li><b>원가(계약)심사 면제:</b> ' + d.costExemptReason + '</li>';
+      if (d.auditExemptReason) h += '<li><b>일상감사 면제:</b> ' + d.auditExemptReason + '</li>';
+      if (d.ombudsmanExemptReason) h += '<li><b>시민감사옴부즈만 면제:</b> ' + d.ombudsmanExemptReason + '</li>';
+      h += '</ul></div>';
+    }
+
+    const pres = [
+      ["일상감사", d.audit ? d.audit : (d.auditExemptReason ? "✅ [면제/제외] " + d.auditExemptReason : null)],
+      ["원가(계약)심사", d.cost ? d.cost : (d.costExemptReason ? "✅ [면제/제외] " + d.costExemptReason : null)],
+      ["사전규격 공개", d.spec],
+      ["재정합의 (계약의뢰 시)", d.agree],
+      ["시민감사옴부즈만 입회·감시 (청렴계약)", d.ombudsman ? d.ombudsman : (d.ombudsmanExemptReason ? "✅ [면제/제외] " + d.ombudsmanExemptReason : null)]
+    ];
     if(d.gam){
       pres.push(["기술용역 타당성 심사 (건설기술)", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
         : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"

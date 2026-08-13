@@ -257,12 +257,21 @@
         <label class="opt" id="opt-festival" style="display:none;"><input type="checkbox">
           <span><span class="t">축제·행사성 사업</span><br>
           <span class="s">재난안전법상 안전관리계획 수립 대상 행사 — 일상감사 기준이 1억원 이상으로 낮아져요</span></span></label>
+
         <label class="opt" id="opt-gam"><input type="checkbox">
           <span><span class="t">건설기술용역 · 공사감리 (건설사업관리 · 설계 · 안전진단)</span><br>
           <span class="s">건설기술진흥법 적용 — 기술용역 타당성 심사, 건설기술심의(PQ·발주심의), 기술용역 낙찰하한율 절차를 안내해요</span></span></label>
+
+        <div id="gam-subs" style="display:none;margin-left:24px;margin-top:6px;margin-bottom:8px;">
+          <label class="opt" id="opt-gam-legal-cost" style="border:1.5px solid #a7f3d0; background:#f0fdf4;"><input type="checkbox">
+            <span><span class="t">📐 법정 대가기준(엔지니어링·건설기술 대가요율) 직접 적용 용역 (원가심사 제외)</span><br>
+            <span class="s">엔지니어링산업진흥법 §31 또는 건설기술진흥법 §37 등 법정 대가기준에 따라 직접 요율/적산 산정한 기술용역 ➔ <b>서울특별시 계약심사 규칙 제3조에 따라 원가계약심사 대상에서 제외(면제)</b>됩니다.</span></span></label>
+        </div>
+
         <label class="opt" id="opt-it"><input type="checkbox">
           <span><span class="t">정보화사업 · SW 감리 (정보시스템 구축 · SW 개발 등)</span><br>
           <span class="s">SW 개발·구축, 웹사이트·모바일앱, ISP, SW 감리 — 예산타당성·과업심의·사전협의·정보시스템 감리 절차를 안내해요</span></span></label>
+
         <div id="it-subs" style="display:none;margin-left:24px">
           <label class="opt" id="opt-itnew"><input type="checkbox">
             <span><span class="t">신규 사업</span><br>
@@ -277,6 +286,18 @@
             <span><span class="t">정보시스템 감리 (SW 감리) 사업</span><br>
             <span class="s">전자정부법 §57 — 5억원 이상 구축(대국민·공동이용은 1억원 이상) 감리 의무, 20억원 미만 2단계 감리 가능</span></span></label>
         </div>
+      </div>
+
+      <!-- ⑤ 법정 면제 · 예외 조건 선택 (선택) -->
+      <div class="field">
+        <label>⑤ 법정 면제 · 예외 조건 선택 <span style="font-weight:600; color:#10b981;">(해당 시 일상감사 · 원가심사 사전절차 면제)</span></label>
+        <label class="opt" id="opt-disaster" style="border:1.5px solid #fed7aa; background:#fff7ed;"><input type="checkbox">
+          <span><span class="t">🚨 긴급 재난복구 · 긴급구호 · 긴급 안전조치 사업 (감사 · 심사 면제)</span><br>
+          <span class="s">「재난 및 안전관리 기본법」에 따른 긴급 재난복구 사업 ➔ 사전 일상감사 및 원가계약심사가 <b>면제</b>되며 사후 통보로 대체됩니다.</span></span></label>
+
+        <label class="opt" id="opt-legal-exempt" style="border:1.5px solid #cbd5e1; background:#f8fafc;"><input type="checkbox">
+          <span><span class="t">⚖️ 법정 의무 경비 및 공공요금 · 인건비 (감사 · 심사 면제)</span><br>
+          <span class="s">법정 부담금, 공공요금, 인건비 등 금액이 확정된 법정 경비 집행 ➔ 일상감사 및 원가계약심사 대상에서 <b>제외</b>됩니다.</span></span></label>
       </div>
     </div>
   </div>
