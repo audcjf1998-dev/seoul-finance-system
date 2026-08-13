@@ -953,34 +953,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const pres = [
-      ["일상감사", d.audit ? d.audit : (d.auditExemptReason ? "✅ [면제/제외] " + d.auditExemptReason : null)],
-      ["원가(계약)심사", d.cost ? d.cost : (d.costExemptReason ? "✅ [면제/제외] " + d.costExemptReason : null)],
-      ["사전규격 공개", d.spec],
-      ["재정합의 (계약의뢰 시)", d.agree],
-      ["시민감사옴부즈만 입회·감시 (청렴계약)", d.ombudsman ? d.ombudsman : (d.ombudsmanExemptReason ? "✅ [면제/제외] " + d.ombudsmanExemptReason : null)]
+      {
+        n: "일상감사",
+        v: d.audit,
+        ex: !d.audit && !!d.auditExemptReason,
+        r: d.auditExemptReason
+      },
+      {
+        n: "원가(계약)심사",
+        v: d.cost,
+        ex: !d.cost && !!d.costExemptReason,
+        r: d.costExemptReason
+      },
+      {
+        n: "사전규격 공개",
+        v: d.spec,
+        ex: false,
+        r: null
+      },
+      {
+        n: "재정합의 (계약의뢰 시)",
+        v: d.agree,
+        ex: false,
+        r: null
+      },
+      {
+        n: "시민감사옴부즈만 입회·감시 (청렴계약)",
+        v: d.ombudsman,
+        ex: !d.ombudsman && !!d.ombudsmanExemptReason,
+        r: d.ombudsmanExemptReason
+      }
     ];
+
     if(d.gam){
-      pres.push(["기술용역 타당성 심사 (건설기술)", d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
-        : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
-        : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null]);
-      pres.push(["용역발주심의 (건설기술심의)", d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
-        : d.p>=1*E ? "전기·기계·조경 1억↑ 대상 (토목·건축은 2억↑)" : null]);
-      pres.push(["사업수행능력(PQ) 세부기준 심의", d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null]);
+      pres.push({
+        n: "기술용역 타당성 심사 (건설기술)",
+        v: d.p>=1e8 ? "전 분야 대상 — 기술심사담당관 (예산 반영 전, 당해연도는 발주 전)"
+          : d.p>=5e7 ? "건축 5천만↑ · 기계·전기·조경 3천만↑ 대상 (토목·도시계획은 1억↑)"
+          : d.p>=3e7 ? "기계·전기·조경 등 3천만↑ 대상 (건축 5천만 · 토목 1억 기준)" : null,
+        ex: false
+      });
+      pres.push({
+        n: "용역발주심의 (건설기술심의)",
+        v: d.p>=2*E ? "전 분야 대상 — 발주 타당성·과업 적정성"
+          : d.p>=1*E ? "전기·기계·조경 1억↑ 대상 (토목·건축은 2억↑)" : null,
+        ex: false
+      });
+      pres.push({
+        n: "사업수행능력(PQ) 세부기준 심의",
+        v: d.p>=2.3*E ? "설계·건설사업관리 2.3억↑ — 시 표준기준과 동일 시 서면협의 대체" : null,
+        ex: false
+      });
     }
+
     if(d.it){
-      pres.push(["과업심의위원회 (SW)", "모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)"]);
-      pres.push(["행안부 사전협의 (IRM)", (d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"유지보수·계속사업 2억원 이상 — 발주 40일 전 신청"):null]);
-      pres.push(["정보통신 보안성 검토", (!d.itAudit && !d.itMaint) ? "정보시스템 신·증설 및 구축·개발 사업 대상 — 정보보안과 (유지보수 및 단순 SW 감리 제외)" : null]);
-      pres.push(["정보시스템 감리 (SW 감리)", (!d.itMaint && (d.itAudit || d.p>=5*E || (d.itPub && d.p>=1*E)))
-        ? (d.p>=20*E ? "전자정부법 §57 — 20억 이상 SW 구축: 3단계 감리(착수·중간·종료) 의무"
-        : (d.p>=5*E || (d.itPub && d.p>=1*E)) ? "전자정부법 §57 — 5억 이상(대국민 1억 이상) 의무 감리 · 20억 미만·6개월 미만 2단계 감리 가능" : "SW 감리 대상 여부 검토") : null]);
-      pres.push(["SW사업 영향평가", (!d.itAudit && !d.itMaint) ? "자체평가 후 사전규격 공개 시 결과 공개" : null]);
-      pres.push(["예산타당성 심사", (d.itNew && !d.itMaint) ? "신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인" : null]);
+      pres.push({ n: "과업심의위원회 (SW)", v: "모든 SW사업 — 과업내용·기간 확정 (1억 이하 간소화)", ex: false });
+      pres.push({ n: "행안부 사전협의 (IRM)", v: (d.itNew||d.p>=2*E)?(d.itNew?"신규 정보화사업 — 발주 40일 전 신청":"유지보수·계속사업 2억원 이상 — 발주 40일 전 신청"):null, ex: false });
+      pres.push({ n: "정보통신 보안성 검토", v: (!d.itAudit && !d.itMaint) ? "정보시스템 신·증설 및 구축·개발 사업 대상 — 정보보안과 (유지보수 및 단순 SW 감리 제외)" : null, ex: false });
+      pres.push({
+        n: "정보시스템 감리 (SW 감리)",
+        v: (!d.itMaint && (d.itAudit || d.p>=5*E || (d.itPub && d.p>=1*E)))
+          ? (d.p>=20*E ? "전자정부법 §57 — 20억 이상 SW 구축: 3단계 감리(착수·중간·종료) 의무"
+          : (d.p>=5*E || (d.itPub && d.p>=1*E)) ? "전자정부법 §57 — 5억 이상(대국민 1억 이상) 의무 감리 · 20억 미만·6개월 미만 2단계 감리 가능" : "SW 감리 대상 여부 검토") : null,
+        ex: false
+      });
+      pres.push({ n: "SW사업 영향평가", v: (!d.itAudit && !d.itMaint) ? "자체평가 후 사전규격 공개 시 결과 공개" : null, ex: false });
+      pres.push({ n: "예산타당성 심사", v: (d.itNew && !d.itMaint) ? "신규 구축·SW개발 — 전년도 예산편성 단계 이행 확인" : null, ex: false });
     }
-    const hit = pres.filter(x=>x[1]);
+
+    const hit = pres.filter(x => x.v || x.ex);
     if(hit.length){
       h += '<div class="pre">';
-      hit.forEach(([n,v])=>{ h += '<div class="p on"><div class="n">⚠️ '+n+'</div><div class="y">'+v+'</div></div>'; });
+      hit.forEach(x => {
+        if (x.ex) {
+          h += '<div class="p" style="background:#f0fdf4; border:1.5px solid #86efac;">'
+            + '<div class="n" style="color:#166534; font-weight:700;">✅ ' + x.n + ' <span style="font-size:0.78rem; font-weight:700; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:12px; margin-left:6px;">[면제 / 심사 제외]</span></div>'
+            + '<div class="y" style="color:#166534; font-weight:600; margin-top:6px; background:#ffffff; padding:8px 12px; border-radius:8px; border:1px solid #bbf7d0;">💡 <b>면제 사유:</b> ' + x.r + '</div>'
+            + '</div>';
+        } else {
+          h += '<div class="p on"><div class="n">⚠️ ' + x.n + '</div><div class="y">' + x.v + '</div></div>';
+        }
+      });
       h += '</div>';
     } else {
       h += '<div class="verdict"><span class="big">🎈</span><div><b>필수 사전절차 대상이 없어요</b><small>이 금액·조건에서는 일상감사 · 원가심사 · 재정합의 등 대상이 아니에요</small></div></div>';
