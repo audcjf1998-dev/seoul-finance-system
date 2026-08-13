@@ -409,18 +409,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
       }
     } else {
+      // 1인 수의 한도 기준: 기본 2,000만원 (VAT 2,200만원) / 특례기업 5,000만원 (VAT 5,500만원)
+      const isOneLimitOk = p <= 2.2e7 || (isSubChecked && p <= 5.5e7);
+
       if (p <= suiLimit) {
-        if (inpSui && !inpSui.disabled) {
-          inpSui.checked = true;
-          if (elSui) elSui.classList.add("on");
+        if (isOneLimitOk) {
+          // 1인 견적 수의계약 한도 이내 (2천만원 이하 또는 특례 적용 시)
+          if (inpSui && !inpSui.disabled) {
+            inpSui.checked = true;
+            if (elSui) elSui.classList.add("on");
+          }
+          if (inpBid) {
+            inpBid.checked = false;
+            if (elBid) elBid.classList.remove("on");
+          }
+          if (badgeSuiRec) {
+            badgeSuiRec.textContent = isSubChecked ? "[추천: 특례 1인 수의]" : "[추천: 1인 수의]";
+            badgeSuiRec.style.background = "#10b981";
+            badgeSuiRec.style.display = "inline-block";
+          }
+          if (badgeBidRec) badgeBidRec.style.display = "none";
+        } else {
+          // 2천만원 초과 5,500만원 이하이고 특례 미체크 시 ➔ 1인 수의 불가, 2인 이상 전자견적 수의 대상
+          if (inpSui) {
+            inpSui.checked = false;
+            if (elSui) elSui.classList.remove("on");
+          }
+          if (inpBid) {
+            inpBid.checked = false;
+            if (elBid) elBid.classList.remove("on");
+          }
+          if (badgeSuiRec) {
+            badgeSuiRec.textContent = "[2인 이상 전자견적 수의 대상 (1인 수의 2천만원 초과)]";
+            badgeSuiRec.style.background = "#3b82f6";
+            badgeSuiRec.style.display = "inline-block";
+          }
+          if (badgeBidRec) badgeBidRec.style.display = "none";
         }
-        if (inpBid) {
-          inpBid.checked = false;
-          if (elBid) elBid.classList.remove("on");
-        }
-        if (badgeSuiRec) badgeSuiRec.style.display = "inline-block";
-        if (badgeBidRec) badgeBidRec.style.display = "none";
       } else {
+        // 5,500만원 초과 시 수의계약 불가 ➔ 경쟁입찰 추천
         if (inpSui) {
           inpSui.checked = false;
           if (elSui) elSui.classList.remove("on");
