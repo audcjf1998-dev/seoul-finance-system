@@ -186,29 +186,15 @@
       <p class="desc">계약 종류와 금액을 입력하고 [진단 결과 보기 →]를 누르면 진단 페이지로 이동해요.</p>
 
       <div class="field">
-        <label>① 계약 종류</label>
+        <label>① 계약 종류 <span style="font-size:0.8rem; font-weight:600; color:#0f766e;">(필수 선택)</span></label>
         <div class="chips" id="kind">
-          <button class="chip on" data-k="goods">물품</button>
+          <button class="chip" data-k="goods">물품</button>
           <button class="chip" data-k="service">용역</button>
           <button class="chip" data-k="gc">종합공사</button>
           <button class="chip" data-k="sc">전문공사</button>
           <button class="chip" data-k="oc">그 밖의 공사</button>
         </div>
-
-        <!-- 종합공사 vs 전문공사 vs 그 밖의 공사 구별 맞춤 가이드 박스 -->
-        <div id="kind-info-box" style="margin-top:10px; padding:12px 16px; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.86rem; line-height:1.7; color:#334155;">
-          <div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
-            <span>💡</span><span>계약 종류별 분류 및 공사 구별 가이드</span>
-          </div>
-          <div id="kind-desc-text" style="color:#1e293b;">
-            <b>🏗️ 종합공사 vs 🛠️ 전문공사 vs ⚡ 그 밖의 공사 핵심 차이점:</b>
-            <ul style="margin:4px 0 0; padding-left:18px; line-height:1.7; color:#475569;">
-              <li><b style="color:#0f766e;">🏗️ 종합공사 (종합건설업):</b> 토목·건축·조경 등 복합 공종을 총괄 관리·시공 (건설산업기본법 §2) ➔ <b>2인 공개수의 한도 4억원 이하</b> · 일상감사 20억원 이상 · 1인 수의 2천만원(특례 5천만원) 이하</li>
-              <li><b style="color:#0f766e;">🛠️ 전문공사 (전문건설업):</b> 실내건축·토공·방수·금속·도장 등 특정 단일 전문기술 시공 (건설산업기본법 §2) ➔ <b>2인 공개수의 한도 2억원 이하</b> · 일상감사 10억원 이상 · 1인 수의 2천만원(특례 5천만원) 이하</li>
-              <li><b style="color:#0f766e;">⚡ 그 밖의 공사 (개별 특별법):</b> 전기공사 · 정보통신공사 · 소방시설공사 · 문화재수리공사 (분리발주 원칙) ➔ <b>2인 공개수의 한도 1.6억원 이하</b> · 일상감사 10억원 이상 · 1인 수의 2천만원(특례 5천만원) 이하</li>
-            </ul>
-          </div>
-        </div>
+        <p class="note">그 밖의 공사: 전기 · 정보통신 · 소방시설 · 문화재수리 등</p>
       </div>
 
       <div class="field">
