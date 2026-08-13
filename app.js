@@ -393,6 +393,12 @@ document.addEventListener('DOMContentLoaded', () => {
       g.style.display = (KIND==="service") ? "" : "none";
       if(KIND!=="service"){ const gc = g.querySelector("input"); if(gc) gc.checked = false; g.classList.remove("on"); }
     }
+    const m = $("opt-mat");
+    if(m) {
+      const isGoods = (KIND === "goods");
+      m.style.display = isGoods ? "" : "none";
+      if(!isGoods){ const mc = m.querySelector("input"); if(mc) mc.checked = false; m.classList.remove("on"); }
+    }
     syncFestival();
     syncIt();
     syncMat();
@@ -430,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function syncMat(){
     const matEl = $("opt-mat");
-    const on = matEl && matEl.querySelector("input").checked;
+    const on = matEl && matEl.querySelector("input").checked && (KIND === "goods");
     const subs = $("mat-subs");
     if(subs) subs.style.display = on ? "" : "none";
     if(!on){
