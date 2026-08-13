@@ -102,17 +102,22 @@
 
       <div class="field">
         <label>② 추정가격 (부가세 제외)</label>
-        <input type="text" id="price" class="money" inputmode="numeric" placeholder="예: 80,000,000">
-        <div class="kor-hint" id="price-kor"></div>
+        <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
+          <div style="flex:1; min-width:240px;">
+            <input type="text" id="price" class="money" inputmode="numeric" placeholder="예: 80,000,000">
+            <div class="kor-hint" id="price-kor"></div>
+          </div>
+          <button class="btn" id="go-top" style="padding:14px 28px; font-size:1.05rem; white-space:nowrap; margin-top:0;">진단 결과 보기 →</button>
+        </div>
       </div>
 
       <div class="field">
         <label>③ 해당되면 체크해 주세요 <span style="font-weight:400">(선택)</span></label>
         <label class="opt" id="opt-sui"><input type="checkbox" id="chk-sui">
-          <span><span class="t">일반 수의계약으로 진행 (소액 수의계약)</span><br>
+          <span><span class="t">일반 수의계약으로 진행 (소액 수의계약) <span class="badge-rec" id="badge-sui-rec" style="display:none; margin-left:6px; background:#10b981; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;">[추천]</span></span><br>
           <span class="s">추정가격 소액 수의 한도 이내 (물품·용역 5,500만원 이하 / 공사 2억원 이하) 1인 또는 2인 전자견적 수의계약</span></span></label>
         <label class="opt" id="opt-bid"><input type="checkbox" id="chk-bid">
-          <span><span class="t">일반 경쟁입찰로 진행 (일반 · 제한 · 지명경쟁)</span><br>
+          <span><span class="t">일반 경쟁입찰로 진행 (일반 · 제한 · 지명경쟁) <span class="badge-rec" id="badge-bid-rec" style="display:none; margin-left:6px; background:#10b981; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;">[추천]</span></span><br>
           <span class="s">수의계약 한도를 초과하거나 공개 입찰 경쟁으로 낙찰자를 선정하는 사업</span></span></label>
         <label class="opt" id="opt-none"><input type="checkbox" id="chk-none">
           <span><span class="t">해당 사항 없음 (금액에 맞춰 자동 판정)</span><br>

@@ -27,6 +27,9 @@ function attachMoney(inp){
     inp.value = raw ? parseInt(raw,10).toLocaleString("ko-KR") : "";
     const hint = inp.id ? $(inp.id+"-kor") : null;
     if(hint) hint.textContent = raw ? "= "+korUnit(parseInt(raw,10)) : "";
+    if (inp.id === "price" && typeof window.autoRecommendMethod === "function") {
+      window.autoRecommendMethod();
+    }
   });
 }
 
@@ -200,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
         syncOpts();
+        autoRecommendMethod();
       });
     });
   }
@@ -211,6 +215,101 @@ document.addEventListener('DOMContentLoaded', () => {
     sc:{name:"전문공사", two:2e8, isC:true},
     oc:{name:"그 밖의 공사", two:1.6e8, isC:true}
   };
+
+  /* ───── 계약 방식 (수의/입찰/협상/해당없음) 상호 배타적 단일 선택 제어 ───── */
+  const setupContractMethodRadio = () => {
+    const groupIds = ["opt-sui", "opt-bid", "opt-nego", "opt-none"];
+    groupIds.forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      const inp = el.querySelector("input");
+      if (!inp) return;
+      inp.addEventListener("change", () => {
+        if (inp.checked) {
+          groupIds.forEach(otherId => {
+            if (otherId !== id) {
+              const otherEl = $(otherId);
+              if (otherEl) {
+                const c = otherEl.querySelector("input");
+                if (c) c.checked = false;
+                otherEl.classList.remove("on");
+              }
+            }
+          });
+          el.classList.add("on");
+          if (id === "opt-nego") {
+            const badgeSui = $("badge-sui-rec");
+            const badgeBid = $("badge-bid-rec");
+            if (badgeSui) badgeSui.style.display = "none";
+            if (badgeBid) badgeBid.style.display = "none";
+            syncFestival();
+          }
+        }
+      });
+    });
+  };
+  setupContractMethodRadio();
+
+  /* ───── 금액/종류 입력 시 자동 추천 및 자동 체크 ───── */
+  function autoRecommendMethod() {
+    const p = num($("price"));
+    const badgeSui = $("badge-sui-rec");
+    const badgeBid = $("badge-bid-rec");
+
+    const isNego = $("opt-nego") ? $("opt-nego").querySelector("input").checked : false;
+    const isNone = $("chk-none") ? $("chk-none").checked : false;
+
+    if (!p || p <= 0 || isNego || isNone) {
+      if (badgeSui) badgeSui.style.display = "none";
+      if (badgeBid) badgeBid.style.display = "none";
+      return;
+    }
+
+    // 수의계약 한도 판단
+    let suiLimit = 5.5e7;
+    if (KIND === "gc") suiLimit = 2*E;
+    else if (KIND === "sc") suiLimit = 1*E;
+    else if (KIND === "oc") suiLimit = 8e7;
+    else suiLimit = 5.5e7;
+
+    const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
+    const severe = $("opt-severe") ? $("opt-severe").querySelector("input").checked : false;
+
+    if (special && suiLimit < 5.5e7) suiLimit = 5.5e7;
+    if (severe) suiLimit = Infinity;
+
+    const optSui = $("opt-sui");
+    const optBid = $("opt-bid");
+    const chkSui = $("chk-sui");
+    const chkBid = $("chk-bid");
+
+    if (p <= suiLimit) {
+      if (chkSui) chkSui.checked = true;
+      if (chkBid) chkBid.checked = false;
+      if (optSui) optSui.classList.add("on");
+      if (optBid) optBid.classList.remove("on");
+
+      if (badgeSui) badgeSui.style.display = "inline-block";
+      if (badgeBid) badgeBid.style.display = "none";
+    } else {
+      if (chkBid) chkBid.checked = true;
+      if (chkSui) chkSui.checked = false;
+      if (optBid) optBid.classList.add("on");
+      if (optSui) optSui.classList.remove("on");
+
+      if (badgeBid) badgeBid.style.display = "inline-block";
+      if (badgeSui) badgeSui.style.display = "none";
+    }
+  }
+  window.autoRecommendMethod = autoRecommendMethod;
+
+  ["opt-special", "opt-severe"].forEach(id => {
+    const el = $(id);
+    if (el) {
+      const inp = el.querySelector("input");
+      if (inp) inp.addEventListener("change", autoRecommendMethod);
+    }
+  });
 
   function syncOpts(){
     const isC = KINFO[KIND].isC;
@@ -722,67 +821,69 @@ document.addEventListener('DOMContentLoaded', () => {
   window.renderResult = renderResult;
 
   // "진단 결과 보기 →" 버튼 이벤트 (유효성 및 법령 알림 검증)
+  const handleGo = () => {
+    const p = num($("price"));
+    if(!p || p <= 0) {
+      alert("⚠️ 추정가격을 정확히 입력해 주세요 🙂 (예: 80,000,000원)");
+      const pEl = $("price");
+      if(pEl) pEl.focus();
+      return;
+    }
+
+    const isSui = $("opt-sui") ? $("opt-sui").querySelector("input").checked : false;
+    const isBid = $("opt-bid") ? $("opt-bid").querySelector("input").checked : false;
+    const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
+    const severe = $("opt-severe") ? $("opt-severe").querySelector("input").checked : false;
+    const nego = $("opt-nego") ? $("opt-nego").querySelector("input").checked : false;
+    const itNew = $("opt-itnew") ? $("opt-itnew").querySelector("input").checked : false;
+    const itMaint = $("opt-itmaint") ? $("opt-itmaint").querySelector("input").checked : false;
+    const itAudit = $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false;
+
+    const kindName = KINFO[KIND] ? KINFO[KIND].name : "계약";
+
+    // 1. 수의계약 선택 시 한도 초과 오류 검증
+    let suiLimit = 5.5e7;
+    let limitText = "5,500만원";
+    if (KIND === "gc") { suiLimit = 2*E; limitText = "2억원"; }
+    else if (KIND === "sc") { suiLimit = 1*E; limitText = "1억원"; }
+    else if (KIND === "oc") { suiLimit = 8e7; limitText = "8,000만원"; }
+
+    if (isSui && p > suiLimit) {
+      alert(`🚫 [수의계약 진행 불가 알림 — 지방계약법 시행령 §25, §30]\n\n선택하신 '${kindName}'의 입력 추정가격 ${korUnit(p)}은 수의계약 법정 소액 한도(${limitText} 이하)를 초과하여 수의계약이 불가능합니다.\n\n💡 조치방법: 옵션을 '일반 경쟁입찰'로 변경하시거나 추정가격을 확인해 주세요.`);
+      return;
+    }
+
+    if (special && p > 5.5e7) {
+      alert(`🚫 [특례 1인 수의 한도 초과 알림 — 지방계약법 시행령 §30]\n\n여성·장애인·사회적기업 등 특례 1인 수의계약 한도는 추정가격 5,000만원 (부가가치세 포함 5,500만원) 이하입니다.\n\n입력하신 추정가격 (${korUnit(p)})은 한도를 초과하여 1인 수의계약이 불가합니다.\n\n💡 조치방법: 경쟁입찰 또는 2인 이상 전자견적 수의계약으로 전환해 주세요.`);
+      return;
+    }
+
+    // 2. 공사 계약과 협상에 의한 계약 불일치 검증
+    if ((KIND === "gc" || KIND === "sc" || KIND === "oc") && nego) {
+      alert(`🚫 [계약 종류 및 방식 불일치 알림 — 지방계약법 시행령 §43]\n\n${kindName}은 '협상에 의한 계약(제안서 평가)'을 적용할 수 없는 계약입니다.\n\n💡 조치방법: 공사 계약은 적격심사 또는 종합심사낙찰제로 진행해야 하므로 '협상에 의한 계약' 체크를 해제해 주세요.`);
+      return;
+    }
+
+    // 3. SW 감리와 신규/유지보수 사업 중복 선택 검증
+    if (itAudit && (itNew || itMaint)) {
+      alert(`🚫 [정보화 하위 사업 중복 선택 알림]\n\n'정보시스템 감리(SW 감리)'는 구축·유지보수 본 사업과 별도로 발주하는 독립 감리 용역입니다.\n\n💡 조치방법: '신규 사업' 또는 '유지관리·유지보수 사업' 체크를 해제해 주세요.`);
+      return;
+    }
+
+    // 4. 신규 사업과 유지보수 사업 동시 선택 검증
+    if (itNew && itMaint) {
+      alert(`🚫 [신규/유지보수 사업 동시 선택 알림]\n\n'신규 사업'과 '유지관리·유지보수 사업'을 동시에 선택할 수 없습니다.\n\n💡 조치방법: 신규 사업과 유지보수 사업 중 하나만 선택해 주세요.`);
+      return;
+    }
+
+    renderResult();
+    showStep("result");
+  };
+
   const btnGo = $("go");
-  if(btnGo) {
-    btnGo.addEventListener("click", ()=>{
-      const p = num($("price"));
-      if(!p || p <= 0) {
-        alert("⚠️ 추정가격을 정확히 입력해 주세요 🙂 (예: 80,000,000원)");
-        const pEl = $("price");
-        if(pEl) pEl.focus();
-        return;
-      }
-
-      const isSui = $("opt-sui") ? $("opt-sui").querySelector("input").checked : false;
-      const isBid = $("opt-bid") ? $("opt-bid").querySelector("input").checked : false;
-      const special = $("opt-special") ? $("opt-special").querySelector("input").checked : false;
-      const severe = $("opt-severe") ? $("opt-severe").querySelector("input").checked : false;
-      const nego = $("opt-nego") ? $("opt-nego").querySelector("input").checked : false;
-      const itNew = $("opt-itnew") ? $("opt-itnew").querySelector("input").checked : false;
-      const itMaint = $("opt-itmaint") ? $("opt-itmaint").querySelector("input").checked : false;
-      const itAudit = $("opt-itaudit") ? $("opt-itaudit").querySelector("input").checked : false;
-
-      const kindName = KINFO[KIND] ? KINFO[KIND].name : "계약";
-
-      // 1. 수의계약 선택 시 한도 초과 오류 검증
-      let suiLimit = 5.5e7;
-      let limitText = "5,500만원";
-      if (KIND === "gc") { suiLimit = 2*E; limitText = "2억원"; }
-      else if (KIND === "sc") { suiLimit = 1*E; limitText = "1억원"; }
-      else if (KIND === "oc") { suiLimit = 8e7; limitText = "8,000만원"; }
-
-      if (isSui && p > suiLimit) {
-        alert(`🚫 [수의계약 진행 불가 알림 — 지방계약법 시행령 §25, §30]\n\n선택하신 '${kindName}'의 입력 추정가격 ${korUnit(p)}은 수의계약 법정 소액 한도(${limitText} 이하)를 초과하여 수의계약이 불가능합니다.\n\n💡 조치방법: 옵션을 '일반 경쟁입찰'로 변경하시거나 추정가격을 확인해 주세요.`);
-        return;
-      }
-
-      if (special && p > 5.5e7) {
-        alert(`🚫 [특례 1인 수의 한도 초과 알림 — 지방계약법 시행령 §30]\n\n여성·장애인·사회적기업 등 특례 1인 수의계약 한도는 추정가격 5,000만원 (부가가치세 포함 5,500만원) 이하입니다.\n\n입력하신 추정가격 (${korUnit(p)})은 한도를 초과하여 1인 수의계약이 불가합니다.\n\n💡 조치방법: 경쟁입찰 또는 2인 이상 전자견적 수의계약으로 전환해 주세요.`);
-        return;
-      }
-
-      // 2. 공사 계약과 협상에 의한 계약 불일치 검증
-      if ((KIND === "gc" || KIND === "sc" || KIND === "oc") && nego) {
-        alert(`🚫 [계약 종류 및 방식 불일치 알림 — 지방계약법 시행령 §43]\n\n${kindName}은 '협상에 의한 계약(제안서 평가)'을 적용할 수 없는 계약입니다.\n\n💡 조치방법: 공사 계약은 적격심사 또는 종합심사낙찰제로 진행해야 하므로 '협상에 의한 계약' 체크를 해제해 주세요.`);
-        return;
-      }
-
-      // 3. SW 감리와 신규/유지보수 사업 중복 선택 검증
-      if (itAudit && (itNew || itMaint)) {
-        alert(`🚫 [정보화 하위 사업 중복 선택 알림]\n\n'정보시스템 감리(SW 감리)'는 구축·유지보수 본 사업과 별도로 발주하는 독립 감리 용역입니다.\n\n💡 조치방법: '신규 사업' 또는 '유지관리·유지보수 사업' 체크를 해제해 주세요.`);
-        return;
-      }
-
-      // 4. 신규 사업과 유지보수 사업 동시 선택 검증
-      if (itNew && itMaint) {
-        alert(`🚫 [신규/유지보수 사업 동시 선택 알림]\n\n'신규 사업'과 '유지관리·유지보수 사업'을 동시에 선택할 수 없습니다.\n\n💡 조치방법: 신규 사업과 유지보수 사업 중 하나만 선택해 주세요.`);
-        return;
-      }
-
-      renderResult();
-      showStep("result");
-    });
-  }
+  if(btnGo) btnGo.addEventListener("click", handleGo);
+  const btnGoTop = $("go-top");
+  if(btnGoTop) btnGoTop.addEventListener("click", handleGo);
 
   // "← 조건 다시 선택하기" 버튼 이벤트
   const btnBack = $("btn-back");
