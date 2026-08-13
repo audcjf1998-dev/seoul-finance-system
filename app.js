@@ -246,18 +246,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncSui() {
     const suiInp = $("chk-sui");
     const suiSubs = $("sui-subs");
-    if (suiSubs) {
-      const isSuiChecked = suiInp && suiInp.checked;
-      suiSubs.style.display = isSuiChecked ? "block" : "none";
-      if (!isSuiChecked) {
-        const spInp = $("opt-special") ? $("opt-special").querySelector("input") : null;
-        const seInp = $("opt-severe") ? $("opt-severe").querySelector("input") : null;
-        if (spInp) spInp.checked = false;
-        if (seInp) seInp.checked = false;
-        if ($("opt-special")) $("opt-special").classList.remove("on");
-        if ($("opt-severe")) $("opt-severe").classList.remove("on");
+    if (!suiSubs) return;
+
+    const spInp = $("opt-special") ? $("opt-special").querySelector("input") : null;
+    const seInp = $("opt-severe") ? $("opt-severe").querySelector("input") : null;
+    const isSubChecked = (spInp && spInp.checked) || (seInp && seInp.checked);
+
+    // 하위 수의 특례(여성·장애인기업 등)가 체크된 경우 부모 수의계약 체크 상태 유지
+    if (isSubChecked && suiInp) {
+      suiInp.checked = true;
+      const elSui = $("opt-sui");
+      if (elSui) {
+        elSui.classList.add("on");
+        elSui.classList.remove("disabled-opt");
       }
     }
+
+    const isSuiChecked = suiInp && suiInp.checked;
+    suiSubs.style.display = isSuiChecked ? "block" : "none";
   }
   window.syncSui = syncSui;
 
@@ -384,9 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const isNegoChecked = inpNego ? inpNego.checked : false;
     const isMatChecked = $("opt-mat") ? $("opt-mat").querySelector("input").checked : false;
 
+    const spInp = $("opt-special") ? $("opt-special").querySelector("input") : null;
+    const seInp = $("opt-severe") ? $("opt-severe").querySelector("input") : null;
+    const isSubChecked = (spInp && spInp.checked) || (seInp && seInp.checked);
+
     if (!p || p <= 0) {
-      // 금액 미입력(또는 0원)일 때는 어떠한 버튼도 자동 체크하지 않고 초기 해제 상태 유지
-      if (inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
+      // 금액 미입력(또는 0원)일 때는 자동 추천하지 않되, 수의 세부 특례가 이미 체크된 경우 수의계약 유지
+      if (!isSubChecked && inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
       if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
       if (badgeSuiRec) badgeSuiRec.style.display = "none";
       if (badgeBidRec) badgeBidRec.style.display = "none";
@@ -395,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (badgeSuiRec) badgeSuiRec.style.display = "none";
       if (badgeBidRec) badgeBidRec.style.display = "none";
       if (isMatChecked) {
-        if (inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
+        if (!isSubChecked && inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
         if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
       }
     } else {
