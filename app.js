@@ -1212,20 +1212,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const kindName = KINFO[KIND] ? KINFO[KIND].name : "계약";
 
-    // 1. 수의계약 선택 시 한도 초과 오류 검증
-    let suiLimit = 5.5e7;
-    let limitText = "5,500만원";
-    if (KIND === "gc") { suiLimit = 2*E; limitText = "2억원"; }
-    else if (KIND === "sc") { suiLimit = 1*E; limitText = "1억원"; }
-    else if (KIND === "oc") { suiLimit = 8e7; limitText = "8,000만원"; }
+    // 1. 수의계약 선택 시 한도 초과 오류 검증 (2인 공개수의 법정 한도)
+    let suiLimit = 1e8;
+    let limitText = "1억원";
+    if (KIND === "gc") { suiLimit = 4e8; limitText = "4억원"; }
+    else if (KIND === "sc") { suiLimit = 2e8; limitText = "2억원"; }
+    else if (KIND === "oc") { suiLimit = 1.6e8; limitText = "1.6억원"; }
 
     if (isSui && p > suiLimit) {
       alert(`🚫 [수의계약 진행 불가 알림 — 지방계약법 시행령 §25, §30]\n\n선택하신 '${kindName}'의 입력 추정가격 ${korUnit(p)}은 수의계약 법정 소액 한도(${limitText} 이하)를 초과하여 수의계약이 불가능합니다.\n\n💡 조치방법: 옵션을 '일반 경쟁입찰'로 변경하시거나 추정가격을 확인해 주세요.`);
-      return;
-    }
-
-    if (special && p > 5.5e7) {
-      alert(`🚫 [특례 1인 수의 한도 초과 알림 — 지방계약법 시행령 §30]\n\n여성·장애인·사회적기업 등 특례 1인 수의계약 한도는 추정가격 5,000만원 (부가가치세 포함 5,500만원) 이하입니다.\n\n입력하신 추정가격 (${korUnit(p)})은 한도를 초과하여 1인 수의계약이 불가합니다.\n\n💡 조치방법: 경쟁입찰 또는 2인 이상 전자견적 수의계약으로 전환해 주세요.`);
       return;
     }
 
@@ -1255,6 +1250,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if(btnGo) btnGo.addEventListener("click", handleGo);
   const btnGoTop = $("go-top");
   if(btnGoTop) btnGoTop.addEventListener("click", handleGo);
+  const btnGoBottom = $("go-bottom");
+  if(btnGoBottom) btnGoBottom.addEventListener("click", handleGo);
 
   // "← 조건 다시 선택하기" 버튼 이벤트
   const btnBack = $("btn-back");
