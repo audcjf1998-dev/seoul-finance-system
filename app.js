@@ -672,30 +672,23 @@ document.addEventListener('DOMContentLoaded', () => {
       +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
   }
 
-  /* ───── Step 1 ↔ Step 2 페이지 전환 기능 ───── */
+  /* ───── Step 0(Landing) ↔ Step 1(Input) ↔ Step 2(Result) 페이지 전환 기능 ───── */
   function showStep(stepName) {
+    const landingView = $("step-landing");
     const inputView = $("step-input");
     const resultView = $("step-result");
-    
-    if (stepName === "result") {
-      if (inputView) inputView.style.display = "none";
-      if (resultView) {
-        resultView.style.display = "block";
-        resultView.classList.remove("fade-in");
-        void resultView.offsetWidth;
-        resultView.classList.add("fade-in");
-      }
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      if (resultView) resultView.style.display = "none";
-      if (inputView) {
-        inputView.style.display = "block";
-        inputView.classList.remove("fade-in");
-        void inputView.offsetWidth;
-        inputView.classList.add("fade-in");
-      }
-      window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (landingView) landingView.style.display = (stepName === "landing") ? "block" : "none";
+    if (inputView) inputView.style.display = (stepName === "input") ? "block" : "none";
+    if (resultView) resultView.style.display = (stepName === "result") ? "block" : "none";
+
+    const targetView = stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView);
+    if (targetView) {
+      targetView.classList.remove("fade-in");
+      void targetView.offsetWidth;
+      targetView.classList.add("fade-in");
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
   window.showStep = showStep;
 
@@ -745,12 +738,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(typeof syncOpts === "function") syncOpts();
     showTab("guide");
-    showStep("input");
+    showStep("landing");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   window.goHome = function() {
-    window.resetAll();
+    showTab("guide");
+    showStep("landing");
   };
 
   /* ───── 진단 결과 렌더 ───── */
@@ -2529,6 +2523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch(e) {}
 
-  // 초기 상태 검증 (금액 0/빈값 시 수의계약 자동체크 방지 및 사용불가 처리)
+  // 초기 상태 검증 및 첫 화면(landing) 표시
   if (typeof updateOptionStates === "function") updateOptionStates();
+  showStep("landing");
 });
