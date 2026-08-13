@@ -208,32 +208,18 @@
         </div>
       </div>
 
+      <!-- ③ 계약 방식 선택 (상호 배타적 단일 선택) -->
       <div class="field">
-        <label>③ 해당되면 체크해 주세요 <span style="font-weight:400">(선택)</span></label>
+        <label>③ 계약 방식 선택 <span style="font-weight:400; color:#64748b;">(계약 구매 경로)</span></label>
         <label class="opt" id="opt-sui"><input type="checkbox" id="chk-sui">
           <span><span class="t">일반 수의계약으로 진행 (소액 수의계약) <span class="badge-rec" id="badge-sui-rec" style="display:none; margin-left:6px; background:#10b981; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;">[추천]</span><span class="badge-dis" id="badge-sui-dis" style="display:none; margin-left:6px; background:#ef4444; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;"></span></span><br>
           <span class="s">기본 1인 수의 2,000만원 이하 · 특례 1인 수의 5,000만원 이하 · 2인 이상 전자견적 수의 (물품·용역 5,500만원 이하 / 공사 2억원 이하)</span></span></label>
         <label class="opt" id="opt-bid"><input type="checkbox" id="chk-bid">
           <span><span class="t">일반 경쟁입찰로 진행 (일반 · 제한 · 지명경쟁) <span class="badge-rec" id="badge-bid-rec" style="display:none; margin-left:6px; background:#10b981; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;">[추천]</span></span><br>
           <span class="s">수의계약 한도를 초과하거나 공개 입찰 경쟁으로 낙찰자를 선정하는 사업</span></span></label>
-        <label class="opt" id="opt-special"><input type="checkbox">
-          <span><span class="t">특례 대상 기업과 계약 예정 <span class="badge-dis" id="badge-special-dis" style="display:none; margin-left:6px; background:#ef4444; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;"></span></span><br>
-          <span class="s">여성기업 · 장애인기업 · 사회적기업 · 청년창업기업 등 → 기본 2천만원인 1인 수의 한도가 5천만원(VAT 포함 5,500만원)으로 확대 적용</span></span></label>
-        <label class="opt" id="opt-severe"><input type="checkbox">
-          <span><span class="t">중증장애인생산품 (직접 생산 물품·용역)</span><br>
-          <span class="s">생산시설과의 직접 계약 → 금액 제한 없이 수의계약 가능</span></span></label>
         <label class="opt" id="opt-nego"><input type="checkbox">
           <span><span class="t">협상에 의한 계약으로 진행 (제안서 평가) <span class="badge-dis" id="badge-nego-dis" style="display:none; margin-left:6px; background:#ef4444; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;"></span></span><br>
           <span class="s">전문성·기술성·창의성 등이 필요한 용역·물품, 지식기반사업 — 단순노무용역·단순물품구매는 제외 (령 §43·§44)</span></span></label>
-        <label class="opt" id="opt-festival" style="display:none;margin-left:24px"><input type="checkbox">
-          <span><span class="t">축제·행사성 사업</span><br>
-          <span class="s">재난안전법상 안전관리계획 수립 대상 행사 — 일상감사 기준이 1억원 이상으로 낮아져요</span></span></label>
-        <label class="opt" id="opt-gam"><input type="checkbox">
-          <span><span class="t">건설기술용역 · 공사감리 (건설사업관리 · 설계 · 안전진단)</span><br>
-          <span class="s">건설기술진흥법 적용 — 기술용역 타당성 심사, 건설기술심의(PQ·발주심의), 기술용역 낙찰하한율 절차를 안내해요</span></span></label>
-        <label class="opt" id="opt-it"><input type="checkbox">
-          <span><span class="t">정보화사업 · SW 감리 (정보시스템 구축 · SW 개발 등)</span><br>
-          <span class="s">SW 개발·구축, 웹사이트·모바일앱, ISP, SW 감리 — 예산타당성·과업심의·사전협의·정보시스템 감리 절차를 안내해요</span></span></label>
         <label class="opt" id="opt-mat"><input type="checkbox">
           <span><span class="t">관급자재 (지급자재 · 관급물품) 포함 물품제조 · 공사</span><br>
           <span class="s">발주기관에서 직접 구매·제공하는 자재 포함 — 구매 방식(3자단가, MAS 2단계경쟁, 자체발주)에 따라 맞춤 절차를 안내해요</span></span></label>
@@ -248,6 +234,31 @@
             <span><span class="t">자체 발주 (자체 총액입찰 · 수의계약)</span><br>
             <span class="s">종합쇼핑몰 미등록 자재 등 발주부서 자체 계약 — 관급자재대 포함 총 추정금액 기준 일상감사 및 원가계약심사 대상</span></span></label>
         </div>
+      </div>
+
+      <!-- ④ 특례 기업 조건 선택 (독립 체크 항목) -->
+      <div class="field">
+        <label>④ 특례 기업 조건 선택 <span style="font-weight:600; color:#2563eb;">(독립 체크 가능 — 1인 수의 한도 5천만원으로 확대 적용)</span></label>
+        <label class="opt" id="opt-special" style="border:1.5px solid #cbd5e1;"><input type="checkbox">
+          <span><span class="t">🌸 여성기업 · 장애인기업 · 사회적기업 · 청년창업기업 특례 적용 <span class="badge-dis" id="badge-special-dis" style="display:none; margin-left:6px; background:#ef4444; color:#fff; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:600;"></span></span><br>
+          <span class="s">특례기업 대상 계약 시 기본 2,000만원인 1인 견적 수의계약 한도가 <b>5,000만원(VAT 포함 5,500만원) 이하</b>로 확대 적용됩니다.</span></span></label>
+        <label class="opt" id="opt-severe" style="border:1.5px solid #cbd5e1;"><input type="checkbox">
+          <span><span class="t">♿ 중증장애인생산품 (직접 생산 물품·용역) 수의계약</span><br>
+          <span class="s">중증장애인 생산시설과의 직접 수의계약 시 <b>금액 제한 없이 무제한 수의계약</b>이 가능합니다.</span></span></label>
+      </div>
+
+      <!-- ⑤ 사업 분야별 추가 심사 절차 (선택) -->
+      <div class="field">
+        <label>⑤ 사업 분야별 추가 절차 <span style="font-weight:400;">(해당 시 선택)</span></label>
+        <label class="opt" id="opt-festival" style="display:none;"><input type="checkbox">
+          <span><span class="t">축제·행사성 사업</span><br>
+          <span class="s">재난안전법상 안전관리계획 수립 대상 행사 — 일상감사 기준이 1억원 이상으로 낮아져요</span></span></label>
+        <label class="opt" id="opt-gam"><input type="checkbox">
+          <span><span class="t">건설기술용역 · 공사감리 (건설사업관리 · 설계 · 안전진단)</span><br>
+          <span class="s">건설기술진흥법 적용 — 기술용역 타당성 심사, 건설기술심의(PQ·발주심의), 기술용역 낙찰하한율 절차를 안내해요</span></span></label>
+        <label class="opt" id="opt-it"><input type="checkbox">
+          <span><span class="t">정보화사업 · SW 감리 (정보시스템 구축 · SW 개발 등)</span><br>
+          <span class="s">SW 개발·구축, 웹사이트·모바일앱, ISP, SW 감리 — 예산타당성·과업심의·사전협의·정보시스템 감리 절차를 안내해요</span></span></label>
         <div id="it-subs" style="display:none;margin-left:24px">
           <label class="opt" id="opt-itnew"><input type="checkbox">
             <span><span class="t">신규 사업</span><br>
