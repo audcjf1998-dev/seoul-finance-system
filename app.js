@@ -688,6 +688,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputView) inputView.style.display = (stepName === "input") ? "block" : "none";
     if (resultView) resultView.style.display = (stepName === "result") ? "block" : "none";
 
+    if (stepName === "landing") {
+      // 홈 화면(첫 선택 화면)에서는 상단 탭 활성화(on)를 모두 해제하여 어떤 메뉴도 선택되지 않은 홈 상태로 안내
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+    } else if (stepName === "input" || stepName === "result") {
+      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
+    }
+
     const targetView = stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView);
     if (targetView) {
       targetView.classList.remove("fade-in");
