@@ -147,6 +147,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.p)));
 
+  /* 업무 목적별 맞춤 바로가기 네비게이터 */
+  window.navToPurpose = function(type) {
+    if (type === "calc") {
+      showTab("guide");
+      if (typeof window.showStep === "function") window.showStep("input");
+      const pEl = $("price");
+      if (pEl) {
+        pEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        pEl.focus();
+      }
+    } else if (type === "forms") {
+      showTab("forms");
+    } else if (type === "ref") {
+      showTab("ref");
+    } else if (type === "timeline") {
+      showTab("check");
+    }
+  };
+
   /* 옵션 토글 스타일 */
   document.querySelectorAll(".opt input").forEach(c=>{
     c.addEventListener("change",()=>{
