@@ -222,12 +222,58 @@ document.addEventListener('DOMContentLoaded', () => {
   /* 종류 칩 (초기 선택 없음 - 사용자 직접 클릭 필수) */
   let KIND = null;
 
+  function updateKindDesc() {
+    const descEl = $("kind-info-box");
+    if (!descEl) return;
+    if (!KIND) {
+      descEl.style.display = "none";
+      return;
+    }
+    descEl.style.display = "block";
+
+    if (KIND === "gc") {
+      descEl.innerHTML = '<div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><span>💡</span><span>🏗️ 종합공사 (종합건설업) 맞춤 발주 가이드</span></div>'
+        + '<div style="color:#1e293b; line-height:1.7;">토목·건축·조경 등 5개 종합 업종. 종합적인 계획·관리·조정을 통한 복합 공종 총괄 시공.<br>'
+        + '• <b>소액 수의계약 한도:</b> 2인 공개수의 <b>4억원 이하</b> (VAT 포함 4.4억원) · 1인 수의 2,000만원(특례 5,000만원) 이하<br>'
+        + '• <b>주요 사전절차:</b> 원가계약심사 3억~5억원 이상 · 일상감사 20억원 이상 · 계약심의위원회 50억원 이상 (시본청 기준)</div>';
+    } else if (KIND === "sc") {
+      descEl.innerHTML = '<div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><span>💡</span><span>🛠️ 전문공사 (전문건설업) 맞춤 발주 가이드</span></div>'
+        + '<div style="color:#1e293b; line-height:1.7;">실내건축·토공·방수·금속·도장 등 14개 전문 업종. 단일 전문 기술 시공.<br>'
+        + '• <b>소액 수의계약 한도:</b> 2인 공개수의 <b>2억원 이하</b> (VAT 포함 2.2억원) · 1인 수의 2,000만원(특례 5,000만원) 이하<br>'
+        + '• <b>주요 사전절차:</b> 원가계약심사 3억원 이상 · 일상감사 10억원 이상 · 계약심의위원회 30억원 이상</div>';
+    } else if (KIND === "oc") {
+      descEl.innerHTML = '<div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><span>💡</span><span>⚡ 그 밖의 공사 (전기 · 정보통신 · 소방 · 문화재) 맞춤 가이드</span></div>'
+        + '<div style="color:#1e293b; line-height:1.7;">전기공사 · 정보통신공사 · 소방시설공사 · 문화재수리공사 (개별 법령 분리발주 원칙).<br>'
+        + '• <b>소액 수의계약 한도:</b> 2인 공개수의 <b>1.6억원 이하</b> (VAT 포함 1.76억원) · 1인 수의 2,000만원(특례 5,000만원) 이하<br>'
+        + '• <b>주요 사전절차:</b> 원가계약심사 3억원 이상 · 일상감사 10억원 이상 · 계약심의위원회 30억원 이상</div>';
+    } else if (KIND === "service") {
+      descEl.innerHTML = '<div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><span>💡</span><span>💼 용역 사업 맞춤 발주 가이드</span></div>'
+        + '<div style="color:#1e293b; line-height:1.7;">학술연구, 일반용역, 엔지니어링·설계·감리 등 기술용역 및 정보화(SW) 사업.<br>'
+        + '• <b>소액 수의계약 한도:</b> 2인 공개수의 <b>1억원 이하</b> (VAT 포함 1.1억원) · 1인 수의 2,000만원(특례 5,000만원) 이하<br>'
+        + '• <b>주요 사전절차:</b> 원가계약심사 2억원 이상 (법정 대가 요율 적용 기술용역 면제) · 일상감사 10억원 이상 (협상계약 5억↑) · 계약심의위원회 20억원 이상</div>';
+    } else {
+      descEl.innerHTML = '<div style="font-weight:700; color:#0f766e; margin-bottom:6px; font-size:0.92rem; display:flex; align-items:center; gap:6px;"><span>💡</span><span>📦 물품 구매 · 납품계약 맞춤 가이드</span></div>'
+        + '<div style="color:#1e293b; line-height:1.7;">행정 물품, 비품, 장비 구매 및 조달청 3자단가·MAS 다수공급자계약.<br>'
+        + '• <b>소액 수의계약 한도:</b> 2인 공개수의 <b>1억원 이하</b> (VAT 포함 1.1억원) · 1인 수의 2,000만원(특례 5,000만원) 이하<br>'
+        + '• <b>주요 사전절차:</b> 원가계약심사 2,000만원 이상 (조달청 3자단가 제외) · 일상감사 5억원 이상 · 계약심의위원회 10억원 이상</div>';
+    }
+  }
+  window.updateKindDesc = updateKindDesc;
+
   const kindEl = $("kind");
   if (kindEl) {
     kindEl.querySelectorAll(".chip").forEach(ch=>{
       ch.addEventListener("click",()=>{
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
+        const subFields = $("input-sub-fields");
+        if (subFields) {
+          subFields.style.display = "block";
+          subFields.classList.remove("fade-in");
+          void subFields.offsetWidth;
+          subFields.classList.add("fade-in");
+        }
+        updateKindDesc();
         syncOpts();
         updateOptionStates();
       });
@@ -848,6 +894,10 @@ document.addEventListener('DOMContentLoaded', () => {
         b.classList.remove("on");
       });
     }
+    const subFields = $("input-sub-fields");
+    if (subFields) subFields.style.display = "none";
+    const kindInfo = $("kind-info-box");
+    if (kindInfo) kindInfo.style.display = "none";
 
     const allOptIds = [
       "opt-sui", "opt-bid", "opt-special", "opt-severe", "opt-nego", "opt-festival",
