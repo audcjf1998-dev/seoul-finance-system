@@ -262,9 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (KIND === "sc") { suiLimit = 1*E; limitText = "1억원"; }
     else if (KIND === "oc") { suiLimit = 8e7; limitText = "8,000만원"; }
 
-    const severe = $("opt-severe") ? ($("opt-severe").querySelector("input").checked && !k.isC) : false;
-    if (severe) suiLimit = Infinity;
-
     // (A) 수의계약 (opt-sui) 한도 초과 검증
     const elSui = $("opt-sui");
     const inpSui = $("chk-sui");
