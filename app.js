@@ -147,9 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.p)));
 
-  /* 업무 목적별 맞춤 바로가기 네비게이터 */
+  /* 업무 목적별 맞춤 바로가기 네비게이터 (상단 탭 바 100% 매칭) */
   window.navToPurpose = function(type) {
-    if (type === "calc") {
+    if (type === "guide") {
       showTab("guide");
       if (typeof window.showStep === "function") window.showStep("input");
       const pEl = $("price");
@@ -157,12 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
         pEl.scrollIntoView({ behavior: "smooth", block: "center" });
         pEl.focus();
       }
-    } else if (type === "forms") {
-      showTab("forms");
+    } else if (type === "check" || type === "timeline") {
+      showTab("check");
+    } else if (type === "calc" || type === "calc_helper") {
+      showTab("calc");
+    } else if (type === "rate") {
+      showTab("rate");
+    } else if (type === "g2b") {
+      showTab("g2b");
     } else if (type === "ref") {
       showTab("ref");
-    } else if (type === "timeline") {
-      showTab("check");
+    } else if (type === "forms") {
+      showTab("forms");
     }
   };
 
