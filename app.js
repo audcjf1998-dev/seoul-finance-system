@@ -725,7 +725,21 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     })();
 
-    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,gamLegalCost,disaster,legalExempt,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,auditExemptReason,cost,costExemptReason,spec,agree,ombudsman,ombudsmanExemptReason};
+    /* 계약심의위원회 심의 대상 판정 (지방계약법 §32, 령 §108) */
+    const committee = (()=>{
+      if (KIND === "service" && p >= 20*E) {
+        return "용역 20억원 이상 — 입찰공고/계약의뢰 전 계약심의위원회 심의 필수 (계약방법 · 입찰참가자격 · 낙찰자결정방법 심의)";
+      }
+      if (k.isC && p >= 50*E) {
+        return "공사 50억원 이상 (자치구 30억↑) — 입찰공고 전 계약심의위원회 심의 필수";
+      }
+      if (KIND === "goods" && p >= 10*E) {
+        return "물품 구매·제조 10억원 이상 — 입찰공고 전 계약심의위원회 심의 필수";
+      }
+      return null;
+    })();
+
+    return {k,p,special,severe,nego,festival,it,itNew,itMaint,itPub,itAudit,gam,gamLegalCost,disaster,legalExempt,mat,mat3ja,matMas,matSelf,oneLimit,oneOk,twoOk,rec,noticeDays,quoteRate,audit,auditExemptReason,cost,costExemptReason,spec,agree,ombudsman,ombudsmanExemptReason,committee};
   }
 
   /* ───── 타임라인 ───── */
@@ -736,6 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       pre.push({t:"발주 준비 — 과업내용서·예산 확정", tag:"통상", days:[3,5], soft:true});
     }
+    if(d.committee) pre.push({t:"계약심의위원회 심의", tag:"법정", days:[7,14], s:d.committee});
     if(d.cost) pre.push({t:"원가(계약)심사", tag:"통상", days:[5,10], soft:true, s:d.cost});
     if(d.audit) pre.push({t:"일상감사", tag:"통상", days:[3,7], soft:true, s:d.audit});
     if(d.gam && d.p>=3e7) pre.push({t:"기술용역 타당성 심사", tag:"통상", days:[7,14], soft:true, s:"기술심사담당관 — 용역 필요성·대가 적정성 (예산 반영 전 원칙, 당해연도 사업은 발주 전)"});
@@ -966,6 +981,12 @@ document.addEventListener('DOMContentLoaded', () => {
         r: d.costExemptReason
       },
       {
+        n: "계약심의위원회 심의 (계약방법·자격요건 확정)",
+        v: d.committee,
+        ex: false,
+        r: null
+      },
+      {
         n: "사전규격 공개",
         v: d.spec,
         ex: false,
@@ -1193,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     add(P,"과업내용서 · 시방서 · 설계서 확정","산출 근거 포함","권장",true);
     add(P,"분리발주(쪼개기) 여부 점검","수의 기준 회피 목적 분할 금지 — 시행령 §77","필수",true);
     add(P,"동일업체 수의계약 횟수 확인","실·국 연 4회 / 시 전체 연 9회 이내","필수",d.rec==="one");
+    add(P,"계약심의위원회 심의 (발주 전 필수)",d.committee||"","필수",!!d.committee);
     add(P,"원가(계약)심사 의뢰",d.cost||"","필수",!!d.cost);
     add(P,"재정합의 (계약의뢰 시 필수)",d.agree||"","필수",!!d.agree);
     add(P,"일상감사 의뢰",d.audit||"","필수",!!d.audit);
