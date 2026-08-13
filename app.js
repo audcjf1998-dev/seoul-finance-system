@@ -242,6 +242,25 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   /* ───── 계약 방식 (수의/입찰/협상/관급자재 구매) 상호 배타적 단일 선택 제어 ───── */
+  /* 수의계약 세부 특례 옵션(sui-subs) 펼침/접힘 동기화 */
+  function syncSui() {
+    const suiInp = $("chk-sui");
+    const suiSubs = $("sui-subs");
+    if (suiSubs) {
+      const isSuiChecked = suiInp && suiInp.checked;
+      suiSubs.style.display = isSuiChecked ? "block" : "none";
+      if (!isSuiChecked) {
+        const spInp = $("opt-special") ? $("opt-special").querySelector("input") : null;
+        const seInp = $("opt-severe") ? $("opt-severe").querySelector("input") : null;
+        if (spInp) spInp.checked = false;
+        if (seInp) seInp.checked = false;
+        if ($("opt-special")) $("opt-special").classList.remove("on");
+        if ($("opt-severe")) $("opt-severe").classList.remove("on");
+      }
+    }
+  }
+  window.syncSui = syncSui;
+
   const setupContractMethodRadio = () => {
     const groupIds = ["opt-sui", "opt-bid", "opt-nego", "opt-mat"];
     groupIds.forEach(id => {
@@ -268,11 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (badgeSui) badgeSui.style.display = "none";
             if (badgeBid) badgeBid.style.display = "none";
           }
+          if (id === "opt-sui") syncSui();
+          if (id !== "opt-sui") syncSui();
           if (id === "opt-nego") syncFestival();
           if (id === "opt-mat") syncMat();
           if (id !== "opt-mat") syncMat();
         } else {
           el.classList.remove("on");
+          if (id === "opt-sui") syncSui();
           if (id === "opt-mat") syncMat();
         }
       });
@@ -401,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (badgeSuiRec) badgeSuiRec.style.display = "none";
       }
     }
+    if (typeof syncSui === "function") syncSui();
   }
   window.updateOptionStates = updateOptionStates;
 
