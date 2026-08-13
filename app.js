@@ -216,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
     oc:{name:"그 밖의 공사", two:1.6e8, isC:true}
   };
 
-  /* ───── 계약 방식 (수의/입찰/협상) 상호 배타적 단일 선택 제어 ───── */
+  /* ───── 계약 방식 (수의/입찰/협상/관급자재 구매) 상호 배타적 단일 선택 제어 ───── */
   const setupContractMethodRadio = () => {
-    const groupIds = ["opt-sui", "opt-bid", "opt-nego"];
+    const groupIds = ["opt-sui", "opt-bid", "opt-nego", "opt-mat"];
     groupIds.forEach(id => {
       const el = $(id);
       if (!el) return;
@@ -237,13 +237,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
           el.classList.add("on");
-          if (id === "opt-nego") {
+          if (id === "opt-nego" || id === "opt-mat") {
             const badgeSui = $("badge-sui-rec");
             const badgeBid = $("badge-bid-rec");
             if (badgeSui) badgeSui.style.display = "none";
             if (badgeBid) badgeBid.style.display = "none";
-            syncFestival();
           }
+          if (id === "opt-nego") syncFestival();
+          if (id === "opt-mat") syncMat();
+          if (id !== "opt-mat") syncMat();
+        } else {
+          el.classList.remove("on");
+          if (id === "opt-mat") syncMat();
         }
       });
     });
@@ -329,19 +334,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const elBid = $("opt-bid");
     const inpBid = $("chk-bid");
 
+    const isNegoChecked = inpNego ? inpNego.checked : false;
+    const isMatChecked = $("opt-mat") ? $("opt-mat").querySelector("input").checked : false;
+
     if (!p || p <= 0) {
       // 금액 미입력(또는 0원)일 때는 어떠한 버튼도 자동 체크하지 않고 초기 해제 상태 유지
       if (inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
       if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
       if (badgeSuiRec) badgeSuiRec.style.display = "none";
       if (badgeBidRec) badgeBidRec.style.display = "none";
+    } else if (isNegoChecked || isMatChecked) {
+      // 협상계약 또는 관급자재 구매 선택 시 수의계약/경쟁입찰 자동 체크를 방지하고 추천 태그도 숨김
+      if (badgeSuiRec) badgeSuiRec.style.display = "none";
+      if (badgeBidRec) badgeBidRec.style.display = "none";
+      if (isMatChecked) {
+        if (inpSui) { inpSui.checked = false; if (elSui) elSui.classList.remove("on"); }
+        if (inpBid) { inpBid.checked = false; if (elBid) elBid.classList.remove("on"); }
+      }
     } else {
-      const isNegoChecked = inpNego ? inpNego.checked : false;
-
-      if (isNegoChecked) {
-        if (badgeSuiRec) badgeSuiRec.style.display = "none";
-        if (badgeBidRec) badgeBidRec.style.display = "none";
-      } else if (p <= suiLimit) {
+      if (p <= suiLimit) {
         if (inpSui && !inpSui.disabled) {
           inpSui.checked = true;
           if (elSui) elSui.classList.add("on");
