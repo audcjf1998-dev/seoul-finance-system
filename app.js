@@ -221,12 +221,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 종류 칩 */
   let KIND = "goods";
+  function updateKindDesc() {
+    const descEl = $("kind-desc-text");
+    if (!descEl) return;
+    if (KIND === "gc") {
+      descEl.innerHTML = '<b>🏗️ 종합공사 (종합건설업) 선택됨:</b> 토목·건축·조경 등 5개 종합 업종. 종합적인 계획·관리·조정을 통해 시설물을 총괄 시공하는 공사예요.<br>• <b>2인 공개수의 한도:</b> 추정가격 <b>4억원 이하</b> (VAT 포함 4.4억원)<br>• <b>일상감사 대상:</b> 20억원 이상 | <b>계약심의위원회:</b> 50억원 이상 (시본청 기준)';
+    } else if (KIND === "sc") {
+      descEl.innerHTML = '<b>🛠️ 전문공사 (전문건설업) 선택됨:</b> 실내건축·토공·방수·금속·도장 등 14개 전문 업종. 시설물의 일부 또는 전문 분야별 시공기술을 요하는 공사예요.<br>• <b>2인 공개수의 한도:</b> 추정가격 <b>2억원 이하</b> (VAT 포함 2.2억원)<br>• <b>일상감사 대상:</b> 10억원 이상 | <b>계약심의위원회:</b> 30억원 이상';
+    } else if (KIND === "oc") {
+      descEl.innerHTML = '<b>⚡ 그 밖의 공사 (개별 특별법) 선택됨:</b> 전기공사 · 정보통신공사 · 소방시설공사 · 문화재수리공사. 건산법 외 개별 법령에 따라 <b>분리발주가 원칙</b>이에요.<br>• <b>2인 공개수의 한도:</b> 추정가격 <b>1.6억원 이하</b> (VAT 포함 1.76억원)<br>• <b>일상감사 대상:</b> 10억원 이상 | <b>계약심의위원회:</b> 30억원 이상';
+    } else if (KIND === "service") {
+      descEl.innerHTML = '<b>💼 용역 선택됨:</b> 학술연구, 일반용역, 엔지니어링·설계·감리 등 기술용역 및 정보화(SW) 사업.<br>• <b>2인 공개수의 한도:</b> 추정가격 <b>1억원 이하</b> | <b>원가심사:</b> 2억원 이상 (※ 법정 대가기준 직접 적용 기술용역 제외)<br>• <b>일상감사 대상:</b> 10억원 이상 (협상계약은 5억원↑) | <b>계약심의위원회:</b> 20억원 이상';
+    } else {
+      descEl.innerHTML = '<b>📦 물품 선택됨:</b> 행정 물품, 비품, 장비 구매 및 조달청 3자단가·MAS 다수공급자계약.<br>• <b>2인 공개수의 한도:</b> 추정가격 <b>1억원 이하</b> | <b>원가심사:</b> 2,000만원 이상 (※ 조달청 3자단가 제외)<br>• <b>일상감사 대상:</b> 5억원 이상 | <b>계약심의위원회:</b> 10억원 이상';
+    }
+  }
+  window.updateKindDesc = updateKindDesc;
+
   const kindEl = $("kind");
   if (kindEl) {
     kindEl.querySelectorAll(".chip").forEach(ch=>{
       ch.addEventListener("click",()=>{
         KIND = ch.dataset.k;
         kindEl.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===ch));
+        updateKindDesc();
         syncOpts();
         updateOptionStates();
       });
