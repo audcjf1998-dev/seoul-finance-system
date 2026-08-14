@@ -876,6 +876,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultView = $("step-result");
     const heroBanner = $("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
     const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
+    const aiBtn = $("btn-toggle-ai-widget") || document.querySelector(".floating-ai-btn");
+    const aiWidget = $("ai-chatbot-widget") || document.querySelector(".ai-chatbot-widget");
 
     if (loginView) loginView.style.setProperty("display", (stepName === "login") ? "block" : "none", "important");
     if (landingView) landingView.style.setProperty("display", (stepName === "landing") ? "block" : "none", "important");
@@ -885,6 +887,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (stepName === "login") {
       if (heroBanner) heroBanner.style.setProperty("display", "none", "important");
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
+      if (aiBtn) {
+        aiBtn.classList.remove("authenticated");
+        aiBtn.style.setProperty("display", "none", "important");
+      }
+      if (aiWidget) {
+        aiWidget.classList.remove("open");
+        aiWidget.style.setProperty("display", "none", "important");
+      }
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
@@ -893,6 +903,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (heroBanner) heroBanner.style.setProperty("display", "block", "important");
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
+      if (aiBtn) {
+        aiBtn.classList.add("authenticated");
+        aiBtn.style.setProperty("display", "inline-flex", "important");
+      }
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
         p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
@@ -904,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const targetView = stepName === "login" ? loginView : (stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView));
+    const targetView = stepName === "login" ? loginView : (stepName === "input" ? inputView : (stepName === "result" ? resultView : landingView));
     if (targetView) {
       targetView.classList.remove("fade-in");
       void targetView.offsetWidth;
@@ -971,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.goHome = function() {
     showTab("guide");
-    showStep("landing");
+    showStep("input");
   };
 
   /* ───── 진단 결과 렌더 ───── */
@@ -2843,6 +2857,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameDisplay = $("user-name-display");
     const heroBanner = $("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
     const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
+    const aiBtn = $("btn-toggle-ai-widget") || document.querySelector(".floating-ai-btn");
+    const aiWidget = $("ai-chatbot-widget") || document.querySelector(".ai-chatbot-widget");
 
     if (userSession && userSession.dept && userSession.name) {
       if (loggedInfoEl) loggedInfoEl.style.setProperty("display", "flex", "important");
@@ -2853,6 +2869,10 @@ document.addEventListener('DOMContentLoaded', () => {
         heroBanner.style.setProperty("display", "block", "important");
       }
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
+      if (aiBtn) {
+        aiBtn.classList.add("authenticated");
+        aiBtn.style.setProperty("display", "inline-flex", "important");
+      }
 
       const landingSpeechP = document.querySelector("#step-landing .speech-content p");
       if (landingSpeechP) {
@@ -2865,6 +2885,14 @@ document.addEventListener('DOMContentLoaded', () => {
         heroBanner.style.setProperty("display", "none", "important");
       }
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
+      if (aiBtn) {
+        aiBtn.classList.remove("authenticated");
+        aiBtn.style.setProperty("display", "none", "important");
+      }
+      if (aiWidget) {
+        aiWidget.classList.remove("open");
+        aiWidget.style.setProperty("display", "none", "important");
+      }
     }
   }
 
@@ -2878,7 +2906,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateLoginUI();
     showTab("guide");
-    showStep("landing");
+    showStep("input");
 
     if (typeof toast === "function") {
       toast(`👋 ${name}님 (${dept}) 환영합니다!`);
@@ -2916,7 +2944,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateLoginUI();
   const initUserSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
   if (initUserSession && initUserSession.dept && initUserSession.name) {
-    showStep("landing");
+    showStep("input");
   } else {
     showStep("login");
   }
