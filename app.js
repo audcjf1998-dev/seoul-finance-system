@@ -2841,14 +2841,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateLoginUI() {
     const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
     const loggedInfoEl = $("user-logged-info");
-    const btnOpenLogin = $("btn-open-login");
     const deptDisplay = $("user-dept-display");
     const nameDisplay = $("user-name-display");
     const mainTabsWrap = document.querySelector(".tabs-wrap");
 
     if (userSession && userSession.dept && userSession.name) {
       if (loggedInfoEl) loggedInfoEl.style.display = "flex";
-      if (btnOpenLogin) btnOpenLogin.style.display = "none";
       if (deptDisplay) deptDisplay.textContent = `🏛️ ${userSession.dept}`;
       if (nameDisplay) nameDisplay.innerHTML = `<b>${userSession.name}님</b>`;
       if (mainTabsWrap) mainTabsWrap.style.display = "flex";
@@ -2859,7 +2857,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       if (loggedInfoEl) loggedInfoEl.style.display = "none";
-      if (btnOpenLogin) btnOpenLogin.style.display = "inline-flex";
       if (mainTabsWrap) mainTabsWrap.style.display = "none";
     }
   }
