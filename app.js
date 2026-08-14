@@ -850,24 +850,30 @@ document.addEventListener('DOMContentLoaded', () => {
       +(x.s?'<div class="d">'+x.s+'</div>':'')+'</div>';
   }
 
-  /* ───── Step 0(Landing) ↔ Step 1(Input) ↔ Step 2(Result) 페이지 전환 기능 ───── */
+  /* ───── Step Login ↔ Step 0(Landing) ↔ Step 1(Input) ↔ Step 2(Result) 페이지 전환 기능 ───── */
   function showStep(stepName) {
+    const loginView = $("step-login");
     const landingView = $("step-landing");
     const inputView = $("step-input");
     const resultView = $("step-result");
 
+    if (loginView) loginView.style.display = (stepName === "login") ? "block" : "none";
     if (landingView) landingView.style.display = (stepName === "landing") ? "block" : "none";
     if (inputView) inputView.style.display = (stepName === "input") ? "block" : "none";
     if (resultView) resultView.style.display = (stepName === "result") ? "block" : "none";
 
-    if (stepName === "landing") {
-      // 홈 화면(첫 선택 화면)에서는 상단 탭 활성화(on)를 모두 해제하여 어떤 메뉴도 선택되지 않은 홈 상태로 안내
+    if (stepName === "login" || stepName === "landing") {
+      // 첫 로그인 및 홈 화면에서는 상단 탭 활성화(on)를 해제하고 guide 패널을 표시
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+      document.querySelectorAll(".panel").forEach(p => {
+        p.classList.toggle("on", p.id === "p-guide");
+        p.style.display = p.id === "p-guide" ? "block" : "none";
+      });
     } else if (stepName === "input" || stepName === "result") {
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
     }
 
-    const targetView = stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView);
+    const targetView = stepName === "login" ? loginView : (stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView));
     if (targetView) {
       targetView.classList.remove("fade-in");
       void targetView.offsetWidth;
@@ -934,7 +940,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.goHome = function() {
     showTab("guide");
-    showStep("landing");
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    if (userSession && userSession.dept && userSession.name) {
+      showStep("landing");
+    } else {
+      showStep("login");
+    }
   };
 
   /* ───── 진단 결과 렌더 ───── */
