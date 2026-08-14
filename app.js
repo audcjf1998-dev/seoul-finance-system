@@ -866,7 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ───── Step Login ↔ Step 0(Landing) ↔ Step 1(Input) ↔ Step 2(Result) 페이지 전환 기능 ───── */
   function showStep(stepName) {
     const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
-    if ((!userSession || !userSession.name) && stepName !== "login") {
+    if ((!userSession || !userSession.name || !userSession.dept) && stepName !== "login") {
       stepName = "login";
     }
 
@@ -875,30 +875,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputView = $("step-input");
     const resultView = $("step-result");
 
-    if (loginView) loginView.style.display = (stepName === "login") ? "block" : "none";
-    if (landingView) landingView.style.display = (stepName === "landing") ? "block" : "none";
-    if (inputView) inputView.style.display = (stepName === "input") ? "block" : "none";
-    if (resultView) resultView.style.display = (stepName === "result") ? "block" : "none";
+    if (loginView) loginView.style.setProperty("display", (stepName === "login") ? "block" : "none", "important");
+    if (landingView) landingView.style.setProperty("display", (stepName === "landing") ? "block" : "none", "important");
+    if (inputView) inputView.style.setProperty("display", (stepName === "input") ? "block" : "none", "important");
+    if (resultView) resultView.style.setProperty("display", (stepName === "result") ? "block" : "none", "important");
 
-    const mainTabsWrap = document.querySelector(".tabs-wrap");
+    const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
 
     if (stepName === "login") {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
-        p.style.display = p.id === "p-guide" ? "block" : "none";
+        p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
       });
-      if (mainTabsWrap) mainTabsWrap.style.display = "none";
+      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
     } else if (stepName === "landing") {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
-        p.style.display = p.id === "p-guide" ? "block" : "none";
+        p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
       });
-      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
+      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
     } else if (stepName === "input" || stepName === "result") {
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
-      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
+      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
     }
 
     const targetView = stepName === "login" ? loginView : (stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView));
@@ -2843,21 +2843,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const loggedInfoEl = $("user-logged-info");
     const deptDisplay = $("user-dept-display");
     const nameDisplay = $("user-name-display");
-    const mainTabsWrap = document.querySelector(".tabs-wrap");
+    const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
 
     if (userSession && userSession.dept && userSession.name) {
-      if (loggedInfoEl) loggedInfoEl.style.display = "flex";
+      if (loggedInfoEl) loggedInfoEl.style.setProperty("display", "flex", "important");
       if (deptDisplay) deptDisplay.textContent = `🏛️ ${userSession.dept}`;
       if (nameDisplay) nameDisplay.innerHTML = `<b>${userSession.name}님</b>`;
-      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
+      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
 
       const landingSpeechP = document.querySelector("#step-landing .speech-content p");
       if (landingSpeechP) {
         landingSpeechP.innerHTML = `👋 <b>${userSession.name} 담당자님(${userSession.dept})</b> 환영합니다! 오늘 필요하신 계약 업무를 선택해 보세요.`;
       }
     } else {
-      if (loggedInfoEl) loggedInfoEl.style.display = "none";
-      if (mainTabsWrap) mainTabsWrap.style.display = "none";
+      if (loggedInfoEl) loggedInfoEl.style.setProperty("display", "none", "important");
+      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
     }
   }
 

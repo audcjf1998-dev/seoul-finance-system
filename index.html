@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="styles.css?v=20260814_3000">
+<link rel="stylesheet" href="styles.css?v=20260814_88888">
 </head>
 <body>
 <div class="wrap">
@@ -27,8 +27,8 @@
     <!-- 로그인 상태 및 사용자 소속 프로필 바 -->
     <div id="user-session-bar" style="display:flex; align-items:center; gap:8px;">
       <div id="user-logged-info" style="display:none; align-items:center; gap:8px; background:#ffffff; border:1.5px solid #bfdbfe; border-radius:20px; padding:5px 14px; font-size:0.84rem; font-weight:700; color:#1d4fc4; box-shadow:0 2px 10px rgba(37,99,235,0.08);">
-        <span id="user-dept-display">🏛️ 서울시 물순환안전국</span>
-        <span id="user-name-display"><b>물순환주무관님</b></span>
+        <span id="user-dept-display">🏛️ 서울시 본청</span>
+        <span id="user-name-display"><b>김계약 담당자님</b></span>
         <button type="button" onclick="window.doLogout()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:800; font-size:0.8rem; margin-left:6px;" title="로그아웃">로그아웃</button>
       </div>
     </div>
@@ -49,7 +49,7 @@
   </div>
 </div>
 
-<div class="tabs-wrap">
+<div class="tabs-wrap" id="main-tabs-wrap" style="display:none !important;">
   <div class="tabs">
     <button class="tab on" data-p="guide">맞춤 안내</button>
     <button class="tab" data-p="check">체크리스트</button>
@@ -1133,6 +1133,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260814_3000"></script>
+<script src="app.js?v=20260814_88888"></script>
 </body>
 </html>
