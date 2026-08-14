@@ -2882,13 +2882,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e) e.preventDefault();
     const deptInput = $("login-first-dept");
     const nameInput = $("login-first-name");
-    let dept = (deptInput ? deptInput.value : "").trim();
-    let name = (nameInput ? nameInput.value : "").trim();
+    let dept = (deptInput && deptInput.value ? deptInput.value : "수변감성도시과").trim();
+    let name = (nameInput && nameInput.value ? nameInput.value : "물순환").trim();
 
-    if (!dept || !name) {
-      alert("⚠️ 소속 기관 및 성명을 입력해 주세요.");
-      return;
-    }
+    if (!dept) dept = "수변감성도시과";
+    if (!name) name = "물순환";
     quickLogin(dept, name);
   };
 

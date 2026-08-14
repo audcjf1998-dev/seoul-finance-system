@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="styles.css?v=20260814_HIDE_HERO_HERO">
+<link rel="stylesheet" href="styles.css?v=20260814_FINAL_LOGIN">
 </head>
 <body>
 <div class="wrap">
@@ -90,10 +90,10 @@
       <div class="naver-login-card">
         <form onsubmit="window.handleCustomLogin(event)">
           <div class="naver-input-group">
-            <input type="text" id="login-first-dept" class="naver-input-field" placeholder="소속 부서명 (예: 수변감성도시과)" required autocomplete="off">
+            <input type="text" id="login-first-dept" class="naver-input-field" value="수변감성도시과" placeholder="소속 부서명 (예: 수변감성도시과)" required autocomplete="off">
           </div>
           <div class="naver-input-group">
-            <input type="text" id="login-first-name" class="naver-input-field" placeholder="담당자 성명 및 직급 (예: 물순환)" required autocomplete="off">
+            <input type="text" id="login-first-name" class="naver-input-field" value="물순환" placeholder="담당자 성명 및 직급 (예: 물순환)" required autocomplete="off">
           </div>
 
           <div class="naver-login-options">
@@ -114,22 +114,6 @@
             <button type="submit" class="naver-btn-primary">
               로그인
             </button>
-          </div>
-
-          <div class="naver-quick-presets">
-            <span class="preset-label">빠른 선택:</span>
-            <button type="button" class="preset-chip" onclick="window.quickLogin('수변감성도시과', '물순환')">🏛️ 수변감성도시과</button>
-            <button type="button" class="preset-chip" onclick="window.quickLogin('강남구 재무과', '이재무 계약팀장')">🏢 자치구 담당</button>
-            <button type="button" class="preset-chip" onclick="window.quickLogin('서울교통공사 계약처', '박공사 주임')">💼 투자·출연기관</button>
-            <button type="button" class="preset-chip" onclick="window.quickLogin('서울시 일반 행정부서', '최행정 주무관')">👤 게스트</button>
-          </div>
-
-          <div class="naver-card-footer-links">
-            <a href="javascript:void(0)" onclick="alert('서울계약 도우미는 서울특별시 계약 실무자 전용 도구입니다.')">부서 확인</a>
-            <span class="divider">|</span>
-            <a href="javascript:void(0)" onclick="alert('계약 매뉴얼 문의: 서울시 재무과 계약팀')">담당자 문의</a>
-            <span class="divider">|</span>
-            <a href="javascript:void(0)" onclick="window.quickLogin('수변감성도시과', '물순환')">게스트 이용</a>
           </div>
         </form>
       </div>
@@ -1084,6 +1068,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260814_HIDE_HERO_HERO"></script>
+<script src="app.js?v=20260814_FINAL_LOGIN"></script>
 </body>
 </html>
