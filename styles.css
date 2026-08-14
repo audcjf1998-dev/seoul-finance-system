@@ -69,13 +69,16 @@ code, pre, kbd, samp {
   color: #0f172a;
   padding: 3px 8px;
   border-radius: 6px;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: normal !important;
   word-spacing: normal !important;
-  word-break: break-all;
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+  white-space: pre-wrap !important;
+  max-width: 100% !important;
   border: 1px solid #cbd5e1;
-  display: inline-block;
+  display: inline;
   line-height: 1.45;
 }
 
