@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="styles.css?v=20260814_LOGIN_FIX_MAIN">
+<link rel="stylesheet" href="styles.css?v=20260814_PREVENT_RELOAD">
 </head>
 <body>
 <div class="wrap">
@@ -88,7 +88,7 @@
       </div>
 
       <div class="naver-login-card">
-        <form onsubmit="window.handleCustomLogin(event)">
+        <form onsubmit="window.handleCustomLogin(event); return false;">
           <div class="naver-input-group">
             <input type="text" id="login-first-dept" class="naver-input-field" value="수변감성도시과" placeholder="소속 부서명 (예: 수변감성도시과)" required autocomplete="off">
           </div>
@@ -111,7 +111,7 @@
             <button type="button" class="naver-btn-secondary" onclick="window.quickLogin('수변감성도시과', '물순환')">
               ⚡ 1초 빠른로그인
             </button>
-            <button type="submit" class="naver-btn-primary">
+            <button type="button" class="naver-btn-primary" onclick="window.handleCustomLogin(event)">
               로그인
             </button>
           </div>
@@ -1068,6 +1068,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260814_LOGIN_FIX_MAIN"></script>
+<script src="app.js?v=20260814_PREVENT_RELOAD"></script>
 </body>
 </html>

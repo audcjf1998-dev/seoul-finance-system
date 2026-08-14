@@ -2869,25 +2869,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.quickLogin = function(dept, name) {
+    if (!dept) dept = "수변감성도시과";
+    if (!name) name = "물순환";
     const session = { dept, name, loggedAt: new Date().toISOString() };
-    localStorage.setItem("seoul_user_session", JSON.stringify(session));
+    try {
+      localStorage.setItem("seoul_user_session", JSON.stringify(session));
+    } catch(err) {}
+
     updateLoginUI();
+    showTab("guide");
     showStep("landing");
+
     if (typeof toast === "function") {
       toast(`👋 ${name}님 (${dept}) 환영합니다!`);
     }
+    return false;
   };
 
   window.handleCustomLogin = function(e) {
-    if (e) e.preventDefault();
-    const deptInput = $("login-first-dept");
-    const nameInput = $("login-first-name");
+    if (e) {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      if (typeof e.stopPropagation === "function") e.stopPropagation();
+    }
+    const deptInput = $("login-first-dept") || document.getElementById("login-first-dept");
+    const nameInput = $("login-first-name") || document.getElementById("login-first-name");
     let dept = (deptInput && deptInput.value ? deptInput.value : "수변감성도시과").trim();
     let name = (nameInput && nameInput.value ? nameInput.value : "물순환").trim();
 
     if (!dept) dept = "수변감성도시과";
     if (!name) name = "물순환";
-    quickLogin(dept, name);
+    window.quickLogin(dept, name);
+    return false;
   };
 
   window.doLogout = function() {
