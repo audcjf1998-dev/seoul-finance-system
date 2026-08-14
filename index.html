@@ -24,13 +24,9 @@
       <img src="seoul_slogan.png?v=20260811_3" alt="SEOUL MY SOUL" class="slogan-img">
     </div>
 
-    <!-- 로그인 상태 및 사용자 소속 프로필 바 -->
-    <div id="user-session-bar" style="display:flex; align-items:center; gap:8px;">
-      <div id="user-logged-info" style="display:none; align-items:center; gap:8px; background:#ffffff; border:1.5px solid #bfdbfe; border-radius:20px; padding:5px 14px; font-size:0.84rem; font-weight:700; color:#1d4fc4; box-shadow:0 2px 10px rgba(37,99,235,0.08);">
-        <span id="user-dept-display">🏛️ 서울시 본청</span>
-        <span id="user-name-display"><b>김계약 담당자님</b></span>
-        <button type="button" onclick="window.doLogout()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:800; font-size:0.8rem; margin-left:6px;" title="로그아웃">로그아웃</button>
-      </div>
+  <div class="hero-brand-bar">
+    <div class="slogan-badge-wrap">
+      <img src="seoul_slogan.png?v=20260811_3" alt="SEOUL MY SOUL" class="slogan-img">
     </div>
   </div>
   
@@ -49,7 +45,7 @@
   </div>
 </div>
 
-<div class="tabs-wrap" id="main-tabs-wrap" style="display:none !important;">
+<div class="tabs-wrap">
   <div class="tabs">
     <button class="tab on" data-p="guide">맞춤 안내</button>
     <button class="tab" data-p="check">체크리스트</button>
@@ -78,65 +74,6 @@
 
 <!-- ─────────── 1. 맞춤 안내 ─────────── -->
 <section class="panel on" id="p-guide">
-
-  <!-- [STEP LOGIN] 첫 화면 필수 로그인 페이지 (Login Screen) -->
-  <div id="step-login" class="step-view">
-    <div class="card mascot-card" style="border:2px solid #bfdbfe; background:linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);">
-      <div class="mascot-speech-banner" style="margin-bottom:20px;">
-        <div class="mascot-img-box">
-          <img src="heachi_friends.png" alt="해치와 소울프렌즈" class="mascot-avatar">
-        </div>
-        <div class="speech-content">
-          <div class="speech-title">
-            <b style="font-size:1.15rem; color:#1d4ed8;">🔑 서울계약 도우미 로그인 서비스</b>
-          </div>
-          <p style="font-size:0.92rem; color:#334155; margin-top:4px;">
-            서울시 발주담당자 및 계약 실무관 전용 참고 도구입니다.<br>
-            소속 기관 및 담당자 정보를 선택하거나 입력 후 시스템을 이용하실 수 있습니다.
-          </p>
-        </div>
-      </div>
-
-      <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:18px; padding:28px 24px; box-shadow:0 10px 25px rgba(15,23,42,0.05); max-width:540px; margin:0 auto;">
-        <div style="text-align:center; margin-bottom:20px;">
-          <h3 style="font-size:1.3rem; font-weight:900; color:#0f172a; margin:0 0 6px 0;">🏛️ 발주 담당자 로그인 / 소속 선택</h3>
-          <p style="font-size:0.88rem; color:#64748b; margin:0;">빠른 로그인 버튼을 누르시거나 소속을 직접 입력하세요.</p>
-        </div>
-
-        <!-- 1초 원클릭 소속 선택 -->
-        <div style="margin-bottom:20px;">
-          <label style="font-size:0.83rem; font-weight:800; color:#0f766e; display:block; margin-bottom:8px;">⚡ 1초 원클릭 소속 선택 (빠른 로그인)</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button type="button" class="btn ghost" onclick="window.quickLogin('서울특별시 물순환안전국 수변감성도시과', '물순환주무관')" style="padding:12px 14px; font-size:0.85rem; text-align:left; border-color:#bfdbfe; background:#eff6ff;">🏛️ 물순환안전국</button>
-            <button type="button" class="btn ghost" onclick="window.quickLogin('강남구 재무과', '이재무 계약팀장')" style="padding:12px 14px; font-size:0.85rem; text-align:left; border-color:#bfdbfe; background:#eff6ff;">🏢 자치구 계약담당</button>
-            <button type="button" class="btn ghost" onclick="window.quickLogin('서울교통공사 계약처', '박공사 주임')" style="padding:12px 14px; font-size:0.85rem; text-align:left; border-color:#bfdbfe; background:#eff6ff;">💼 투자·출연기관</button>
-            <button type="button" class="btn ghost" onclick="window.quickLogin('서울시 일반 행정부서', '최행정 주무관')" style="padding:12px 14px; font-size:0.85rem; text-align:left; border-color:#bfdbfe; background:#eff6ff;">👤 일반 체험 게스트</button>
-          </div>
-        </div>
-
-        <div style="display:flex; align-items:center; margin:18px 0; color:#94a3b8; font-size:0.8rem;">
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-          <span style="padding:0 10px; font-weight:600;">또는 직접 입력</span>
-          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-        </div>
-
-        <!-- Custom Input Login Form -->
-        <form onsubmit="window.handleCustomLogin(event)">
-          <div class="field" style="margin-bottom:14px;">
-            <label style="font-size:0.86rem; font-weight:700; color:#334155;">소속 기관 / 부서명</label>
-            <input type="text" id="login-first-dept" placeholder="예: 서울특별시 물순환안전국 수변감성도시과" style="height:44px; font-size:0.92rem; border-radius:10px;">
-          </div>
-          <div class="field" style="margin-bottom:20px;">
-            <label style="font-size:0.86rem; font-weight:700; color:#334155;">성명 및 직급 (담당자명)</label>
-            <input type="text" id="login-first-name" placeholder="예: 물순환주무관" style="height:44px; font-size:0.92rem; border-radius:10px;">
-          </div>
-          <button type="submit" class="btn" style="width:100%; padding:14px; font-size:1.05rem; font-weight:800; background:var(--primary); color:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(37,99,235,0.25);">
-            🔑 로그인 및 시스템 시작하기 →
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <!-- [STEP 0] 첫 화면 업무 선택 (Landing Screen) -->
   <div id="step-landing" class="step-view">
@@ -1084,55 +1021,8 @@
     <textarea id="gpt-input-text" rows="1" placeholder="계약법, 수의계약, 입찰 절차 등에 대해 질문해 보세요..." style="flex:1;border:1.5px solid #cbd5e1;border-radius:10px;padding:8px 12px;font-family:inherit;font-size:0.88rem;resize:none;max-height:80px;"></textarea>
     <button type="button" class="btn pri-btn" id="btn-send-gpt" style="height:38px;padding:0 14px;font-size:0.88rem;background:#2563eb;color:#fff;border-radius:10px;white-space:nowrap;">전송</button>
   </div>
-<!-- ─────────── LOGIN MODAL / PAGE CONTAINER ─────────── -->
-<div id="login-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.55); backdrop-filter:blur(5px); z-index:99999; justify-content:center; align-items:center; padding:16px;">
-  <div style="background:#ffffff; border-radius:24px; width:100%; max-width:480px; padding:32px 28px; box-shadow:0 20px 45px rgba(0,0,0,0.2); border:1.5px solid #cbd5e1; position:relative; animation:modalSlideUp 0.25s ease-out; box-sizing:border-box;">
-    <!-- Modal Close Button -->
-    <button type="button" onclick="window.hideLoginModal()" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:#94a3b8; font-weight:700;" title="닫기">✕</button>
-
-    <!-- Header -->
-    <div style="text-align:center; margin-bottom:20px;">
-      <div style="display:inline-flex; align-items:center; justify-content:center; background:#eff6ff; border-radius:50%; width:64px; height:64px; margin-bottom:10px;">
-        <span style="font-size:2rem;">🏛️</span>
-      </div>
-      <h2 style="font-size:1.35rem; font-weight:900; color:#0f172a; margin:0 0 4px 0;">서울계약 도우미 로그인</h2>
-      <p style="font-size:0.88rem; color:#64748b; margin:0;">발주 담당자님의 소속 기관 및 담당 정보를 입력해 주세요.</p>
-    </div>
-
-    <!-- Quick Preset Login Buttons -->
-    <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem; font-weight:800; color:#0f766e; display:block; margin-bottom:8px;">⚡ 1초 원클릭 소속 선택 (빠른 로그인)</label>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <button type="button" class="btn ghost" onclick="window.quickLogin('서울특별시 물순환안전국 수변감성도시과', '물순환주무관')" style="padding:10px 12px; font-size:0.83rem; text-align:left; border-color:#cbd5e1; background:#f8fafc;">🏛️ 물순환안전국</button>
-        <button type="button" class="btn ghost" onclick="window.quickLogin('강남구 재무과', '이재무 계약팀장')" style="padding:10px 12px; font-size:0.83rem; text-align:left; border-color:#cbd5e1; background:#f8fafc;">🏢 자치구 계약담당</button>
-        <button type="button" class="btn ghost" onclick="window.quickLogin('서울교통공사 계약처', '박공사 주임')" style="padding:10px 12px; font-size:0.83rem; text-align:left; border-color:#cbd5e1; background:#f8fafc;">💼 투자·출연기관</button>
-        <button type="button" class="btn ghost" onclick="window.quickLogin('서울시 일반 행정부서', '최행정 주무관')" style="padding:10px 12px; font-size:0.83rem; text-align:left; border-color:#cbd5e1; background:#f8fafc;">👤 일반 체험 게스트</button>
-      </div>
-    </div>
-
-    <div style="display:flex; align-items:center; margin:16px 0; color:#94a3b8; font-size:0.8rem;">
-      <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-      <span style="padding:0 8px; font-weight:600;">또는 직접 입력</span>
-      <div style="flex:1; height:1px; background:#e2e8f0;"></div>
-    </div>
-
-    <!-- Custom Form -->
-    <form id="login-form" onsubmit="window.handleCustomLogin(event)">
-      <div class="field" style="margin-bottom:12px;">
-        <label style="font-size:0.85rem; font-weight:700; color:#334155;">소속 기관 / 부서명</label>
-        <input type="text" id="login-dept-input" placeholder="예: 서울특별시 물순환안전국 수변감성도시과" style="height:42px; font-size:0.9rem; border-radius:10px;">
-      </div>
-      <div class="field" style="margin-bottom:18px;">
-        <label style="font-size:0.85rem; font-weight:700; color:#334155;">성명 및 직급 (담당자명)</label>
-        <input type="text" id="login-name-input" placeholder="예: 물순환주무관" style="height:42px; font-size:0.9rem; border-radius:10px;">
-      </div>
-      <button type="submit" class="btn" style="width:100%; padding:13px; font-size:1rem; font-weight:800; background:var(--primary); color:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(37,99,235,0.25);">
-        🔑 로그인 / 업무 시작하기
-      </button>
-    </form>
-  </div>
 </div>
 
-<script src="app.js?v=20260814_99999"></script>
+<script src="app.js?v=20260814_open"></script>
 </body>
 </html>

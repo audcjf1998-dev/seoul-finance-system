@@ -479,7 +479,7 @@ code, pre, kbd, samp {
 
 /* ─────────────────── 탭 바 & 저장/불러오기 버튼 ─────────────────── */
 .tabs-wrap {
-  display: none;
+  display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 22px;
