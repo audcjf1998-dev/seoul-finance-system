@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
     document.querySelectorAll(".panel").forEach(s=>{
       s.classList.toggle("on",s.id==="p-"+p);
-      s.style.display = (s.id==="p-"+p) ? "block" : "none";
+      s.style.setProperty("display", (s.id==="p-"+p) ? "block" : "none", "important");
     });
     window.scrollTo({top:0,behavior:"smooth"});
     if (p === "gpt" && window.openAiChatbotWidget) {
@@ -874,7 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const landingView = $("step-landing");
     const inputView = $("step-input");
     const resultView = $("step-result");
-    const heroBanner = document.querySelector(".hero.seoul-soul-hero");
+    const heroBanner = $("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
     const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
 
     if (loginView) loginView.style.setProperty("display", (stepName === "login") ? "block" : "none", "important");
@@ -893,12 +893,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (heroBanner) heroBanner.style.setProperty("display", "block", "important");
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
+      document.querySelectorAll(".panel").forEach(p => {
+        p.classList.toggle("on", p.id === "p-guide");
+        p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
+      });
       if (stepName === "landing") {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
-        document.querySelectorAll(".panel").forEach(p => {
-          p.classList.toggle("on", p.id === "p-guide");
-          p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
-        });
       } else if (stepName === "input" || stepName === "result") {
         document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
       }
