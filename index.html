@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="styles.css?v=20260814_MAIN_LANDING_FIX">
+<link rel="stylesheet" href="styles.css?v=20260814_DIRECT_CLICK_FIX">
 </head>
 <body>
 <div class="wrap">
@@ -88,7 +88,7 @@
       </div>
 
       <div class="naver-login-card">
-        <form onsubmit="window.handleCustomLogin(event); return false;">
+        <form onsubmit="window.doDirectLogin(); return false;">
           <div class="naver-input-group">
             <input type="text" id="login-first-dept" class="naver-input-field" value="수변감성도시과" placeholder="소속 부서명 (예: 수변감성도시과)" required autocomplete="off">
           </div>
@@ -108,15 +108,50 @@
           </div>
 
           <div class="naver-btn-row">
-            <button type="button" class="naver-btn-secondary" onclick="window.quickLogin('수변감성도시과', '물순환')">
+            <button type="button" class="naver-btn-secondary" onclick="window.doDirectLogin('수변감성도시과', '물순환')">
               ⚡ 1초 빠른로그인
             </button>
-            <button type="button" class="naver-btn-primary" onclick="window.handleCustomLogin(event)">
+            <button type="button" class="naver-btn-primary" onclick="window.doDirectLogin()">
               로그인
             </button>
           </div>
         </form>
       </div>
+      <script>
+        window.doDirectLogin = function(dept, name) {
+          var d = dept || (document.getElementById("login-first-dept") ? document.getElementById("login-first-dept").value : "") || "수변감성도시과";
+          var n = name || (document.getElementById("login-first-name") ? document.getElementById("login-first-name").value : "") || "물순환";
+          var session = { dept: d.trim(), name: n.trim(), loggedAt: new Date().toISOString() };
+          try { localStorage.setItem("seoul_user_session", JSON.stringify(session)); } catch(e) {}
+
+          var stepLogin = document.getElementById("step-login");
+          var stepLanding = document.getElementById("step-landing");
+          var stepInput = document.getElementById("step-input");
+          var stepResult = document.getElementById("step-result");
+          var heroBanner = document.getElementById("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
+          var tabsWrap = document.getElementById("main-tabs-wrap") || document.querySelector(".tabs-wrap");
+          var aiBtn = document.getElementById("btn-toggle-ai-widget") || document.querySelector(".floating-ai-btn");
+          var userLoggedInfo = document.getElementById("user-logged-info");
+          var userDeptDisplay = document.getElementById("user-dept-display");
+          var userNameDisplay = document.getElementById("user-name-display");
+
+          if (stepLogin) stepLogin.style.setProperty("display", "none", "important");
+          if (stepLanding) stepLanding.style.setProperty("display", "block", "important");
+          if (stepInput) stepInput.style.setProperty("display", "none", "important");
+          if (stepResult) stepResult.style.setProperty("display", "none", "important");
+
+          if (heroBanner) heroBanner.style.setProperty("display", "block", "important");
+          if (tabsWrap) tabsWrap.style.setProperty("display", "flex", "important");
+          if (aiBtn) aiBtn.style.setProperty("display", "inline-flex", "important");
+          if (userLoggedInfo) userLoggedInfo.style.setProperty("display", "flex", "important");
+          if (userDeptDisplay) userDeptDisplay.textContent = "🏛️ " + session.dept;
+          if (userNameDisplay) userNameDisplay.innerHTML = "<b>" + session.name + "님</b>";
+
+          if (window.updateLoginUI) window.updateLoginUI();
+          if (window.showStep) window.showStep("landing");
+          return false;
+        };
+      </script>
     </div>
   </div>
 
@@ -1068,6 +1103,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260814_MAIN_LANDING_FIX"></script>
+<script src="app.js?v=20260814_DIRECT_CLICK_FIX"></script>
 </body>
 </html>
