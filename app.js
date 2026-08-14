@@ -2798,4 +2798,72 @@ document.addEventListener('DOMContentLoaded', () => {
   // 초기 상태 검증 및 첫 화면(landing) 표시
   if (typeof updateOptionStates === "function") updateOptionStates();
   showStep("landing");
+
+  /* ─────────── LOGIN & USER SESSION MANAGEMENT ─────────── */
+  function updateLoginUI() {
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    const loggedInfoEl = $("user-logged-info");
+    const btnOpenLogin = $("btn-open-login");
+    const deptDisplay = $("user-dept-display");
+    const nameDisplay = $("user-name-display");
+
+    if (userSession && userSession.dept && userSession.name) {
+      if (loggedInfoEl) loggedInfoEl.style.display = "flex";
+      if (btnOpenLogin) btnOpenLogin.style.display = "none";
+      if (deptDisplay) deptDisplay.textContent = `🏛️ ${userSession.dept}`;
+      if (nameDisplay) nameDisplay.innerHTML = `<b>${userSession.name}님</b>`;
+    } else {
+      if (loggedInfoEl) loggedInfoEl.style.display = "none";
+      if (btnOpenLogin) btnOpenLogin.style.display = "inline-flex";
+    }
+  }
+
+  window.showLoginModal = function() {
+    const modal = $("login-modal-overlay");
+    if (modal) {
+      modal.style.display = "flex";
+    }
+  };
+
+  window.hideLoginModal = function() {
+    const modal = $("login-modal-overlay");
+    if (modal) {
+      modal.style.display = "none";
+    }
+  };
+
+  window.quickLogin = function(dept, name) {
+    const session = { dept, name, loggedAt: new Date().toISOString() };
+    localStorage.setItem("seoul_user_session", JSON.stringify(session));
+    updateLoginUI();
+    hideLoginModal();
+    if (typeof toast === "function") {
+      toast(`👋 ${name}님 (${dept}) 환영합니다!`);
+    } else {
+      alert(`👋 ${name}님 (${dept}) 환영합니다!`);
+    }
+  };
+
+  window.handleCustomLogin = function(e) {
+    if (e) e.preventDefault();
+    const dept = ($("login-dept-input") ? $("login-dept-input").value : "").trim();
+    const name = ($("login-name-input") ? $("login-name-input").value : "").trim();
+    if (!dept || !name) {
+      alert("⚠️ 소속 기관 및 성명을 모두 입력해 주세요.");
+      return;
+    }
+    quickLogin(dept, name);
+  };
+
+  window.doLogout = function() {
+    if (confirm("로그아웃 하시겠습니까?")) {
+      localStorage.removeItem("seoul_user_session");
+      updateLoginUI();
+      if (typeof toast === "function") {
+        toast("로그아웃 되었습니다.");
+      }
+    }
+  };
+
+  updateLoginUI();
 });
