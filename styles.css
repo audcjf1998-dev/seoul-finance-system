@@ -2524,10 +2524,20 @@ tr.win td {
 /* ─────────────────── 네이버 스타일 로그인 페이지 ─────────────────── */
 .naver-login-container {
   max-width: 480px;
-  margin: 30px auto 50px auto;
-  padding: 0 16px;
+  width: 100%;
+  min-height: calc(100vh - 220px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  padding: 40px 16px;
   box-sizing: border-box;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+.naver-login-logo, .naver-login-card {
+  width: 100%;
 }
 
 .naver-login-logo {
