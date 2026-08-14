@@ -2841,12 +2841,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const loggedInfoEl = $("user-logged-info");
     const deptDisplay = $("user-dept-display");
     const nameDisplay = $("user-name-display");
+    const heroBanner = $("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
     const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
 
     if (userSession && userSession.dept && userSession.name) {
       if (loggedInfoEl) loggedInfoEl.style.setProperty("display", "flex", "important");
       if (deptDisplay) deptDisplay.textContent = `🏛️ ${userSession.dept}`;
       if (nameDisplay) nameDisplay.innerHTML = `<b>${userSession.name}님</b>`;
+      if (heroBanner) {
+        heroBanner.classList.add("authenticated");
+        heroBanner.style.setProperty("display", "block", "important");
+      }
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
 
       const landingSpeechP = document.querySelector("#step-landing .speech-content p");
@@ -2855,6 +2860,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       if (loggedInfoEl) loggedInfoEl.style.setProperty("display", "none", "important");
+      if (heroBanner) {
+        heroBanner.classList.remove("authenticated");
+        heroBanner.style.setProperty("display", "none", "important");
+      }
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
     }
   }

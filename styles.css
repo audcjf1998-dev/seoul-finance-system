@@ -113,6 +113,7 @@ code, pre, kbd, samp {
 
 /* ─────────────────── SEOUL MY SOUL TRENDY LIGHT HERO & WATERMARK ─────────────────── */
 .hero.seoul-soul-hero {
+  display: none !important;
   background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #f3fdf8 100%);
   color: var(--ink);
   border-radius: 24px;
@@ -126,6 +127,10 @@ code, pre, kbd, samp {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.hero.seoul-soul-hero.authenticated {
+  display: block !important;
 }
 
 /* 해치와 소울프렌즈 대형 은은한 워터마크 배경 */
