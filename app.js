@@ -136,8 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 탭 스위칭 */
   window.showTab = function(p){
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    if (!userSession || !userSession.name) {
+      if (typeof window.showStep === "function") window.showStep("login");
+      return;
+    }
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
-    document.querySelectorAll(".panel").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
+    document.querySelectorAll(".panel").forEach(s=>{
+      s.classList.toggle("on",s.id==="p-"+p);
+      s.style.display = (s.id==="p-"+p) ? "block" : "none";
+    });
     window.scrollTo({top:0,behavior:"smooth"});
     if (p === "gpt" && window.openAiChatbotWidget) {
       window.openAiChatbotWidget();
@@ -149,6 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 업무 목적별 맞춤 바로가기 네비게이터 (상단 탭 바 100% 매칭) */
   window.navToPurpose = function(type) {
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    if (!userSession || !userSession.name) {
+      if (typeof window.showStep === "function") window.showStep("login");
+      return;
+    }
     if (type === "guide") {
       showTab("guide");
       if (typeof window.showStep === "function") window.showStep("input");
@@ -852,6 +865,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ───── Step Login ↔ Step 0(Landing) ↔ Step 1(Input) ↔ Step 2(Result) 페이지 전환 기능 ───── */
   function showStep(stepName) {
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    if ((!userSession || !userSession.name) && stepName !== "login") {
+      stepName = "login";
+    }
+
     const loginView = $("step-login");
     const landingView = $("step-landing");
     const inputView = $("step-input");
@@ -862,15 +880,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputView) inputView.style.display = (stepName === "input") ? "block" : "none";
     if (resultView) resultView.style.display = (stepName === "result") ? "block" : "none";
 
-    if (stepName === "login" || stepName === "landing") {
-      // 첫 로그인 및 홈 화면에서는 상단 탭 활성화(on)를 해제하고 guide 패널을 표시
+    const mainTabsWrap = document.querySelector(".tabs-wrap");
+
+    if (stepName === "login") {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
         p.style.display = p.id === "p-guide" ? "block" : "none";
       });
+      if (mainTabsWrap) mainTabsWrap.style.display = "none";
+    } else if (stepName === "landing") {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+      document.querySelectorAll(".panel").forEach(p => {
+        p.classList.toggle("on", p.id === "p-guide");
+        p.style.display = p.id === "p-guide" ? "block" : "none";
+      });
+      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
     } else if (stepName === "input" || stepName === "result") {
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
+      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
     }
 
     const targetView = stepName === "login" ? loginView : (stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView));
