@@ -985,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.goHome = function() {
     showTab("guide");
-    showStep("input");
+    showStep("landing");
   };
 
   /* ───── 진단 결과 렌더 ───── */
@@ -2906,7 +2906,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateLoginUI();
     showTab("guide");
-    showStep("input");
+    showStep("landing");
 
     if (typeof toast === "function") {
       toast(`👋 ${name}님 (${dept}) 환영합니다!`);
@@ -2944,7 +2944,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateLoginUI();
   const initUserSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
   if (initUserSession && initUserSession.dept && initUserSession.name) {
-    showStep("input");
+    showStep("landing");
   } else {
     showStep("login");
   }
