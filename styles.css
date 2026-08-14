@@ -80,20 +80,24 @@ code, pre, kbd, samp {
 }
 
 .wrap {
-  max-width: 1400px;
+  max-width: 1160px;
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 24px 100px;
+  padding: 20px 20px 80px;
+  box-sizing: border-box;
 }
 
 /* ─────────────────── 2-COLUMN DASHBOARD GRID LAYOUT ─────────────────── */
 .result-grid-layout {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   align-items: start;
+  width: 100%;
+  max-width: 100%;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1024px) {
   .result-grid-layout {
     grid-template-columns: 1fr;
   }
@@ -639,6 +643,10 @@ code, pre, kbd, samp {
   margin-bottom: 20px;
   box-shadow: var(--shadow);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .card:hover {
