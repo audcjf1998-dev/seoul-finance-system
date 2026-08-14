@@ -152,11 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* 업무 목적별 맞춤 바로가기 네비게이터 (상단 탭 바 100% 매칭) */
   window.navToPurpose = function(type) {
-    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
-    if (!userSession || !userSession.name) {
-      if (typeof window.showStep === "function") window.showStep("login");
-      return;
-    }
     if (type === "guide") {
       showTab("guide");
       if (typeof window.showStep === "function") window.showStep("input");
@@ -945,12 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.goHome = function() {
     showTab("guide");
-    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
-    if (userSession && userSession.dept && userSession.name) {
-      showStep("landing");
-    } else {
-      showStep("login");
-    }
+    showStep("landing");
   };
 
   /* ───── 진단 결과 렌더 ───── */
