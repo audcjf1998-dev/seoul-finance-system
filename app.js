@@ -874,31 +874,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const landingView = $("step-landing");
     const inputView = $("step-input");
     const resultView = $("step-result");
+    const heroBanner = document.querySelector(".hero.seoul-soul-hero");
+    const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
 
     if (loginView) loginView.style.setProperty("display", (stepName === "login") ? "block" : "none", "important");
     if (landingView) landingView.style.setProperty("display", (stepName === "landing") ? "block" : "none", "important");
     if (inputView) inputView.style.setProperty("display", (stepName === "input") ? "block" : "none", "important");
     if (resultView) resultView.style.setProperty("display", (stepName === "result") ? "block" : "none", "important");
 
-    const mainTabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
-
     if (stepName === "login") {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
-      document.querySelectorAll(".panel").forEach(p => {
-        p.classList.toggle("on", p.id === "p-guide");
-        p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
-      });
+      if (heroBanner) heroBanner.style.setProperty("display", "none", "important");
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "none", "important");
-    } else if (stepName === "landing") {
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       document.querySelectorAll(".panel").forEach(p => {
         p.classList.toggle("on", p.id === "p-guide");
         p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
       });
+    } else {
+      if (heroBanner) heroBanner.style.setProperty("display", "block", "important");
       if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
-    } else if (stepName === "input" || stepName === "result") {
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
-      if (mainTabsWrap) mainTabsWrap.style.setProperty("display", "flex", "important");
+      if (stepName === "landing") {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+        document.querySelectorAll(".panel").forEach(p => {
+          p.classList.toggle("on", p.id === "p-guide");
+          p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
+        });
+      } else if (stepName === "input" || stepName === "result") {
+        document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.p === "guide"));
+      }
     }
 
     const targetView = stepName === "login" ? loginView : (stepName === "landing" ? landingView : (stepName === "result" ? resultView : inputView));
