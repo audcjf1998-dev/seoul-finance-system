@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="styles.css?v=20260814_DIRECT_CLICK_FIX">
+<link rel="stylesheet" href="styles.css?v=20260814_LOGOUT_FIX">
 </head>
 <body>
 <div class="wrap">
@@ -150,6 +150,46 @@
           if (window.updateLoginUI) window.updateLoginUI();
           if (window.showStep) window.showStep("landing");
           return false;
+        };
+
+        window.doLogout = function() {
+          if (confirm("로그아웃 하시겠습니까?")) {
+            try { localStorage.removeItem("seoul_user_session"); } catch(e) {}
+
+            var stepLogin = document.getElementById("step-login");
+            var stepLanding = document.getElementById("step-landing");
+            var stepInput = document.getElementById("step-input");
+            var stepResult = document.getElementById("step-result");
+            var heroBanner = document.getElementById("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
+            var tabsWrap = document.getElementById("main-tabs-wrap") || document.querySelector(".tabs-wrap");
+            var aiBtn = document.getElementById("btn-toggle-ai-widget") || document.querySelector(".floating-ai-btn");
+            var aiWidget = document.getElementById("ai-chatbot-widget") || document.querySelector(".ai-chatbot-widget");
+            var userLoggedInfo = document.getElementById("user-logged-info");
+
+            if (stepLogin) stepLogin.style.setProperty("display", "block", "important");
+            if (stepLanding) stepLanding.style.setProperty("display", "none", "important");
+            if (stepInput) stepInput.style.setProperty("display", "none", "important");
+            if (stepResult) stepResult.style.setProperty("display", "none", "important");
+
+            if (heroBanner) {
+              heroBanner.classList.remove("authenticated");
+              heroBanner.style.setProperty("display", "none", "important");
+            }
+            if (tabsWrap) tabsWrap.style.setProperty("display", "none", "important");
+            if (aiBtn) {
+              aiBtn.classList.remove("authenticated");
+              aiBtn.style.setProperty("display", "none", "important");
+            }
+            if (aiWidget) {
+              aiWidget.classList.remove("open");
+              aiWidget.style.setProperty("display", "none", "important");
+            }
+            if (userLoggedInfo) userLoggedInfo.style.setProperty("display", "none", "important");
+
+            if (window.updateLoginUI) window.updateLoginUI();
+            if (window.showStep) window.showStep("login");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         };
       </script>
     </div>
@@ -1103,6 +1143,6 @@
   </div>
 </div>
 
-<script src="app.js?v=20260814_DIRECT_CLICK_FIX"></script>
+<script src="app.js?v=20260814_LOGOUT_FIX"></script>
 </body>
 </html>

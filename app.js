@@ -2932,12 +2932,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.doLogout = function() {
     if (confirm("로그아웃 하시겠습니까?")) {
-      localStorage.removeItem("seoul_user_session");
-      updateLoginUI();
-      showStep("login");
+      try { localStorage.removeItem("seoul_user_session"); } catch(e) {}
+      if (typeof window.updateLoginUI === "function") window.updateLoginUI();
+      if (typeof window.showStep === "function") window.showStep("login");
+
+      const stepLogin = $("step-login") || document.getElementById("step-login");
+      const stepLanding = $("step-landing") || document.getElementById("step-landing");
+      const stepInput = $("step-input") || document.getElementById("step-input");
+      const heroBanner = $("main-hero-banner") || document.querySelector(".hero.seoul-soul-hero");
+      const tabsWrap = $("main-tabs-wrap") || document.querySelector(".tabs-wrap");
+      const aiBtn = $("btn-toggle-ai-widget") || document.querySelector(".floating-ai-btn");
+      const aiWidget = $("ai-chatbot-widget") || document.querySelector(".ai-chatbot-widget");
+
+      if (stepLogin) stepLogin.style.setProperty("display", "block", "important");
+      if (stepLanding) stepLanding.style.setProperty("display", "none", "important");
+      if (stepInput) stepInput.style.setProperty("display", "none", "important");
+      if (heroBanner) {
+        heroBanner.classList.remove("authenticated");
+        heroBanner.style.setProperty("display", "none", "important");
+      }
+      if (tabsWrap) tabsWrap.style.setProperty("display", "none", "important");
+      if (aiBtn) {
+        aiBtn.classList.remove("authenticated");
+        aiBtn.style.setProperty("display", "none", "important");
+      }
+      if (aiWidget) {
+        aiWidget.classList.remove("open");
+        aiWidget.style.setProperty("display", "none", "important");
+      }
+
       if (typeof toast === "function") {
         toast("로그아웃 되었습니다.");
       }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
