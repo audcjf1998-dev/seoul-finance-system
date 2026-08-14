@@ -2795,9 +2795,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch(e) {}
 
-  // 초기 상태 검증 및 첫 화면(landing) 표시
+  // 초기 상태 검증 및 로그인 세션 확인 후 화면 표시
   if (typeof updateOptionStates === "function") updateOptionStates();
-  showStep("landing");
 
   /* ─────────── LOGIN & USER SESSION MANAGEMENT ─────────── */
   function updateLoginUI() {
@@ -2806,30 +2805,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenLogin = $("btn-open-login");
     const deptDisplay = $("user-dept-display");
     const nameDisplay = $("user-name-display");
+    const mainTabsWrap = document.querySelector(".tabs-wrap");
 
     if (userSession && userSession.dept && userSession.name) {
       if (loggedInfoEl) loggedInfoEl.style.display = "flex";
       if (btnOpenLogin) btnOpenLogin.style.display = "none";
       if (deptDisplay) deptDisplay.textContent = `🏛️ ${userSession.dept}`;
       if (nameDisplay) nameDisplay.innerHTML = `<b>${userSession.name}님</b>`;
+      if (mainTabsWrap) mainTabsWrap.style.display = "flex";
+
+      const landingSpeechP = document.querySelector("#step-landing .speech-content p");
+      if (landingSpeechP) {
+        landingSpeechP.innerHTML = `👋 <b>${userSession.name} 담당자님(${userSession.dept})</b> 환영합니다! 오늘 필요하신 계약 업무를 선택해 보세요.`;
+      }
     } else {
       if (loggedInfoEl) loggedInfoEl.style.display = "none";
       if (btnOpenLogin) btnOpenLogin.style.display = "inline-flex";
+      if (mainTabsWrap) mainTabsWrap.style.display = "none";
     }
   }
 
   window.showLoginModal = function() {
-    const modal = $("login-modal-overlay");
-    if (modal) {
-      modal.style.display = "flex";
+    const userSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+    if (!userSession) {
+      showStep("login");
+    } else {
+      const modal = $("login-modal-overlay");
+      if (modal) modal.style.display = "flex";
     }
   };
 
   window.hideLoginModal = function() {
     const modal = $("login-modal-overlay");
-    if (modal) {
-      modal.style.display = "none";
-    }
+    if (modal) modal.style.display = "none";
   };
 
   window.quickLogin = function(dept, name) {
@@ -2837,6 +2845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem("seoul_user_session", JSON.stringify(session));
     updateLoginUI();
     hideLoginModal();
+    showStep("landing");
     if (typeof toast === "function") {
       toast(`👋 ${name}님 (${dept}) 환영합니다!`);
     } else {
@@ -2846,8 +2855,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.handleCustomLogin = function(e) {
     if (e) e.preventDefault();
-    const dept = ($("login-dept-input") ? $("login-dept-input").value : "").trim();
-    const name = ($("login-name-input") ? $("login-name-input").value : "").trim();
+    let dept = ($("login-first-dept") ? $("login-first-dept").value : "").trim();
+    let name = ($("login-first-name") ? $("login-first-name").value : "").trim();
+    
+    if (!dept || !name) {
+      dept = ($("login-dept-input") ? $("login-dept-input").value : "").trim();
+      name = ($("login-name-input") ? $("login-name-input").value : "").trim();
+    }
+
     if (!dept || !name) {
       alert("⚠️ 소속 기관 및 성명을 모두 입력해 주세요.");
       return;
@@ -2859,6 +2874,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirm("로그아웃 하시겠습니까?")) {
       localStorage.removeItem("seoul_user_session");
       updateLoginUI();
+      showStep("login");
       if (typeof toast === "function") {
         toast("로그아웃 되었습니다.");
       }
@@ -2866,4 +2882,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   updateLoginUI();
+  const initUserSession = JSON.parse(localStorage.getItem("seoul_user_session") || "null");
+  if (initUserSession && initUserSession.dept && initUserSession.name) {
+    showStep("landing");
+  } else {
+    showStep("login");
+  }
 });
