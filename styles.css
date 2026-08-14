@@ -2511,3 +2511,232 @@ tr.win td {
   gap: 8px;
   align-items: center;
 }
+
+/* ─────────────────── 네이버 스타일 로그인 페이지 ─────────────────── */
+.naver-login-container {
+  max-width: 480px;
+  margin: 30px auto 50px auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+.naver-login-logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.naver-login-title {
+  font-size: 1.95rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  margin: 0 0 6px 0;
+}
+
+.naver-login-title span {
+  color: #2563eb;
+}
+
+.naver-login-sub {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.naver-login-card {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 18px;
+  padding: 32px 28px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.naver-input-group {
+  margin-bottom: 12px;
+}
+
+.naver-input-field {
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.94rem;
+  color: #1e293b;
+  background: #ffffff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.naver-input-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.naver-login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 24px 0;
+  font-size: 0.86rem;
+  color: #475569;
+}
+
+.naver-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.naver-checkbox-label input {
+  display: none;
+}
+
+.naver-checkbox-label .custom-chk-icon {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: transparent;
+  transition: all 0.15s ease;
+}
+
+.naver-checkbox-label input:checked + .custom-chk-icon {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.naver-security-badge {
+  font-size: 0.8rem;
+  color: #10b981;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.naver-security-badge .sec-dot {
+  font-size: 0.6rem;
+}
+
+.naver-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.naver-btn-secondary {
+  flex: 1;
+  height: 52px;
+  border: 1.5px solid #cbd5e1;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.naver-btn-secondary:hover {
+  background: #dbeafe;
+}
+
+.naver-btn-primary {
+  flex: 1;
+  height: 52px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.naver-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.naver-quick-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+}
+
+.preset-label {
+  font-weight: 800;
+  color: #64748b;
+  margin-right: 2px;
+}
+
+.preset-chip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-chip:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.naver-card-footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 10px;
+}
+
+.naver-card-footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.naver-card-footer-links a:hover {
+  text-decoration: underline;
+  color: #0f172a;
+}
+
+.naver-card-footer-links .divider {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+}
+
+.naver-login-copyright {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 28px;
+  line-height: 1.5;
+}
