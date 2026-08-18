@@ -907,10 +907,15 @@ document.addEventListener('DOMContentLoaded', () => {
         aiBtn.classList.add("authenticated");
         aiBtn.style.setProperty("display", "inline-flex", "important");
       }
-      document.querySelectorAll(".panel").forEach(p => {
-        p.classList.toggle("on", p.id === "p-guide");
-        p.style.setProperty("display", p.id === "p-guide" ? "block" : "none", "important");
-      });
+      const activeTab = document.querySelector(".tab.on");
+      const currentTabName = activeTab ? activeTab.dataset.p : "guide";
+      if (!currentTabName || currentTabName === "guide") {
+        document.querySelectorAll(".panel").forEach(p => {
+          const isGuide = (p.id === "p-guide");
+          p.classList.toggle("on", isGuide);
+          p.style.setProperty("display", isGuide ? "block" : "none", "important");
+        });
+      }
       if (stepName === "landing") {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
       } else if (stepName === "input" || stepName === "result") {
@@ -964,23 +969,37 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.remove("disabled-opt");
       }
     });
-    if (typeof window.updateOptionStates === "function") window.updateOptionStates();
 
     const festivalOpt = $("opt-festival");
     if(festivalOpt) festivalOpt.style.display = "none";
     const itSubs = $("it-subs");
     if(itSubs) itSubs.style.display = "none";
 
+    const res = $("result");
+    if (res) res.innerHTML = "";
+
+    if (typeof EVAL_SCORES_STORE !== "undefined") EVAL_SCORES_STORE = {};
     CKSET.clear();
     CKS = null;
     CURR_STAGE = 0;
     VIEW_ALL_STAGES = false;
     LAST = null;
 
-    if(typeof syncOpts === "function") syncOpts();
+    const ckArea = $("ck-area");
+    if (ckArea) {
+      ckArea.innerHTML = '<div class="card"><div class="empty"><div class="e">📝</div><b>아직 만들어진 체크리스트가 없어요</b><br><span style="font-size:.88rem">「맞춤 안내」에서 계약 종류와 금액을 입력하면<br>이 계약에 딱 맞는 점검 목록을 만들어 드려요.</span><br><br><button class="btn sub" onclick="showTab(\'guide\')">맞춤 안내로 가기</button></div></div>';
+    }
+
+    if (typeof window.updateOptionStates === "function") window.updateOptionStates();
+    if (typeof syncOpts === "function") syncOpts();
+
     showTab("guide");
     showStep("landing");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (typeof toast === "function") {
+      toast("🧹 모든 입력과 점검 상태가 초기화되었습니다.");
+    }
   };
 
   window.goHome = function() {
