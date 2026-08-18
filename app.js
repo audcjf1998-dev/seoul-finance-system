@@ -155,6 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
         s.style.setProperty("height", "0px", "important");
       }
     });
+
+    const guidePanel = $("p-guide");
+    if (p !== "guide" && guidePanel) {
+      guidePanel.style.setProperty("display", "none", "important");
+      guidePanel.style.setProperty("visibility", "hidden", "important");
+      guidePanel.style.setProperty("height", "0px", "important");
+    }
+
     window.scrollTo({top:0,behavior:"auto"});
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
