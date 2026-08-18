@@ -143,10 +143,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
     document.querySelectorAll(".panel").forEach(s=>{
-      s.classList.toggle("on",s.id==="p-"+p);
-      s.style.setProperty("display", (s.id==="p-"+p) ? "block" : "none", "important");
+      const isTarget = (s.id === "p-" + p);
+      s.classList.toggle("on", isTarget);
+      if (isTarget) {
+        s.style.setProperty("display", "block", "important");
+        s.style.setProperty("visibility", "visible", "important");
+        s.style.setProperty("height", "auto", "important");
+      } else {
+        s.style.setProperty("display", "none", "important");
+        s.style.setProperty("visibility", "hidden", "important");
+        s.style.setProperty("height", "0px", "important");
+      }
     });
-    window.scrollTo({top:0,behavior:"smooth"});
+    window.scrollTo({top:0,behavior:"auto"});
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     if (p === "gpt" && window.openAiChatbotWidget) {
       window.openAiChatbotWidget();
     }
@@ -1480,6 +1491,9 @@ document.addEventListener('DOMContentLoaded', () => {
     VIEW_ALL_STAGES = false;
     renderCk(); 
     showTab("check");
+    window.scrollTo({top:0,behavior:"auto"});
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   function renderCk(){
