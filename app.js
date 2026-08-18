@@ -141,7 +141,25 @@ document.addEventListener('DOMContentLoaded', () => {
       showStep("login");
       return;
     }
-    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
+    const loginView = $("step-login");
+    const landingView = $("step-landing");
+    const inputView = $("step-input");
+    const resultView = $("step-result");
+    const guidePanel = $("p-guide");
+
+    if (p !== "guide") {
+      if (loginView) loginView.style.setProperty("display", "none", "important");
+      if (landingView) landingView.style.setProperty("display", "none", "important");
+      if (inputView) inputView.style.setProperty("display", "none", "important");
+      if (resultView) resultView.style.setProperty("display", "none", "important");
+      if (guidePanel) {
+        guidePanel.classList.remove("on");
+        guidePanel.style.setProperty("display", "none", "important");
+        guidePanel.style.setProperty("visibility", "hidden", "important");
+        guidePanel.style.setProperty("height", "0px", "important");
+      }
+    }
+
     document.querySelectorAll(".panel").forEach(s=>{
       const isTarget = (s.id === "p-" + p);
       s.classList.toggle("on", isTarget);
@@ -155,13 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
         s.style.setProperty("height", "0px", "important");
       }
     });
-
-    const guidePanel = $("p-guide");
-    if (p !== "guide" && guidePanel) {
-      guidePanel.style.setProperty("display", "none", "important");
-      guidePanel.style.setProperty("visibility", "hidden", "important");
-      guidePanel.style.setProperty("height", "0px", "important");
-    }
 
     window.scrollTo({top:0,behavior:"auto"});
     document.documentElement.scrollTop = 0;
@@ -1497,6 +1508,24 @@ document.addEventListener('DOMContentLoaded', () => {
     CKSET = new Set();
     CURR_STAGE = 0;
     VIEW_ALL_STAGES = false;
+
+    const loginView = $("step-login");
+    const landingView = $("step-landing");
+    const inputView = $("step-input");
+    const resultView = $("step-result");
+    const guidePanel = $("p-guide");
+
+    if (loginView) loginView.style.setProperty("display", "none", "important");
+    if (landingView) landingView.style.setProperty("display", "none", "important");
+    if (inputView) inputView.style.setProperty("display", "none", "important");
+    if (resultView) resultView.style.setProperty("display", "none", "important");
+    if (guidePanel) {
+      guidePanel.classList.remove("on");
+      guidePanel.style.setProperty("display", "none", "important");
+      guidePanel.style.setProperty("visibility", "hidden", "important");
+      guidePanel.style.setProperty("height", "0px", "important");
+    }
+
     renderCk(); 
     showTab("check");
     window.scrollTo({top:0,behavior:"auto"});
